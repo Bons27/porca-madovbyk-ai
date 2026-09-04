@@ -1,0 +1,40 @@
+name: Telegram Setup
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: "Operazione Telegram"
+        required: true
+        type: choice
+        options:
+          - discover_chat_id
+          - send_test
+
+jobs:
+  telegram:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Discover Telegram Chat ID
+        if: ${{ inputs.operation == 'discover_chat_id' }}
+        working-directory: porca-madovbyk-ai
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: python -m src.telegram_bot discover
+
+      - name: Send Telegram test
+        if: ${{ inputs.operation == 'send_test' }}
+        working-directory: porca-madovbyk-ai
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m src.telegram_bot send-test
