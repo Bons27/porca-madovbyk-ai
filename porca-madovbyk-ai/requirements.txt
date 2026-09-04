@@ -1,0 +1,2 @@
+# V1 Step 1: nessuna dipendenza esterna.
+# Le dipendenze per Telegram, Gemini e Supabase verranno aggiunte nei prossimi step.

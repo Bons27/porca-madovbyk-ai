@@ -1,0 +1,26 @@
+﻿Ruolo;Nome;Squadra;Costo d'acquisto;Quotazione Attuale;FVMp;Media Voto;Fanta Media;Partite Giocate (a voto);Prestito
+P;Carnesecchi;Atalanta;69;17;55;6,75;6,75;2;
+P;Caprile;Cagliari;2;10;25;6,5;6;2;
+P;Muric;Sassuolo;1;7;15;6,25;4,75;2;
+D;Valdepenas;Fiorentina;8;5;16;5;5;1;
+D;Belghali;Torino;1;7;20;0;0;0;
+D;Bisseck;Inter;53;12;36;6,75;8,25;2;
+D;Chalobah T.;Como;71;10;32;6,5;6,5;2;
+D;Correia T.;Venezia;1;5;12;6,25;6,25;2;
+D;Hermoso;Roma;21;11;26;6,5;6,25;2;
+D;Balerdi;Roma;1;6;11;0;0;0;
+D;Pavard;Inter;1;6;14;6;6;1;
+C;Rodriguez Je.;Como;6;11;31;5,5;5,5;1;
+C;Volpato;Sassuolo;1;9;25;6,75;8;2;
+C;Vlasic;Torino;50;13;73;5,25;5,25;2;
+C;Da Cunha;Como;64;18;87;6,25;6,25;2;
+C;Samardzic;Atalanta;35;13;44;6,5;8;2;
+C;McTominay;Napoli;151;27;220;5,75;5,75;2;
+C;Zambo Anguissa;Napoli;1;10;41;5,25;5,25;2;
+C;Zaniolo;Udinese;61;18;80;6,5;6,5;1;
+A;Diao;Como;30;12;50;6,25;6,75;2;
+A;Castro S.;Roma;101;14;70;6;6;2;
+A;Ghedjemis;Frosinone;2;8;23;0;0;0;
+A;Camarda;Milan;1;4;20;0;0;0;
+A;Ramos G.;Milan;251;27;237;6,5;8;2;
+A;Geubbels;Lecce;1;8;23;5,25;5,25;2;
