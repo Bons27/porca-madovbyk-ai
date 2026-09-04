@@ -80,7 +80,25 @@ def send_test():
     else:
         raise RuntimeError(f"Errore Telegram: {result}")
 
+def send_message(text):
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
 
+    if not chat_id:
+        raise RuntimeError("TELEGRAM_CHAT_ID non configurato.")
+
+    result = telegram_request(
+        "sendMessage",
+        {
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": "HTML",
+        },
+    )
+
+    if not result.get("ok"):
+        raise RuntimeError(f"Errore Telegram: {result}")
+
+    return result
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usa: discover oppure send-test")
