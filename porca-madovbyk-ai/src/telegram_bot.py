@@ -99,6 +99,32 @@ def send_message(text):
         raise RuntimeError(f"Errore Telegram: {result}")
 
     return result
+    def send_long_message(text, max_length=3800):
+    lines = text.split("\n")
+
+    chunks = []
+    current = ""
+
+    for line in lines:
+        candidate = (
+            current + "\n" + line
+            if current
+            else line
+        )
+
+        if len(candidate) > max_length:
+            if current:
+                chunks.append(current)
+
+            current = line
+        else:
+            current = candidate
+
+    if current:
+        chunks.append(current)
+
+    for chunk in chunks:
+        send_message(chunk)
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usa: discover oppure send-test")
