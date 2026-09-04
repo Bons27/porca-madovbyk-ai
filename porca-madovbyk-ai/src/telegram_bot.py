@@ -99,7 +99,7 @@ def send_message(text):
         raise RuntimeError(f"Errore Telegram: {result}")
 
     return result
-    def send_long_message(text, max_length=3800):
+   def send_long_message(text, max_length=3800):
     lines = text.split("\n")
 
     chunks = []
