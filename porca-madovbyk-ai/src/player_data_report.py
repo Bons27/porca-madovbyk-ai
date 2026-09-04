@@ -1,9 +1,9 @@
+import html
 from pathlib import Path
 
 from .fantacalcio_source import (
     classify_probability,
     fetch_probable_lineups,
-    fetch_statistics,
     fetch_unavailable,
     find_player,
 )
@@ -26,26 +26,91 @@ STATUS_LABELS = {
 }
 
 
-def format_player(
+def safe_text(value):
+    return html.escape(str(value))
+
+
+def get_live_data(roster_names):
+    """
+    Recupera i dati live senza far fallire l'intero report
+    se una singola fonte ha problemi.
+    """
+
+    warnings = []
+
+    try:
+        print("Recupero probabili formazioni...")
+        lineups = fetch_probable_lineups()
+
+        print(
+            f"Probabili formazioni recuperate: "
+            f"{len(lineups)} giocatori"
+        )
+
+    except Exception as exc:
+        print(
+            f"ERRORE probabili formazioni: {exc}"
+        )
+
+        lineups = {}
+
+        warnings.append(
+            "Probabili formazioni non disponibili."
+        )
+
+    try:
+        print("Recupero indisponibili...")
+
+        unavailable = fetch_unavailable(
+            roster_names
+        )
+
+        print(
+            f"Indisponibili della rosa trovati: "
+            f"{len(unavailable)}"
+        )
+
+    except Exception as exc:
+        print(
+            f"ERRORE indisponibili: {exc}"
+        )
+
+        unavailable = {}
+
+        warnings.append(
+            "Dati indisponibili non disponibili."
+        )
+
+    return lineups, unavailable, warnings
+
+
+def get_availability(
     player,
     lineup,
-    stats,
     unavailable,
 ):
-    name = player.name
+    status = unavailable.get(
+        player.name
+    )
 
-    status = unavailable.get(name)
+    # Priorità assoluta:
+    # infortunato / squalificato
+    if status:
+        status_type = status.get(
+            "status"
+        )
 
-    # L'indisponibilità ha priorità
-    if status and status["status"] in (
-        "injured",
-        "suspended",
-    ):
-        availability = STATUS_LABELS[
-            status["status"]
-        ]
+        if status_type in (
+            "injured",
+            "suspended",
+        ):
+            return STATUS_LABELS[
+                status_type
+            ]
 
-    elif lineup:
+    # Altrimenti utilizziamo
+    # la probabilità di titolarità
+    if lineup:
         probability = lineup[
             "probability"
         ]
@@ -54,44 +119,93 @@ def format_player(
             probability
         )
 
-        availability = (
-            f"{icon} {probability:.0f}%"
-        )
-
-    else:
-        availability = "⚪ titolarità n/d"
-
-    if stats:
-        stats_text = (
-            f"PV {stats['games']} | "
-            f"MV {stats['average_vote']:.2f} | "
-            f"FM {stats['fantasy_average']:.2f}"
-        )
-
-        bonus_text = (
-            f"G {stats['goals']} | "
-            f"A {stats['assists']}"
-        )
-
         return (
-            f"• <b>{name}</b> — "
-            f"{availability}\n"
-            f"  {stats_text} | "
-            f"{bonus_text}"
+            f"{icon} "
+            f"{probability:.0f}% titolare"
         )
 
-    return (
-        f"• <b>{name}</b> — "
-        f"{availability}\n"
-        f"  ⚪ statistiche n/d"
+    return "⚪ titolarità n/d"
+
+
+def format_player(
+    player,
+    lineup,
+    unavailable,
+):
+    availability = get_availability(
+        player,
+        lineup,
+        unavailable,
     )
+
+    name = safe_text(player.name)
+    club = safe_text(player.club)
+
+    first_line = (
+        f"• <b>{name}</b> "
+        f"({club}) — {availability}"
+    )
+
+    stats_line = (
+        f"  PV {player.games_with_vote} | "
+        f"MV {player.average_vote:.2f} | "
+        f"FM {player.fantasy_average:.2f}"
+    )
+
+    value_line = (
+        f"  FVM {player.fvmp} | "
+        f"Quot. {player.current_value} | "
+        f"Acq. {player.purchase_cost}"
+    )
+
+    lines = [
+        first_line,
+        stats_line,
+        value_line,
+    ]
+
+    status = unavailable.get(
+        player.name
+    )
+
+    if status:
+        status_type = status.get(
+            "status"
+        )
+
+        detail = status.get(
+            "detail",
+            "",
+        )
+
+        if (
+            status_type in (
+                "injured",
+                "suspended",
+            )
+            and detail
+        ):
+            lines.append(
+                "  ↳ "
+                + safe_text(detail)
+            )
+
+    return "\n".join(lines)
 
 
 def build_report():
-    root = Path(__file__).resolve().parents[1]
+    root = Path(
+        __file__
+    ).resolve().parents[1]
+
+    roster_path = (
+        root
+        / "data"
+        / "rosa.csv"
+    )
 
     roster = load_roster(
-        root / "data" / "rosa.csv"
+        roster_path
     )
 
     roster_names = [
@@ -99,45 +213,42 @@ def build_report():
         for player in roster
     ]
 
-    print(
-        "Recupero probabili formazioni..."
-    )
-
-    lineups = fetch_probable_lineups()
-
-    print(
-        "Recupero statistiche..."
-    )
-
-    statistics = fetch_statistics()
-
-    print(
-        "Recupero indisponibili..."
-    )
-
-    unavailable = fetch_unavailable(
+    (
+        lineups,
+        unavailable,
+        warnings,
+    ) = get_live_data(
         roster_names
     )
 
     lines = [
         "🤖 <b>PORCA MADOVBYK AI</b>",
         "",
-        "📊 <b>DATI GIOCATORI LIVE</b>",
-        "<i>Fonte: Fantacalcio.it</i>",
+        "📊 <b>DATI GIOCATORI</b>",
+        "",
+        "📡 Titolarità/assenze: "
+        "<b>Fantacalcio.it LIVE</b>",
+        "📁 MV/FM/FVM: "
+        "<b>ultimo CSV Leghe Fantacalcio</b>",
         "",
     ]
 
-    stat_matches = 0
+    lineup_matches = 0
 
-    for role in ["P", "D", "C", "A"]:
+    for role in [
+        "P",
+        "D",
+        "C",
+        "A",
+    ]:
         lines.append(
             f"<b>{ROLE_NAMES[role]}</b>"
         )
 
         role_players = [
-            p
-            for p in roster
-            if p.role == role
+            player
+            for player in roster
+            if player.role == role
         ]
 
         for player in role_players:
@@ -146,26 +257,24 @@ def build_report():
                 player.name,
             )
 
-            stats = find_player(
-                statistics,
-                player.name,
-            )
-
-            if stats:
-                stat_matches += 1
+            if lineup:
+                lineup_matches += 1
 
             lines.append(
                 format_player(
                     player,
                     lineup,
-                    stats,
                     unavailable,
                 )
             )
 
         lines.append("")
 
-    alerts = []
+    # -----------------------------
+    # ALERT ASSENZE
+    # -----------------------------
+
+    important_alerts = []
 
     for player in roster:
         status = unavailable.get(
@@ -175,45 +284,76 @@ def build_report():
         if not status:
             continue
 
-        if status["status"] not in (
+        status_type = status.get(
+            "status"
+        )
+
+        if status_type not in (
             "injured",
             "suspended",
         ):
             continue
 
         label = STATUS_LABELS[
-            status["status"]
+            status_type
         ]
 
         detail = status.get(
             "detail",
-            ""
+            "",
         )
 
-        alerts.append(
-            f"• <b>{player.name}</b> "
-            f"— {label}\n"
-            f"  {detail}"
+        alert = (
+            f"• <b>{safe_text(player.name)}</b> "
+            f"— {label}"
+        )
+
+        if detail:
+            alert += (
+                "\n  "
+                + safe_text(detail)
+            )
+
+        important_alerts.append(
+            alert
         )
 
     lines.extend(
         [
-            "🔍 <b>COPERTURA DATI</b>",
+            "🔍 <b>CONTROLLO DATI</b>",
             (
-                "Statistiche riconosciute: "
-                f"{stat_matches}/{len(roster)}"
+                "Titolarità riconosciute: "
+                f"{lineup_matches}/"
+                f"{len(roster)}"
+            ),
+            (
+                "Indisponibili rilevati: "
+                f"{len(important_alerts)}"
             ),
         ]
     )
 
-    if alerts:
+    if important_alerts:
         lines.extend(
             [
                 "",
-                "🚨 <b>INDISPONIBILI</b>",
-                *alerts,
+                "🚨 <b>ASSENZE IMPORTANTI</b>",
+                *important_alerts,
             ]
         )
+
+    if warnings:
+        lines.extend(
+            [
+                "",
+                "⚠️ <b>AVVISI TECNICI</b>",
+            ]
+        )
+
+        for warning in warnings:
+            lines.append(
+                f"• {safe_text(warning)}"
+            )
 
     return "\n".join(lines)
 
@@ -221,10 +361,13 @@ def build_report():
 def main():
     report = build_report()
 
-    send_long_message(report)
+    send_long_message(
+        report
+    )
 
     print(
-        "Report dati giocatori inviato."
+        "Report dati giocatori "
+        "inviato correttamente."
     )
 
 
