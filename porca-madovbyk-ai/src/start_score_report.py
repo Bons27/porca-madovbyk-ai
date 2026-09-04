@@ -318,7 +318,7 @@ def build_report():
             "🔥 ≥75: priorità",
             "✅ 65–74.9: consigliato",
             "🟡 55–64.9: schierabile",
-            "⚠️ <55: rischio",
+            "⚠️ Sotto 55: rischio",
             "❌ 0: infortunato/squalificato",
         ]
     )
