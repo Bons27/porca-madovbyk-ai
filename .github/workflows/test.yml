@@ -19,7 +19,9 @@ jobs:
           python-version: "3.12"
 
       - name: Run tests
+        working-directory: porca-madovbyk-ai
         run: python -m unittest discover -s tests -v
 
       - name: Validate roster and rules
+        working-directory: porca-madovbyk-ai
         run: python -m src.main
