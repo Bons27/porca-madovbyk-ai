@@ -138,7 +138,38 @@ def player_selection_value(item):
         player,
         result,
     )
+def balanced_value(item):
+    player = item["player"]
+    result = item["result"]
 
+    projected = projected_fantasy_points(
+        player,
+        result,
+    )
+
+    value = (
+        (result["score"] / 10.0) * 0.65
+        + projected * 0.35
+    )
+
+    # Penalità aggiuntiva ai ballottaggi forti.
+    # Non elimina il giocatore, ma impedisce
+    # che una FM alta dopo 1-2 giornate
+    # nasconda il rischio.
+    availability = result[
+        "availability"
+    ]
+
+    if 0 < availability < 40:
+        value -= 0.65
+
+    elif availability < 60:
+        value -= 0.30
+
+    elif availability < 70:
+        value -= 0.10
+
+    return round(value, 3)
     start_score_component = (
         result["score"] / 10.0
     )
