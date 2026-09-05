@@ -1,0 +1,145 @@
+﻿GiornataLega;GiornataSerieA;Casa;Trasferta
+1;3;ALVIN SUPERSTAR;Bettercallsaud
+1;3;Atletico Gomez;Porca MaDovbyk
+1;3;Frusinello 92;FC LEAO MERAVIGLIAO
+1;3;Tonno Rio Malen;Old Wild Weston
+2;4;Bettercallsaud;Tonno Rio Malen
+2;4;FC LEAO MERAVIGLIAO;ALVIN SUPERSTAR
+2;4;Old Wild Weston;Atletico Gomez
+2;4;Porca MaDovbyk;Frusinello 92
+3;5;ALVIN SUPERSTAR;Frusinello 92
+3;5;Atletico Gomez;Bettercallsaud
+3;5;Old Wild Weston;Porca MaDovbyk
+3;5;Tonno Rio Malen;FC LEAO MERAVIGLIAO
+4;6;Bettercallsaud;Old Wild Weston
+4;6;FC LEAO MERAVIGLIAO;Atletico Gomez
+4;6;Frusinello 92;Tonno Rio Malen
+4;6;Porca MaDovbyk;ALVIN SUPERSTAR
+5;7;Atletico Gomez;Frusinello 92
+5;7;Bettercallsaud;Porca MaDovbyk
+5;7;Old Wild Weston;FC LEAO MERAVIGLIAO
+5;7;Tonno Rio Malen;ALVIN SUPERSTAR
+6;8;ALVIN SUPERSTAR;Atletico Gomez
+6;8;FC LEAO MERAVIGLIAO;Bettercallsaud
+6;8;Frusinello 92;Old Wild Weston
+6;8;Tonno Rio Malen;Porca MaDovbyk
+7;9;Atletico Gomez;Tonno Rio Malen
+7;9;Bettercallsaud;Frusinello 92
+7;9;Old Wild Weston;ALVIN SUPERSTAR
+7;9;Porca MaDovbyk;FC LEAO MERAVIGLIAO
+8;10;Atletico Gomez;Old Wild Weston
+8;10;FC LEAO MERAVIGLIAO;Porca MaDovbyk
+8;10;Frusinello 92;ALVIN SUPERSTAR
+8;10;Tonno Rio Malen;Bettercallsaud
+9;11;ALVIN SUPERSTAR;Tonno Rio Malen
+9;11;Bettercallsaud;FC LEAO MERAVIGLIAO
+9;11;Old Wild Weston;Frusinello 92
+9;11;Porca MaDovbyk;Atletico Gomez
+10;12;Atletico Gomez;ALVIN SUPERSTAR
+10;12;FC LEAO MERAVIGLIAO;Tonno Rio Malen
+10;12;Frusinello 92;Bettercallsaud
+10;12;Porca MaDovbyk;Old Wild Weston
+11;13;ALVIN SUPERSTAR;Porca MaDovbyk
+11;13;Bettercallsaud;Atletico Gomez
+11;13;FC LEAO MERAVIGLIAO;Old Wild Weston
+11;13;Tonno Rio Malen;Frusinello 92
+12;14;ALVIN SUPERSTAR;FC LEAO MERAVIGLIAO
+12;14;Frusinello 92;Atletico Gomez
+12;14;Old Wild Weston;Bettercallsaud
+12;14;Porca MaDovbyk;Tonno Rio Malen
+13;15;Atletico Gomez;FC LEAO MERAVIGLIAO
+13;15;Bettercallsaud;ALVIN SUPERSTAR
+13;15;Frusinello 92;Porca MaDovbyk
+13;15;Old Wild Weston;Tonno Rio Malen
+14;16;ALVIN SUPERSTAR;Old Wild Weston
+14;16;FC LEAO MERAVIGLIAO;Frusinello 92
+14;16;Porca MaDovbyk;Bettercallsaud
+14;16;Tonno Rio Malen;Atletico Gomez
+15;17;FC LEAO MERAVIGLIAO;ALVIN SUPERSTAR
+15;17;Frusinello 92;Bettercallsaud
+15;17;Old Wild Weston;Porca MaDovbyk
+15;17;Tonno Rio Malen;Atletico Gomez
+16;18;ALVIN SUPERSTAR;Frusinello 92
+16;18;Atletico Gomez;FC LEAO MERAVIGLIAO
+16;18;Bettercallsaud;Old Wild Weston
+16;18;Porca MaDovbyk;Tonno Rio Malen
+17;19;Frusinello 92;FC LEAO MERAVIGLIAO
+17;19;Old Wild Weston;ALVIN SUPERSTAR
+17;19;Porca MaDovbyk;Atletico Gomez
+17;19;Tonno Rio Malen;Bettercallsaud
+18;20;ALVIN SUPERSTAR;Tonno Rio Malen
+18;20;Atletico Gomez;Frusinello 92
+18;20;Bettercallsaud;Porca MaDovbyk
+18;20;FC LEAO MERAVIGLIAO;Old Wild Weston
+19;21;Bettercallsaud;Atletico Gomez
+19;21;Old Wild Weston;Frusinello 92
+19;21;Porca MaDovbyk;ALVIN SUPERSTAR
+19;21;Tonno Rio Malen;FC LEAO MERAVIGLIAO
+20;22;ALVIN SUPERSTAR;Bettercallsaud
+20;22;FC LEAO MERAVIGLIAO;Porca MaDovbyk
+20;22;Frusinello 92;Tonno Rio Malen
+20;22;Old Wild Weston;Atletico Gomez
+21;23;Atletico Gomez;ALVIN SUPERSTAR
+21;23;Bettercallsaud;FC LEAO MERAVIGLIAO
+21;23;Porca MaDovbyk;Frusinello 92
+21;23;Tonno Rio Malen;Old Wild Weston
+22;24;ALVIN SUPERSTAR;Atletico Gomez
+22;24;FC LEAO MERAVIGLIAO;Frusinello 92
+22;24;Old Wild Weston;Bettercallsaud
+22;24;Tonno Rio Malen;Porca MaDovbyk
+23;25;Atletico Gomez;Tonno Rio Malen
+23;25;Bettercallsaud;ALVIN SUPERSTAR
+23;25;Frusinello 92;Old Wild Weston
+23;25;Porca MaDovbyk;FC LEAO MERAVIGLIAO
+24;26;ALVIN SUPERSTAR;Old Wild Weston
+24;26;Atletico Gomez;Porca MaDovbyk
+24;26;FC LEAO MERAVIGLIAO;Bettercallsaud
+24;26;Tonno Rio Malen;Frusinello 92
+25;27;ALVIN SUPERSTAR;Porca MaDovbyk
+25;27;Bettercallsaud;Tonno Rio Malen
+25;27;Frusinello 92;Atletico Gomez
+25;27;Old Wild Weston;FC LEAO MERAVIGLIAO
+26;28;Atletico Gomez;Old Wild Weston
+26;28;FC LEAO MERAVIGLIAO;Tonno Rio Malen
+26;28;Frusinello 92;ALVIN SUPERSTAR
+26;28;Porca MaDovbyk;Bettercallsaud
+27;29;Bettercallsaud;Frusinello 92
+27;29;FC LEAO MERAVIGLIAO;Atletico Gomez
+27;29;Porca MaDovbyk;Old Wild Weston
+27;29;Tonno Rio Malen;ALVIN SUPERSTAR
+28;30;ALVIN SUPERSTAR;FC LEAO MERAVIGLIAO
+28;30;Atletico Gomez;Bettercallsaud
+28;30;Frusinello 92;Porca MaDovbyk
+28;30;Old Wild Weston;Tonno Rio Malen
+29;31;ALVIN SUPERSTAR;Atletico Gomez
+29;31;Bettercallsaud;FC LEAO MERAVIGLIAO
+29;31;Frusinello 92;Old Wild Weston
+29;31;Porca MaDovbyk;Tonno Rio Malen
+30;32;Atletico Gomez;Bettercallsaud
+30;32;FC LEAO MERAVIGLIAO;Porca MaDovbyk
+30;32;Old Wild Weston;ALVIN SUPERSTAR
+30;32;Tonno Rio Malen;Frusinello 92
+31;33;Bettercallsaud;ALVIN SUPERSTAR
+31;33;Frusinello 92;FC LEAO MERAVIGLIAO
+31;33;Porca MaDovbyk;Atletico Gomez
+31;33;Tonno Rio Malen;Old Wild Weston
+32;34;ALVIN SUPERSTAR;Porca MaDovbyk
+32;34;Atletico Gomez;Frusinello 92
+32;34;FC LEAO MERAVIGLIAO;Tonno Rio Malen
+32;34;Old Wild Weston;Bettercallsaud
+33;35;FC LEAO MERAVIGLIAO;Old Wild Weston
+33;35;Frusinello 92;ALVIN SUPERSTAR
+33;35;Porca MaDovbyk;Bettercallsaud
+33;35;Tonno Rio Malen;Atletico Gomez
+34;36;ALVIN SUPERSTAR;Tonno Rio Malen
+34;36;Atletico Gomez;FC LEAO MERAVIGLIAO
+34;36;Bettercallsaud;Frusinello 92
+34;36;Porca MaDovbyk;Old Wild Weston
+35;37;FC LEAO MERAVIGLIAO;ALVIN SUPERSTAR
+35;37;Frusinello 92;Porca MaDovbyk
+35;37;Old Wild Weston;Atletico Gomez
+35;37;Tonno Rio Malen;Bettercallsaud
+36;38;ALVIN SUPERSTAR;Bettercallsaud
+36;38;Atletico Gomez;Old Wild Weston
+36;38;Frusinello 92;Tonno Rio Malen
+36;38;Porca MaDovbyk;FC LEAO MERAVIGLIAO
