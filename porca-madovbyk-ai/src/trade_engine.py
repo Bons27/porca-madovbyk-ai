@@ -51,6 +51,32 @@ ROLE_IMPORTANCE = {
 }
 
 
+# Quanto è "costoso" sul mercato
+# un ruolo a parità di Trade Value.
+ROLE_MARKET_MULTIPLIER = {
+    "P": 0.80,
+    "D": 0.90,
+    "C": 1.00,
+    "A": 1.10,
+}
+
+
+MIN_USER_GAIN = 0.20
+MIN_OPPONENT_GAIN = 0.10
+MIN_ACCEPTANCE_SCORE = 60.0
+
+
+def clamp(
+    value,
+    minimum=0.0,
+    maximum=100.0,
+):
+    return max(
+        minimum,
+        min(maximum, value),
+    )
+
+
 def player_value(
     player,
     values,
@@ -62,6 +88,172 @@ def player_value(
     return values[key][
         "score"
     ]
+
+
+def star_tier(
+    player,
+    values,
+):
+    tv = player_value(
+        player,
+        values,
+    )
+
+    if tv >= 92:
+        return "elite"
+
+    if tv >= 85:
+        return "star"
+
+    if tv >= 75:
+        return "important"
+
+    if tv >= 65:
+        return "starter"
+
+    return "normal"
+
+
+def owner_value(
+    player,
+    values,
+):
+    """
+    Valore percepito dal proprietario.
+
+    Non coincide con Trade Value:
+    un top in hype è più difficile
+    da strappare di quanto suggerisca
+    un semplice valore lineare.
+    """
+
+    tv = player_value(
+        player,
+        values,
+    )
+
+    premium = 1.0
+
+    # Premium qualità
+    if tv >= 92:
+        premium += 0.25
+
+    elif tv >= 85:
+        premium += 0.16
+
+    elif tv >= 75:
+        premium += 0.08
+
+    elif tv >= 65:
+        premium += 0.03
+
+    # Premium hype / rendimento
+    if (
+        player.games_with_vote >= 2
+        and player.fantasy_average >= 8.0
+    ):
+        premium += 0.08
+
+    elif (
+        player.games_with_vote >= 2
+        and player.fantasy_average >= 7.0
+    ):
+        premium += 0.04
+
+    # FVM molto elevato
+    if player.fvmp >= 300:
+        premium += 0.08
+
+    elif player.fvmp >= 200:
+        premium += 0.05
+
+    elif player.fvmp >= 120:
+        premium += 0.03
+
+    # Quanto il proprietario
+    # aveva già investito all'asta
+    if player.purchase_cost >= 200:
+        premium += 0.05
+
+    elif player.purchase_cost >= 120:
+        premium += 0.03
+
+    elif player.purchase_cost >= 70:
+        premium += 0.01
+
+    role_multiplier = (
+        ROLE_MARKET_MULTIPLIER[
+            player.role
+        ]
+    )
+
+    return (
+        tv
+        * premium
+        * role_multiplier
+    )
+
+
+def package_owner_value(
+    players,
+    values,
+):
+    return sum(
+        owner_value(
+            player,
+            values,
+        )
+        for player in players
+    )
+
+
+def package_max_tv(
+    players,
+    values,
+):
+    if not players:
+        return 0.0
+
+    return max(
+        player_value(
+            player,
+            values,
+        )
+        for player in players
+    )
+
+
+def required_market_ratio(
+    opponent_gives,
+    values,
+):
+    """
+    Quanto deve ricevere almeno
+    il proprietario rispetto a ciò
+    che sta cedendo.
+
+    Più è forte il pezzo migliore,
+    più deve essere pagato.
+    """
+
+    maximum = package_max_tv(
+        opponent_gives,
+        values,
+    )
+
+    if maximum >= 92:
+        return 1.08
+
+    if maximum >= 85:
+        return 1.03
+
+    if maximum >= 75:
+        return 0.98
+
+    if maximum >= 65:
+        return 0.94
+
+    return 0.90
 
 
 def group_by_role(players):
@@ -80,20 +272,14 @@ def role_utility(
     role,
     values,
 ):
-    role_players = [
-        player
-        for player in players
-        if player.role == role
-    ]
-
     scores = sorted(
         (
             player_value(
                 player,
                 values,
             )
-            for player
-            in role_players
+            for player in players
+            if player.role == role
         ),
         reverse=True,
     )
@@ -108,20 +294,16 @@ def role_utility(
         weights
     )
 
-    result = sum(
-        score * weight
-        for score, weight
-        in zip(
-            scores,
-            weights,
-        )
-    )
-
     return (
-        result
+        sum(
+            score * weight
+            for score, weight
+            in zip(
+                scores,
+                weights,
+            )
+        )
         / total_weight
-        if total_weight
-        else 0.0
     )
 
 
@@ -152,26 +334,19 @@ def replace_player(
     outgoing,
     incoming,
 ):
-    result = []
-
     outgoing_key = (
         normalize_name(
             outgoing.name
         )
     )
 
-    for player in players:
-        if (
-            normalize_name(
-                player.name
-            )
-            == outgoing_key
-        ):
-            continue
-
-        result.append(
-            player
-        )
+    result = [
+        player
+        for player in players
+        if normalize_name(
+            player.name
+        ) != outgoing_key
+    ]
 
     result.append(
         incoming
@@ -193,13 +368,152 @@ def swap_two(
         incoming_a,
     )
 
-    result = replace_player(
+    return replace_player(
         result,
         outgoing_b,
         incoming_b,
     )
 
-    return result
+
+def evaluate_acceptance(
+    opponent_gives,
+    opponent_receives,
+    opponent_gain,
+    values,
+):
+    """
+    Stima se la proposta ha senso
+    dal punto di vista del proprietario.
+    """
+
+    outgoing_value = (
+        package_owner_value(
+            opponent_gives,
+            values,
+        )
+    )
+
+    incoming_value = (
+        package_owner_value(
+            opponent_receives,
+            values,
+        )
+    )
+
+    if outgoing_value <= 0:
+        return None
+
+    ratio = (
+        incoming_value
+        / outgoing_value
+    )
+
+    required_ratio = (
+        required_market_ratio(
+            opponent_gives,
+            values,
+        )
+    )
+
+    best_outgoing = (
+        package_max_tv(
+            opponent_gives,
+            values,
+        )
+    )
+
+    best_incoming = (
+        package_max_tv(
+            opponent_receives,
+            values,
+        )
+    )
+
+    # Per un vero élite non accettiamo
+    # pacchetti composti soltanto
+    # da giocatori medi/scarsi.
+    if (
+        best_outgoing >= 92
+        and best_incoming < 80
+    ):
+        return None
+
+    # Per una star serve comunque
+    # almeno un giocatore importante.
+    if (
+        best_outgoing >= 85
+        and best_incoming < 75
+    ):
+        return None
+
+    if ratio < required_ratio:
+        return None
+
+    if (
+        opponent_gain
+        < MIN_OPPONENT_GAIN
+    ):
+        return None
+
+    ratio_surplus = (
+        ratio
+        - required_ratio
+    )
+
+    acceptance_score = (
+        60
+        + opponent_gain * 12
+        + ratio_surplus * 120
+    )
+
+    if (
+        best_outgoing >= 92
+        and best_incoming >= 85
+    ):
+        acceptance_score += 5
+
+    acceptance_score = clamp(
+        acceptance_score
+    )
+
+    if (
+        acceptance_score
+        < MIN_ACCEPTANCE_SCORE
+    ):
+        return None
+
+    if acceptance_score >= 82:
+        label = "🟢 ALTA"
+
+    elif acceptance_score >= 70:
+        label = "🟡 BUONA"
+
+    else:
+        label = "🟠 POSSIBILE"
+
+    return {
+        "score": round(
+            acceptance_score,
+            1,
+        ),
+        "label": label,
+        "market_ratio": round(
+            ratio,
+            3,
+        ),
+        "required_ratio": round(
+            required_ratio,
+            3,
+        ),
+        "opponent_gives_value": round(
+            outgoing_value,
+            1,
+        ),
+        "opponent_receives_value": round(
+            incoming_value,
+            1,
+        ),
+    }
 
 
 def diagnose_squad(
@@ -255,178 +569,12 @@ def diagnose_squad(
     return diagnosis
 
 
-def find_upgrade_targets(
-    user_players,
-    opponent_teams,
-    values,
-):
-    base_utility = (
-        squad_utility(
-            user_players,
-            values,
-        )
-    )
-
-    targets = []
-
-    user_by_role = (
-        group_by_role(
-            user_players
-        )
-    )
-
-    for (
-        opponent_name,
-        opponent_players,
-    ) in opponent_teams.items():
-
-        opponent_base = (
-            squad_utility(
-                opponent_players,
-                values,
-            )
-        )
-
-        for target in (
-            opponent_players
-        ):
-            role = target.role
-
-            for outgoing in (
-                user_by_role[
-                    role
-                ]
-            ):
-                new_user = (
-                    replace_player(
-                        user_players,
-                        outgoing,
-                        target,
-                    )
-                )
-
-                user_gain = (
-                    squad_utility(
-                        new_user,
-                        values,
-                    )
-                    - base_utility
-                )
-
-                if user_gain <= 0.15:
-                    continue
-
-                new_opponent = (
-                    replace_player(
-                        opponent_players,
-                        target,
-                        outgoing,
-                    )
-                )
-
-                opponent_gain = (
-                    squad_utility(
-                        new_opponent,
-                        values,
-                    )
-                    - opponent_base
-                )
-
-                targets.append(
-                    {
-                        "opponent": (
-                            opponent_name
-                        ),
-                        "target": target,
-                        "outgoing": (
-                            outgoing
-                        ),
-                        "user_gain": round(
-                            user_gain,
-                            3,
-                        ),
-                        "opponent_gain": round(
-                            opponent_gain,
-                            3,
-                        ),
-                    }
-                )
-
-    targets.sort(
-        key=lambda item: (
-            item["user_gain"],
-            player_value(
-                item["target"],
-                values,
-            ),
-        ),
-        reverse=True,
-    )
-
-    # Un solo risultato
-    # per target.
-    unique = []
-    seen = set()
-
-    for item in targets:
-        key = normalize_name(
-            item[
-                "target"
-            ].name
-        )
-
-        if key in seen:
-            continue
-
-        seen.add(key)
-
-        opponent_gain = (
-            item[
-                "opponent_gain"
-            ]
-        )
-
-        if opponent_gain >= -0.25:
-            difficulty = (
-                "🟢 FATTIBILE"
-            )
-
-        elif opponent_gain >= -0.80:
-            difficulty = (
-                "🟡 DIFFICILE"
-            )
-
-        else:
-            difficulty = (
-                "🔴 MOLTO DIFFICILE"
-            )
-
-        item["difficulty"] = (
-            difficulty
-        )
-
-        unique.append(item)
-
-    return unique
-
-
 def find_win_win_trades(
     user_players,
     opponent_players,
     opponent_name,
     values,
 ):
-    """
-    Scambi 2x2.
-
-    Un giocatore dello stesso ruolo
-    viene scambiato per ciascuno
-    dei due ruoli coinvolti.
-
-    Così entrambe le rose conservano
-    P3 D8 C8 A6.
-    """
-
     user_base = (
         squad_utility(
             user_players,
@@ -499,16 +647,6 @@ def find_win_win_trades(
                             )
                         )
 
-                        new_opponent = (
-                            swap_two(
-                                opponent_players,
-                                opponent_a,
-                                opponent_b,
-                                user_a,
-                                user_b,
-                            )
-                        )
-
                         user_gain = (
                             squad_utility(
                                 new_user,
@@ -519,9 +657,19 @@ def find_win_win_trades(
 
                         if (
                             user_gain
-                            < 0.25
+                            < MIN_USER_GAIN
                         ):
                             continue
+
+                        new_opponent = (
+                            swap_two(
+                                opponent_players,
+                                opponent_a,
+                                opponent_b,
+                                user_a,
+                                user_b,
+                            )
+                        )
 
                         opponent_gain = (
                             squad_utility(
@@ -531,64 +679,45 @@ def find_win_win_trades(
                             - opponent_base
                         )
 
-                        if (
-                            opponent_gain
-                            < 0.05
-                        ):
+                        acceptance = (
+                            evaluate_acceptance(
+                                opponent_gives=[
+                                    opponent_a,
+                                    opponent_b,
+                                ],
+                                opponent_receives=[
+                                    user_a,
+                                    user_b,
+                                ],
+                                opponent_gain=(
+                                    opponent_gain
+                                ),
+                                values=values,
+                            )
+                        )
+
+                        if not acceptance:
                             continue
 
-                        give_value = (
-                            player_value(
-                                user_a,
-                                values,
-                            )
-                            + player_value(
-                                user_b,
-                                values,
-                            )
-                        )
-
-                        receive_value = (
-                            player_value(
-                                opponent_a,
-                                values,
-                            )
-                            + player_value(
-                                opponent_b,
+                        give_market = (
+                            package_owner_value(
+                                [
+                                    user_a,
+                                    user_b,
+                                ],
                                 values,
                             )
                         )
 
-                        raw_delta = (
-                            receive_value
-                            - give_value
+                        receive_market = (
+                            package_owner_value(
+                                [
+                                    opponent_a,
+                                    opponent_b,
+                                ],
+                                values,
+                            )
                         )
-
-                        total_gain = (
-                            user_gain
-                            + opponent_gain
-                        )
-
-                        if (
-                            opponent_gain
-                            >= 0.50
-                        ):
-                            plausibility = (
-                                "🟢 ALTA"
-                            )
-
-                        elif (
-                            opponent_gain
-                            >= 0.20
-                        ):
-                            plausibility = (
-                                "🟡 BUONA"
-                            )
-
-                        else:
-                            plausibility = (
-                                "🟠 STRETTA"
-                            )
 
                         results.append(
                             {
@@ -611,16 +740,13 @@ def find_win_win_trades(
                                     opponent_gain,
                                     3,
                                 ),
-                                "total_gain": round(
-                                    total_gain,
-                                    3,
+                                "market_delta": round(
+                                    receive_market
+                                    - give_market,
+                                    1,
                                 ),
-                                "raw_value_delta": round(
-                                    raw_delta,
-                                    2,
-                                ),
-                                "plausibility": (
-                                    plausibility
+                                "acceptance": (
+                                    acceptance
                                 ),
                             }
                         )
@@ -632,10 +758,98 @@ def find_win_win_trades(
             ]
             + item[
                 "opponent_gain"
-            ] * 0.65,
-            item[
-                "user_gain"
+            ] * 0.70
+            + item[
+                "acceptance"
+            ][
+                "score"
+            ] * 0.015
+        ),
+        reverse=True,
+    )
+
+    return results
+
+
+def find_realistic_targets(
+    trades,
+    values,
+):
+    """
+    Un target appare solo se esiste
+    almeno una proposta concreta
+    che supera i filtri di accettabilità.
+    """
+
+    best = {}
+
+    for trade in trades:
+        target = max(
+            trade[
+                "receive"
             ],
+            key=lambda player: (
+                player_value(
+                    player,
+                    values,
+                )
+            ),
+        )
+
+        # Non chiamiamo "target"
+        # un giocatore mediocre.
+        if (
+            player_value(
+                target,
+                values,
+            )
+            < 65
+        ):
+            continue
+
+        key = normalize_name(
+            target.name
+        )
+
+        candidate_score = (
+            player_value(
+                target,
+                values,
+            )
+            + trade[
+                "user_gain"
+            ] * 8
+            + trade[
+                "acceptance"
+            ][
+                "score"
+            ] * 0.10
+        )
+
+        if (
+            key not in best
+            or candidate_score
+            > best[key][
+                "candidate_score"
+            ]
+        ):
+            best[key] = {
+                "target": target,
+                "trade": trade,
+                "candidate_score": (
+                    candidate_score
+                ),
+            }
+
+    results = list(
+        best.values()
+    )
+
+    results.sort(
+        key=lambda item: (
+            item[
+                "candidate_score"
+            ]
         ),
         reverse=True,
     )
