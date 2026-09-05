@@ -244,6 +244,10 @@ def build_report():
             f"<b>{best['total_projection']:.2f}</b>"
         ),
         (
+            f"🎯 Indice formazione: "
+            f"<b>{best['formation_value']:.2f}</b>"
+        ),
+        (
             f"🧠 Start Score medio: "
             f"{best['average_start_score']:.1f}"
         ),
