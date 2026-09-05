@@ -5,13 +5,16 @@ from .rules import defense_modifier
 
 
 def clamp(value, minimum=0.0, maximum=1.0):
-    return max(minimum, min(maximum, value))
+    return max(
+        minimum,
+        min(maximum, value),
+    )
 
 
 def reliability(player):
     """
-    Dopo 6 voti utilizziamo completamente
-    MV/FM. Prima, riportiamo il dato verso 6.
+    Dopo 6 voti MV/FM vengono usate pienamente.
+    Prima vengono regredite verso 6.
     """
     return clamp(
         player.games_with_vote / 6.0
@@ -23,10 +26,7 @@ def projected_fantasy_points(
     start_result,
 ):
     """
-    Prima proiezione del fantavoto.
-
-    Non è ancora un xFP definitivo:
-    usa FM storica, matchup e titolarità.
+    Prima stima del fantavoto atteso.
     """
 
     if start_result["score"] == 0:
@@ -34,7 +34,6 @@ def projected_fantasy_points(
 
     rel = reliability(player)
 
-    # Regressione verso 6 con campione piccolo
     base = (
         6.0
         + (
@@ -42,11 +41,8 @@ def projected_fantasy_points(
         ) * rel
     )
 
-    matchup = start_result[
-        "matchup"
-    ]
+    matchup = start_result["matchup"]
 
-    # Impatto matchup diverso per ruolo
     max_matchup_adjustment = {
         "P": 0.20,
         "D": 0.20,
@@ -64,8 +60,6 @@ def projected_fantasy_points(
         "availability"
     ]
 
-    # Piccolo premio/malus alla sicurezza
-    # di prendere voto.
     availability_adjustment = (
         (availability - 70.0)
         / 100.0
@@ -90,7 +84,7 @@ def projected_pure_vote(
 ):
     """
     Voto puro previsto.
-    Serve soprattutto al modificatore difesa.
+    Serve per stimare il modificatore difesa.
     """
 
     if start_result["score"] == 0:
@@ -105,9 +99,7 @@ def projected_pure_vote(
         ) * rel
     )
 
-    matchup = start_result[
-        "matchup"
-    ]
+    matchup = start_result["matchup"]
 
     matchup_adjustment = (
         (matchup - 50.0)
@@ -121,45 +113,36 @@ def projected_pure_vote(
     )
 
 
-def player_selection_value(item):
-    """
-    Valore BALANCED utilizzato per scegliere
-    chi schierare.
-
-    Start Score domina la decisione.
-    La proiezione FV serve come componente
-    secondaria e tie-breaker.
-    """
-
-    player = item["player"]
-    result = item["result"]
-
-    projected = projected_fantasy_points(
-        player,
-        result,
-    )
 def balanced_value(item):
+    """
+    Valore usato nella modalità BALANCED.
+
+    Lo Start Score domina la decisione.
+    La proiezione FV è una componente secondaria.
+    """
+
     player = item["player"]
     result = item["result"]
 
-    projected = projected_fantasy_points(
-        player,
-        result,
+    projected = (
+        projected_fantasy_points(
+            player,
+            result,
+        )
     )
 
     value = (
-        (result["score"] / 10.0) * 0.65
+        (
+            result["score"] / 10.0
+        ) * 0.65
         + projected * 0.35
     )
 
-    # Penalità aggiuntiva ai ballottaggi forti.
-    # Non elimina il giocatore, ma impedisce
-    # che una FM alta dopo 1-2 giornate
-    # nasconda il rischio.
     availability = result[
         "availability"
     ]
 
+    # Penalità per ballottaggi.
     if 0 < availability < 40:
         value -= 0.65
 
@@ -169,26 +152,31 @@ def balanced_value(item):
     elif availability < 70:
         value -= 0.10
 
-    return round(value, 3)
-    start_score_component = (
-        result["score"] / 10.0
+    return round(
+        value,
+        3,
     )
 
-    balanced_value = (
-        start_score_component * 0.65
-        + projected * 0.35
+
+def player_selection_value(item):
+    """
+    Chiave di ordinamento dei giocatori.
+    """
+
+    player = item["player"]
+    result = item["result"]
+
+    projected = (
+        projected_fantasy_points(
+            player,
+            result,
+        )
     )
 
     return (
-        round(balanced_value, 3),
+        balanced_value(item),
         result["availability"],
         projected,
-    )
-
-    # Start Score come tie-breaker
-    return (
-        projected,
-        result["score"],
     )
 
 
@@ -222,30 +210,40 @@ def evaluate_formation(
     formation_name,
     structure,
 ):
-    defenders, midfielders, attackers = structure
-
-    goalkeeper = select_best_players(
-        evaluated,
-        "P",
-        1,
+    defenders, midfielders, attackers = (
+        structure
     )
 
-    selected_defenders = select_best_players(
-        evaluated,
-        "D",
-        defenders,
+    goalkeeper = (
+        select_best_players(
+            evaluated,
+            "P",
+            1,
+        )
     )
 
-    selected_midfielders = select_best_players(
-        evaluated,
-        "C",
-        midfielders,
+    selected_defenders = (
+        select_best_players(
+            evaluated,
+            "D",
+            defenders,
+        )
     )
 
-    selected_attackers = select_best_players(
-        evaluated,
-        "A",
-        attackers,
+    selected_midfielders = (
+        select_best_players(
+            evaluated,
+            "C",
+            midfielders,
+        )
+    )
+
+    selected_attackers = (
+        select_best_players(
+            evaluated,
+            "A",
+            attackers,
+        )
     )
 
     groups = [
@@ -255,7 +253,10 @@ def evaluate_formation(
         selected_attackers,
     ]
 
-    if any(group is None for group in groups):
+    if any(
+        group is None
+        for group in groups
+    ):
         return None
 
     starters = (
@@ -315,18 +316,23 @@ def evaluate_formation(
         1
         for item in starters
         if (
-            item["result"]["availability"] < 60
-            and item["result"]["score"] > 0
+            0
+            < item["result"]["availability"]
+            < 60
         )
     )
+
     formation_value = sum(
         balanced_value(item)
         for item in starters
     )
 
+    # Il modificatore entra nel valore
+    # decisionale senza dominarlo.
     formation_value += (
         modifier_bonus * 0.80
     )
+
     return {
         "formation": formation_name,
         "starters": starters,
@@ -349,7 +355,7 @@ def evaluate_formation(
             1,
         ),
         "risky_starters": risky_starters,
-    
+    }
 
 
 def optimize_formations(
@@ -362,10 +368,12 @@ def optimize_formations(
         structure,
     ) in ALLOWED_FORMATIONS.items():
 
-        result = evaluate_formation(
-            evaluated,
-            formation_name,
-            structure,
+        result = (
+            evaluate_formation(
+                evaluated,
+                formation_name,
+                structure,
+            )
         )
 
         if result:
@@ -373,15 +381,15 @@ def optimize_formations(
                 result
             )
 
-formations.sort(
-    key=lambda item: (
-        item["formation_value"],
-        -item["risky_starters"],
-        item["average_start_score"],
-        item["total_projection"],
-    ),
-    reverse=True,
-)
+    formations.sort(
+        key=lambda item: (
+            item["formation_value"],
+            -item["risky_starters"],
+            item["average_start_score"],
+            item["total_projection"],
+        ),
+        reverse=True,
+    )
 
     return formations
 
@@ -398,8 +406,10 @@ def build_bench(
     remaining = [
         item
         for item in evaluated
-        if item["player"].name
-        not in starter_names
+        if (
+            item["player"].name
+            not in starter_names
+        )
     ]
 
     bench = {}
@@ -411,7 +421,11 @@ def build_bench(
         "A": 3,
     }
 
-    for role, number in requirements.items():
+    for (
+        role,
+        number,
+    ) in requirements.items():
+
         candidates = [
             item
             for item in remaining
