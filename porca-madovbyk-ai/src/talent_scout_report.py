@@ -16,12 +16,10 @@ from .fantacalcio_source import (
 from .fantacalcio_statistics import (
     fetch_statistics_catalog,
 )
-from .league_rosters import (
-    load_league_rosters,
-)
 from .talent_scout import (
     calculate_scout_scores,
-    discover_free_agents,
+    enrich_free_agents,
+    load_free_agents,
     scout_label,
 )
 from .telegram_bot import (
@@ -46,10 +44,10 @@ def get_paths():
     ).resolve().parents[1]
 
     return {
-        "rosters": (
+        "free_agents": (
             root
             / "data"
-            / "league_rosters.csv"
+            / "free_agents.csv"
         ),
         "state": (
             root
@@ -140,10 +138,11 @@ def append_history(
                     "Nome",
                     "Ruolo",
                     "Club",
+                    "FuoriLista",
                     "ScoutScore",
                     "FVM",
                     "Quotazione",
-                    "PV",
+                    "PGv",
                     "MV",
                     "FM",
                     "Gol",
@@ -161,6 +160,13 @@ def append_history(
                     player["name"],
                     player["role"],
                     player["club"],
+                    (
+                        1
+                        if player[
+                            "outside_list"
+                        ]
+                        else 0
+                    ),
                     player[
                         "scout_score"
                     ],
@@ -175,15 +181,23 @@ def append_history(
                     player[
                         "fantasy_average"
                     ],
-                    player["goals"],
-                    player["assists"],
+                    player.get(
+                        "goals",
+                        0,
+                    ),
+                    player.get(
+                        "assists",
+                        0,
+                    ),
                     player[
                         "probability"
                     ],
                     player[
                         "trend_score"
                     ],
-                    player["status"],
+                    player[
+                        "status"
+                    ],
                 ]
             )
 
@@ -195,6 +209,11 @@ def find_alerts(
     alerts = []
 
     for player in players:
+        if player[
+            "outside_list"
+        ]:
+            continue
+
         previous = (
             previous_players.get(
                 player["key"]
@@ -204,9 +223,11 @@ def find_alerts(
         if not previous:
             continue
 
-        old_score = previous.get(
-            "scout_score",
-            0,
+        old_score = float(
+            previous.get(
+                "scout_score",
+                0,
+            )
         )
 
         score_delta = (
@@ -222,15 +243,33 @@ def find_alerts(
             )
         )
 
-        probability_delta = (
+        quote_delta = (
             player[
-                "probability"
+                "current_value"
             ]
+            - previous.get(
+                "current_value",
+                player[
+                    "current_value"
+                ],
+            )
+        )
+
+        probability_delta = (
+            player["probability"]
             - previous.get(
                 "probability",
                 player[
                     "probability"
                 ],
+            )
+        )
+
+        games_delta = (
+            player["games"]
+            - previous.get(
+                "games",
+                player["games"],
             )
         )
 
@@ -241,11 +280,20 @@ def find_alerts(
             ] >= 70
         )
 
+        strong_new_vote = (
+            games_delta > 0
+            and player[
+                "fantasy_average"
+            ] >= 6.5
+        )
+
         if (
             became_target
             or score_delta >= 6
-            or fvm_delta >= 10
+            or fvm_delta >= 8
+            or quote_delta >= 2
             or probability_delta >= 20
+            or strong_new_vote
         ):
             alerts.append(
                 (
@@ -275,9 +323,9 @@ def format_player(player):
         f"• <b>{safe(player['name'])}</b> "
         f"({player['role']}, "
         f"{safe(player['club'])})\n"
-        f"  Score "
+        f"  Scout "
         f"<b>{player['scout_score']:.1f}</b> "
-        f"{scout_label(player['scout_score'])}"
+        f"{scout_label(player)}"
         f" | FVM {player['fvmp']}\n"
         f"  PV {player['games']} "
         f"| MV "
@@ -296,22 +344,46 @@ def build_digest(
     now,
     alerts,
 ):
+    active = [
+        player
+        for player in players
+        if not player[
+            "outside_list"
+        ]
+    ]
+
+    outside = [
+        player
+        for player in players
+        if player[
+            "outside_list"
+        ]
+    ]
+
     lines = [
         "🕵️ <b>PORCA MADOVBYK TALENT SCOUT</b>",
         "",
         (
-            f"📅 {now.strftime('%d/%m/%Y')}"
+            f"📅 "
+            f"{now.strftime('%d/%m/%Y')}"
         ),
         (
-            f"Giocatori svincolati "
-            f"monitorati: "
+            f"Svincolati nel database: "
             f"<b>{len(players)}</b>"
+        ),
+        (
+            f"Acquistabili monitorati: "
+            f"<b>{len(active)}</b>"
+        ),
+        (
+            f"Fuori lista: "
+            f"<b>{len(outside)}</b>"
         ),
         "",
         "🏆 <b>TOP TARGET SVINCOLATI</b>",
     ]
 
-    for player in players[:10]:
+    for player in active[:10]:
         lines.append(
             format_player(player)
         )
@@ -331,7 +403,7 @@ def build_digest(
     ):
         role_players = [
             player
-            for player in players
+            for player in active
             if player["role"]
             == role
         ][:3]
@@ -340,14 +412,21 @@ def build_digest(
             f"<b>{role}</b>"
         )
 
-        for player in role_players:
+        for player in (
+            role_players
+        ):
             lines.append(
                 (
-                    f"• {safe(player['name'])} "
+                    f"• "
+                    f"{safe(player['name'])} "
                     f"— "
-                    f"{player['scout_score']:.1f} "
+                    f"<b>"
+                    f"{player['scout_score']:.1f}"
+                    f"</b> "
                     f"| FVM "
-                    f"{player['fvmp']}"
+                    f"{player['fvmp']} "
+                    f"| FM "
+                    f"{player['fantasy_average']:.2f}"
                 )
             )
 
@@ -355,7 +434,8 @@ def build_digest(
         lines.extend(
             [
                 "",
-                "🚨 <b>MOVIMENTI DA SEGUIRE</b>",
+                "🚨 <b>MOVIMENTI "
+                "DA SEGUIRE</b>",
             ]
         )
 
@@ -368,7 +448,7 @@ def build_digest(
                     f"• <b>"
                     f"{safe(player['name'])}"
                     f"</b> "
-                    f"— Score "
+                    f"— Scout "
                     f"{player['scout_score']:.1f} "
                     f"({delta:+.1f})"
                 )
@@ -392,7 +472,9 @@ def build_alert_report(
         delta,
     ) in alerts[:10]:
         lines.append(
-            format_player(player)
+            format_player(
+                player
+            )
         )
 
         lines.append(
@@ -427,24 +509,26 @@ def main():
         )
     )
 
-    first_run = (
-        not bool(
-            previous_players
-        )
+    first_real_run = (
+        len(previous_players)
+        == 0
     )
 
     print(
-        "Caricamento rose..."
+        "Caricamento svincolati..."
     )
 
-    league_players = (
-        load_league_rosters(
-            paths["rosters"]
-        )
+    seeds = load_free_agents(
+        paths["free_agents"]
     )
 
     print(
-        "Recupero listone..."
+        "Svincolati dal file:",
+        len(seeds),
+    )
+
+    print(
+        "Recupero listone live..."
     )
 
     catalog = (
@@ -452,7 +536,7 @@ def main():
     )
 
     print(
-        "Recupero statistiche..."
+        "Recupero statistiche live..."
     )
 
     statistics = (
@@ -468,26 +552,16 @@ def main():
             fetch_probable_lineups()
         )
     except Exception as exc:
-        print(exc)
+        print(
+            "Titolarità non disponibile:",
+            exc,
+        )
+
         lineups = {}
 
     candidate_names = [
         player["name"]
-        for key, player
-        in catalog.items()
-        if key not in {
-            __import__(
-                "src.fantacalcio_source",
-                fromlist=[
-                    "normalize_name",
-                ],
-            )
-            .normalize_name(
-                league_player.name
-            )
-            for league_player
-            in league_players
-        }
+        for player in seeds
     ]
 
     print(
@@ -501,12 +575,17 @@ def main():
             )
         )
     except Exception as exc:
-        print(exc)
+        print(
+            "Indisponibili "
+            "non disponibili:",
+            exc,
+        )
+
         unavailable = {}
 
-    free_agents = (
-        discover_free_agents(
-            league_players,
+    enriched = (
+        enrich_free_agents(
+            seeds,
             catalog,
             statistics,
             lineups,
@@ -516,19 +595,42 @@ def main():
 
     players = (
         calculate_scout_scores(
-            free_agents,
+            enriched,
             previous_players,
         )
     )
 
-    alerts = find_alerts(
-        players,
-        previous_players,
+    active_count = sum(
+        1
+        for player in players
+        if not player[
+            "outside_list"
+        ]
+    )
+
+    outside_count = (
+        len(players)
+        - active_count
     )
 
     print(
         "Svincolati monitorati:",
         len(players),
+    )
+
+    print(
+        "Acquistabili:",
+        active_count,
+    )
+
+    print(
+        "Fuori lista:",
+        outside_count,
+    )
+
+    alerts = find_alerts(
+        players,
+        previous_players,
     )
 
     force_report = (
@@ -541,12 +643,13 @@ def main():
         == "yes"
     )
 
+    # Digest settimanale ogni lunedì.
     weekly_digest = (
         now.weekday() == 0
     )
 
     if (
-        first_run
+        first_real_run
         or weekly_digest
         or force_report
     ):
@@ -567,8 +670,8 @@ def main():
 
     else:
         print(
-            "Nessun alert significativo. "
-            "Telegram non inviato."
+            "Nessun movimento "
+            "significativo."
         )
 
     append_history(
