@@ -123,8 +123,12 @@ def projected_pure_vote(
 
 def player_selection_value(item):
     """
-    Valore utilizzato per scegliere
-    il giocatore nello specifico ruolo.
+    Valore BALANCED utilizzato per scegliere
+    chi schierare.
+
+    Start Score domina la decisione.
+    La proiezione FV serve come componente
+    secondaria e tie-breaker.
     """
 
     player = item["player"]
@@ -133,6 +137,21 @@ def player_selection_value(item):
     projected = projected_fantasy_points(
         player,
         result,
+    )
+
+    start_score_component = (
+        result["score"] / 10.0
+    )
+
+    balanced_value = (
+        start_score_component * 0.65
+        + projected * 0.35
+    )
+
+    return (
+        round(balanced_value, 3),
+        result["availability"],
+        projected,
     )
 
     # Start Score come tie-breaker
