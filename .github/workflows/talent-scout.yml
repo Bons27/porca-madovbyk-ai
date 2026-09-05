@@ -1,0 +1,75 @@
+name: Talent Scout
+
+on:
+  schedule:
+    - cron: "23 9 * * *"
+
+  workflow_dispatch:
+    inputs:
+      force_report:
+        description: "Invia sempre il report Telegram"
+        required: true
+        default: "yes"
+        type: choice
+        options:
+          - "yes"
+          - "no"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: porca-madovbyk-scout
+  cancel-in-progress: false
+
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: porca-madovbyk-ai
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Talent Scout
+        working-directory: porca-madovbyk-ai
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SCOUT_FORCE_REPORT: ${{ github.event.inputs.force_report }}
+        run: python -m src.talent_scout_report
+
+      - name: Save scouting history
+        working-directory: porca-madovbyk-ai
+        run: |
+          if [ -n "$(git status --porcelain -- data/scout_state.json data/scout_history.csv)" ]; then
+            git config user.name "Porca MaDovbyk AI"
+            git config user.email "actions@github.com"
+
+            git add data/scout_state.json
+            git add data/scout_history.csv
+
+            git commit -m "Update Talent Scout data [skip ci]"
+            git push
+          else
+            echo "Nessun dato scouting modificato."
+          fi
+
+      - name: Notify failure
+        if: failure()
+        working-directory: porca-madovbyk-ai
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python -c "from src.telegram_bot import send_message; send_message('⚠️ <b>Talent Scout</b>\nErrore durante il monitoraggio degli svincolati.')"
