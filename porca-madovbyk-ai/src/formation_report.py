@@ -355,7 +355,9 @@ def build_report():
             (
                 f"{position}. "
                 f"<b>{formation['formation']}</b> "
-                f"— "
+                f"— Ind "
+                f"{formation['formation_value']:.2f} "
+                f"| FV≈"
                 f"{formation['total_projection']:.2f} "
                 f"| Mod {modifier:+d} "
                 f"| rischi "
