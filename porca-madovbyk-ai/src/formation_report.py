@@ -11,6 +11,7 @@ from .fantacalcio_source import (
     find_player,
 )
 from .lineup_optimizer import (
+    STRATEGIES,
     build_bench,
     optimize_formations,
     projected_fantasy_points,
@@ -109,12 +110,14 @@ def build_evaluated_players(
             )
         )
 
-        result = calculate_start_score(
-            player=player,
-            lineup=lineup,
-            unavailable=unavailable,
-            fixture=fixture,
-            market_fixture=market_fixture,
+        result = (
+            calculate_start_score(
+                player=player,
+                lineup=lineup,
+                unavailable=unavailable,
+                fixture=fixture,
+                market_fixture=market_fixture,
+            )
         )
 
         evaluated.append(
@@ -149,6 +152,59 @@ def format_player(item):
     )
 
 
+def starter_names(formation):
+    return {
+        item["player"].name
+        for item in formation[
+            "starters"
+        ]
+    }
+
+
+def strategy_changes(
+    reference,
+    alternative,
+):
+    reference_names = (
+        starter_names(reference)
+    )
+
+    alternative_names = (
+        starter_names(alternative)
+    )
+
+    incoming = sorted(
+        alternative_names
+        - reference_names
+    )
+
+    outgoing = sorted(
+        reference_names
+        - alternative_names
+    )
+
+    return incoming, outgoing
+
+
+def build_strategy_summary(
+    strategy,
+    formation,
+):
+    return (
+        f"{STRATEGIES[strategy]['label']}\n"
+        f"Modulo: "
+        f"<b>{formation['formation']}</b>\n"
+        f"Indice: "
+        f"<b>{formation['formation_value']:.2f}</b> "
+        f"| FV≈"
+        f"{formation['total_projection']:.2f}\n"
+        f"Mod: "
+        f"{formation['modifier_bonus']:+d} "
+        f"| Rischi &lt;60%: "
+        f"{formation['risky_starters']}"
+    )
+
+
 def build_report():
     root = Path(
         __file__
@@ -166,11 +222,13 @@ def build_report():
     ]
 
     print("Recupero calendario...")
+
     context = (
         fetch_matchday_context()
     )
 
     print("Recupero titolarità...")
+
     try:
         lineups = (
             fetch_probable_lineups()
@@ -179,7 +237,10 @@ def build_report():
         print(exc)
         lineups = {}
 
-    print("Recupero indisponibili...")
+    print(
+        "Recupero indisponibili..."
+    )
+
     try:
         unavailable = (
             fetch_unavailable(
@@ -191,6 +252,7 @@ def build_report():
         unavailable = {}
 
     print("Recupero matchup...")
+
     try:
         market_fixtures = (
             fetch_market_fixtures()
@@ -209,89 +271,139 @@ def build_report():
         )
     )
 
-    formations = optimize_formations(
-        evaluated
-    )
+    strategy_results = {}
 
-    if not formations:
-        raise RuntimeError(
-            "Nessuna formazione valida "
-            "generata."
+    for strategy in (
+        "safe",
+        "balanced",
+        "upside",
+    ):
+        formations = (
+            optimize_formations(
+                evaluated,
+                strategy,
+            )
         )
 
-    best = formations[0]
+        if not formations:
+            raise RuntimeError(
+                f"Nessuna formazione "
+                f"per strategia "
+                f"{strategy}."
+            )
+
+        strategy_results[
+            strategy
+        ] = {
+            "best": formations[0],
+            "all": formations,
+        }
+
+    balanced = (
+        strategy_results[
+            "balanced"
+        ]["best"]
+    )
+
+    safe_best = (
+        strategy_results[
+            "safe"
+        ]["best"]
+    )
+
+    upside_best = (
+        strategy_results[
+            "upside"
+        ]["best"]
+    )
 
     bench = build_bench(
         evaluated,
-        best["starters"],
+        balanced["starters"],
+        "balanced",
     )
 
     lines = [
         "🤖 <b>PORCA MADOVBYK AI</b>",
         "",
         (
-            f"🏆 <b>FORMAZIONE CONSIGLIATA "
+            f"🏆 <b>FORMAZIONE "
             f"— GIORNATA "
             f"{context['matchday']}</b>"
         ),
         "",
+        "🎛 <b>CONFRONTO STRATEGIE</b>",
+        "",
+        build_strategy_summary(
+            "safe",
+            safe_best,
+        ),
+        "",
+        build_strategy_summary(
+            "balanced",
+            balanced,
+        ),
+        "",
+        build_strategy_summary(
+            "upside",
+            upside_best,
+        ),
+        "",
+        (
+            "⚖️ <b>CONSIGLIO "
+            "PRINCIPALE: BALANCED</b>"
+        ),
         (
             f"📐 Modulo: "
-            f"<b>{best['formation']}</b>"
+            f"<b>{balanced['formation']}</b>"
         ),
         (
-            f"📊 Proiezione squadra: "
-            f"<b>{best['total_projection']:.2f}</b>"
+            f"📊 Proiezione: "
+            f"<b>{balanced['total_projection']:.2f}</b>"
         ),
         (
-            f"🎯 Indice formazione: "
-            f"<b>{best['formation_value']:.2f}</b>"
+            f"🎯 Indice: "
+            f"<b>{balanced['formation_value']:.2f}</b>"
         ),
         (
             f"🧠 Start Score medio: "
-            f"{best['average_start_score']:.1f}"
+            f"{balanced['average_start_score']:.1f}"
         ),
     ]
 
-    if best[
+    if balanced[
         "modifier_bonus"
     ] > 0:
         lines.append(
             (
-                "🛡 Modificatore stimato: "
+                "🛡 Modificatore: "
                 f"<b>+"
-                f"{best['modifier_bonus']}</b> "
-                f"(media voto "
-                f"{best['modifier_average']:.2f})"
+                f"{balanced['modifier_bonus']}</b> "
+                f"(media "
+                f"{balanced['modifier_average']:.2f})"
             )
         )
     else:
         lines.append(
-            "🛡 Modificatore stimato: 0"
+            "🛡 Modificatore: 0"
         )
-
-    lines.append(
-        (
-            f"⚠️ Titolari sotto 60%: "
-            f"{best['risky_starters']}"
-        )
-    )
 
     lines.append("")
 
-    for role in [
+    for role in (
         "P",
         "D",
         "C",
         "A",
-    ]:
+    ):
         lines.append(
             f"<b>{ROLE_NAMES[role]}</b>"
         )
 
         starters = [
             item
-            for item in best[
+            for item
+            in balanced[
                 "starters"
             ]
             if item["player"].role
@@ -305,17 +417,83 @@ def build_report():
 
         lines.append("")
 
-    # Panchina
-    lines.append(
-        "🪑 <b>PANCHINA CONSIGLIATA</b>"
+    # Differenze SAFE
+    safe_in, safe_out = (
+        strategy_changes(
+            balanced,
+            safe_best,
+        )
     )
 
-    for role in [
+    lines.append(
+        "🛡 <b>VARIANTE SAFE</b>"
+    )
+
+    if safe_in:
+        lines.append(
+            "Dentro: "
+            + ", ".join(
+                safe_in
+            )
+        )
+
+        lines.append(
+            "Fuori: "
+            + ", ".join(
+                safe_out
+            )
+        )
+    else:
+        lines.append(
+            "Stessi 11 della Balanced."
+        )
+
+    lines.append("")
+
+    # Differenze UPSIDE
+    upside_in, upside_out = (
+        strategy_changes(
+            balanced,
+            upside_best,
+        )
+    )
+
+    lines.append(
+        "🚀 <b>VARIANTE UPSIDE</b>"
+    )
+
+    if upside_in:
+        lines.append(
+            "Dentro: "
+            + ", ".join(
+                upside_in
+            )
+        )
+
+        lines.append(
+            "Fuori: "
+            + ", ".join(
+                upside_out
+            )
+        )
+    else:
+        lines.append(
+            "Stessi 11 della Balanced."
+        )
+
+    lines.extend(
+        [
+            "",
+            "🪑 <b>PANCHINA BALANCED</b>",
+        ]
+    )
+
+    for role in (
         "P",
         "D",
         "C",
         "A",
-    ]:
+    ):
         lines.append(
             f"<b>{ROLE_NAMES[role]}</b>"
         )
@@ -339,18 +517,16 @@ def build_report():
     lines.extend(
         [
             "",
-            "📐 <b>CONFRONTO MODULI</b>",
+            "📐 <b>TOP MODULI BALANCED</b>",
         ]
     )
 
     for position, formation in enumerate(
-        formations,
+        strategy_results[
+            "balanced"
+        ]["all"],
         start=1,
     ):
-        modifier = formation[
-            "modifier_bonus"
-        ]
-
         lines.append(
             (
                 f"{position}. "
@@ -359,27 +535,19 @@ def build_report():
                 f"{formation['formation_value']:.2f} "
                 f"| FV≈"
                 f"{formation['total_projection']:.2f} "
-                f"| Mod {modifier:+d} "
+                f"| Mod "
+                f"{formation['modifier_bonus']:+d} "
                 f"| rischi "
                 f"{formation['risky_starters']}"
             )
         )
 
-    lines.extend(
-        [
-            "",
-            "ℹ️ <i>Proiezione V1: "
-            "titolarità + MV/FM + matchup "
-            "+ modificatore difesa.</i>",
-        ]
-    )
-
     if not market_fixtures:
         lines.extend(
             [
                 "",
-                "⚠️ <i>Quote matchup non ancora "
-                "disponibili: utilizzato il "
+                "⚠️ <i>Quote matchup "
+                "non ancora disponibili: "
                 "fallback casa/trasferta.</i>",
             ]
         )
@@ -395,8 +563,8 @@ def main():
     )
 
     print(
-        "Formazione consigliata "
-        "inviata su Telegram."
+        "Strategie formazione "
+        "inviate su Telegram."
     )
 
 
