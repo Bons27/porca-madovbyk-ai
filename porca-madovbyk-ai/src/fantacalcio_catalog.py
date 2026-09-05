@@ -8,7 +8,7 @@ from .fantacalcio_source import (
 
 QUOTATIONS_URL = (
     "https://www.fantacalcio.it/"
-    "quotazioni-fantacalcio"
+    "quotazioni-fantacalcio/2026-27"
 )
 
 
@@ -38,14 +38,14 @@ TEAM_CODE_TO_NAME = {
 
 def _to_int(value):
     try:
-        cleaned = (
+        value = (
             str(value)
             .replace(",", ".")
             .strip()
         )
 
         return int(
-            float(cleaned)
+            float(value)
         )
 
     except (
@@ -55,117 +55,198 @@ def _to_int(value):
         return None
 
 
-def _clean_player_name(name):
-    """
-    Rimuove eventuali simboli grafici
-    presenti nella tabella.
-    """
+def _is_number(value):
+    return (
+        _to_int(value)
+        is not None
+    )
 
+
+def _clean_player_name(name):
     name = str(name).strip()
 
+    # Eventuali asterischi o simboli
     name = re.sub(
         r"\s*\*\s*$",
         "",
         name,
     )
 
+    name = re.sub(
+        r"\s+",
+        " ",
+        name,
+    )
+
     return name.strip()
 
 
-def fetch_player_catalog():
+def _find_previous_name(
+    tokens,
+    club_index,
+):
     """
-    Recupera il listone pubblico Fantacalcio.
+    Cerca il nome immediatamente prima
+    del codice squadra.
 
-    Output:
-    {
-        "mctominay": {
-            "name": "McTominay",
-            "club": "Napoli",
-            "club_code": "NAP",
-            "current_value": 27,
-            "fvmp": 220,
-        }
+    Ignora token vuoti, numerici o
+    intestazioni della tabella.
+    """
+
+    ignored = {
+        "calciatore",
+        "sq",
+        "qi",
+        "qa",
+        "fvm / 1000",
+        "classic",
+        "mantra",
     }
+
+    start = max(
+        0,
+        club_index - 6,
+    )
+
+    for index in range(
+        club_index - 1,
+        start - 1,
+        -1,
+    ):
+        candidate = (
+            str(tokens[index])
+            .strip()
+        )
+
+        if not candidate:
+            continue
+
+        if _is_number(candidate):
+            continue
+
+        if (
+            candidate.lower()
+            in ignored
+        ):
+            continue
+
+        if (
+            candidate.upper()
+            in TEAM_CODE_TO_NAME
+        ):
+            continue
+
+        return _clean_player_name(
+            candidate
+        )
+
+    return None
+
+
+def _find_next_numbers(
+    tokens,
+    club_index,
+    limit=6,
+):
+    """
+    Dopo il codice squadra raccoglie
+    i primi valori numerici.
+
+    La pagina Fantacalcio espone:
+    QI, QA, FVM Classic,
+    QI, QA, FVM Mantra.
     """
 
+    numbers = []
+
+    max_index = min(
+        len(tokens),
+        club_index + 15,
+    )
+
+    for index in range(
+        club_index + 1,
+        max_index,
+    ):
+        value = _to_int(
+            tokens[index]
+        )
+
+        if value is None:
+            # Se abbiamo già iniziato a
+            # leggere numeri e incontriamo
+            # un nuovo testo, probabilmente
+            # la riga è terminata.
+            if numbers:
+                break
+
+            continue
+
+        numbers.append(
+            value
+        )
+
+        if len(numbers) >= limit:
+            break
+
+    return numbers
+
+
+def fetch_player_catalog():
     soup = get_soup(
         QUOTATIONS_URL
     )
 
+    # Non dipendiamo dalla struttura HTML
+    # della tabella. Usiamo il testo visibile
+    # nell'ordine in cui appare nella pagina.
+    tokens = [
+        text.strip()
+        for text in soup.stripped_strings
+        if text.strip()
+    ]
+
+    print(
+        "Token pagina quotazioni:",
+        len(tokens),
+    )
+
     catalog = {}
 
-    for row in soup.select(
-        "table tr"
+    club_tokens_found = 0
+
+    for index, token in enumerate(
+        tokens
     ):
-        cells = [
-            cell.get_text(
-                " ",
-                strip=True,
-            )
-            for cell
-            in row.find_all("td")
-        ]
+        club_code = (
+            str(token)
+            .strip()
+            .upper()
+        )
 
-        values = [
-            value
-            for value in cells
-            if value
-        ]
-
-        if not values:
-            continue
-
-        club_index = None
-        club_code = None
-
-        for index, value in enumerate(
-            values
+        if (
+            club_code
+            not in TEAM_CODE_TO_NAME
         ):
-            candidate = (
-                value
-                .strip()
-                .upper()
-            )
-
-            if (
-                candidate
-                in TEAM_CODE_TO_NAME
-            ):
-                club_index = index
-                club_code = candidate
-                break
-
-        if club_index is None:
             continue
 
-        if club_index == 0:
-            continue
+        club_tokens_found += 1
 
-        name = _clean_player_name(
-            values[
-                club_index - 1
-            ]
+        name = _find_previous_name(
+            tokens,
+            index,
         )
 
         if not name:
             continue
 
-        numbers = []
+        numbers = _find_next_numbers(
+            tokens,
+            index,
+        )
 
-        for value in values[
-            club_index + 1:
-        ]:
-            parsed = _to_int(
-                value
-            )
-
-            if parsed is not None:
-                numbers.append(
-                    parsed
-                )
-
-        # Classic:
-        # QI / QA / FVM
+        # Ci bastano i primi tre valori:
+        # QI Classic, QA Classic, FVM Classic
         if len(numbers) < 3:
             continue
 
@@ -173,9 +254,20 @@ def fetch_player_catalog():
         current_value = numbers[1]
         fvmp = numbers[2]
 
-        normalized = normalize_name(
-            name
+        # Filtri anti-falso-positivo
+        if (
+            initial_value < 0
+            or current_value < 0
+            or fvmp < 0
+        ):
+            continue
+
+        normalized = (
+            normalize_name(name)
         )
+
+        if not normalized:
+            continue
 
         catalog[
             normalized
@@ -196,10 +288,21 @@ def fetch_player_catalog():
             "fvmp": fvmp,
         }
 
+    print(
+        "Codici squadra trovati:",
+        club_tokens_found,
+    )
+
+    print(
+        "Giocatori catalogo:",
+        len(catalog),
+    )
+
     if not catalog:
         raise RuntimeError(
-            "Il listone Fantacalcio "
-            "non ha restituito giocatori."
+            "Fantacalcio è raggiungibile, "
+            "ma il parser non ha riconosciuto "
+            "nessun giocatore nel listone."
         )
 
     return catalog
