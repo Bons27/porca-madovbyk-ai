@@ -36,6 +36,14 @@ TEAM_CODE_TO_NAME = {
 }
 
 
+VALID_ROLES = {
+    "P",
+    "D",
+    "C",
+    "A",
+}
+
+
 def _to_int(value):
     try:
         value = (
@@ -65,7 +73,6 @@ def _is_number(value):
 def _clean_player_name(name):
     name = str(name).strip()
 
-    # Eventuali asterischi o simboli
     name = re.sub(
         r"\s*\*\s*$",
         "",
@@ -85,43 +92,9 @@ def _find_previous_name(
     tokens,
     club_index,
 ):
-def _find_previous_role(
-    tokens,
-    club_index,
-):
-    roles = {
-        "P",
-        "D",
-        "C",
-        "A",
-    }
-
-    start = max(
-        0,
-        club_index - 8,
-    )
-
-    for index in range(
-        club_index - 1,
-        start - 1,
-        -1,
-    ):
-        candidate = (
-            str(tokens[index])
-            .strip()
-            .upper()
-        )
-
-        if candidate in roles:
-            return candidate
-
-    return None
     """
-    Cerca il nome immediatamente prima
-    del codice squadra.
-
-    Ignora token vuoti, numerici o
-    intestazioni della tabella.
+    Cerca il nome del calciatore
+    prima del codice squadra.
     """
 
     ignored = {
@@ -132,11 +105,15 @@ def _find_previous_role(
         "fvm / 1000",
         "classic",
         "mantra",
+        "p",
+        "d",
+        "c",
+        "a",
     }
 
     start = max(
         0,
-        club_index - 6,
+        club_index - 8,
     )
 
     for index in range(
@@ -174,6 +151,37 @@ def _find_previous_role(
     return None
 
 
+def _find_previous_role(
+    tokens,
+    club_index,
+):
+    """
+    Cerca un eventuale ruolo Classic
+    P / D / C / A vicino al nome.
+    """
+
+    start = max(
+        0,
+        club_index - 8,
+    )
+
+    for index in range(
+        club_index - 1,
+        start - 1,
+        -1,
+    ):
+        candidate = (
+            str(tokens[index])
+            .strip()
+            .upper()
+        )
+
+        if candidate in VALID_ROLES:
+            return candidate
+
+    return None
+
+
 def _find_next_numbers(
     tokens,
     club_index,
@@ -181,11 +189,15 @@ def _find_next_numbers(
 ):
     """
     Dopo il codice squadra raccoglie
-    i primi valori numerici.
+    i valori numerici della riga.
 
-    La pagina Fantacalcio espone:
-    QI, QA, FVM Classic,
-    QI, QA, FVM Mantra.
+    Normalmente:
+    QI Classic
+    QA Classic
+    FVM Classic
+    QI Mantra
+    QA Mantra
+    FVM Mantra
     """
 
     numbers = []
@@ -204,10 +216,6 @@ def _find_next_numbers(
         )
 
         if value is None:
-            # Se abbiamo già iniziato a
-            # leggere numeri e incontriamo
-            # un nuovo testo, probabilmente
-            # la riga è terminata.
             if numbers:
                 break
 
@@ -228,9 +236,6 @@ def fetch_player_catalog():
         QUOTATIONS_URL
     )
 
-    # Non dipendiamo dalla struttura HTML
-    # della tabella. Usiamo il testo visibile
-    # nell'ordine in cui appare nella pagina.
     tokens = [
         text.strip()
         for text in soup.stripped_strings
@@ -245,6 +250,7 @@ def fetch_player_catalog():
     catalog = {}
 
     club_tokens_found = 0
+    roles_found = 0
 
     for index, token in enumerate(
         tokens
@@ -271,17 +277,19 @@ def fetch_player_catalog():
         if not name:
             continue
 
-        numbers = _find_next_numbers(
-            tokens,
-            index,
-        )
         role = _find_previous_role(
             tokens,
             index,
         )
 
-        # Ci bastano i primi tre valori:
-        # QI Classic, QA Classic, FVM Classic
+        if role:
+            roles_found += 1
+
+        numbers = _find_next_numbers(
+            tokens,
+            index,
+        )
+
         if len(numbers) < 3:
             continue
 
@@ -289,7 +297,6 @@ def fetch_player_catalog():
         current_value = numbers[1]
         fvmp = numbers[2]
 
-        # Filtri anti-falso-positivo
         if (
             initial_value < 0
             or current_value < 0
@@ -308,6 +315,7 @@ def fetch_player_catalog():
             normalized
         ] = {
             "name": name,
+            "role": role,
             "club": (
                 TEAM_CODE_TO_NAME[
                     club_code
@@ -321,7 +329,6 @@ def fetch_player_catalog():
                 current_value
             ),
             "fvmp": fvmp,
-            "role": role,
         }
 
     print(
@@ -334,11 +341,16 @@ def fetch_player_catalog():
         len(catalog),
     )
 
+    print(
+        "Ruoli Classic riconosciuti:",
+        roles_found,
+    )
+
     if not catalog:
         raise RuntimeError(
             "Fantacalcio è raggiungibile, "
             "ma il parser non ha riconosciuto "
-            "nessun giocatore nel listone."
+            "nessun giocatore."
         )
 
     return catalog
