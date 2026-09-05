@@ -275,6 +275,10 @@ def fetch_player_catalog():
             tokens,
             index,
         )
+        role = _find_previous_role(
+            tokens,
+            index,
+        )
 
         # Ci bastano i primi tre valori:
         # QI Classic, QA Classic, FVM Classic
@@ -317,6 +321,7 @@ def fetch_player_catalog():
                 current_value
             ),
             "fvmp": fvmp,
+            "role": role,
         }
 
     print(
