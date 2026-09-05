@@ -373,14 +373,15 @@ def optimize_formations(
                 result
             )
 
-    formations.sort(
-        key=lambda item: (
-            item["total_projection"],
-            item["average_start_score"],
-            -item["risky_starters"],
-        ),
-        reverse=True,
-    )
+formations.sort(
+    key=lambda item: (
+        item["formation_value"],
+        -item["risky_starters"],
+        item["average_start_score"],
+        item["total_projection"],
+    ),
+    reverse=True,
+)
 
     return formations
 
