@@ -3,6 +3,10 @@ from statistics import mean
 from .config import ALLOWED_FORMATIONS
 from .rules import defense_modifier
 
+PREFERRED_FORMATIONS = {
+    "4-3-3": 0.30,
+    "4-4-2": 0.30,
+}
 
 def clamp(value, minimum=0.0, maximum=1.0):
     return max(
@@ -332,7 +336,14 @@ def evaluate_formation(
     formation_value += (
         modifier_bonus * 0.80
     )
+    preference_bonus = (
+        PREFERRED_FORMATIONS.get(
+            formation_name,
+            0.0,
+        )
+    )
 
+    formation_value += preference_bonus
     return {
         "formation": formation_name,
         "starters": starters,
@@ -355,6 +366,7 @@ def evaluate_formation(
             1,
         ),
         "risky_starters": risky_starters,
+        "preference_bonus": preference_bonus,
     }
 
 
