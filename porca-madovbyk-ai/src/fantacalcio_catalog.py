@@ -85,6 +85,37 @@ def _find_previous_name(
     tokens,
     club_index,
 ):
+def _find_previous_role(
+    tokens,
+    club_index,
+):
+    roles = {
+        "P",
+        "D",
+        "C",
+        "A",
+    }
+
+    start = max(
+        0,
+        club_index - 8,
+    )
+
+    for index in range(
+        club_index - 1,
+        start - 1,
+        -1,
+    ):
+        candidate = (
+            str(tokens[index])
+            .strip()
+            .upper()
+        )
+
+        if candidate in roles:
+            return candidate
+
+    return None
     """
     Cerca il nome immediatamente prima
     del codice squadra.
