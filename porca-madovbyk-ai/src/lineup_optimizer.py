@@ -340,12 +340,16 @@ def evaluate_formation(
             total_projection,
             2,
         ),
+        "formation_value": round(
+            formation_value,
+            3,
+        ),
         "average_start_score": round(
             average_start_score,
             1,
         ),
         "risky_starters": risky_starters,
-    }
+    
 
 
 def optimize_formations(
