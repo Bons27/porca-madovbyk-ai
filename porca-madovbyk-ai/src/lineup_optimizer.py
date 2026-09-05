@@ -319,7 +319,14 @@ def evaluate_formation(
             and item["result"]["score"] > 0
         )
     )
+    formation_value = sum(
+        balanced_value(item)
+        for item in starters
+    )
 
+    formation_value += (
+        modifier_bonus * 0.80
+    )
     return {
         "formation": formation_name,
         "starters": starters,
