@@ -30,13 +30,22 @@ jobs:
           python -m py_compile src/repair_auction_engine.py
           python -m py_compile src/repair_auction_optimizer.py
           python -m py_compile src/repair_auction_report.py
+          python -m py_compile src/repair_auction_simulator.py
+          python -m py_compile src/repair_auction_simulation_report.py
 
-      - name: Run Repair Auction
+      - name: Run Repair Auction V2
         working-directory: porca-madovbyk-ai
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python -m src.repair_auction_report
+
+      - name: Run Auction Simulator V3
+        working-directory: porca-madovbyk-ai
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m src.repair_auction_simulation_report
 
       - name: Notify failure
         if: failure()
@@ -45,4 +54,4 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python -c "from src.telegram_bot import send_message; send_message('⚠️ <b>Repair Auction</b>\nErrore durante la costruzione del piano d’asta.')"
+          python -c "from src.telegram_bot import send_message; send_message('⚠️ <b>Repair Auction</b>\nErrore durante il piano o la simulazione dell’asta.')"
