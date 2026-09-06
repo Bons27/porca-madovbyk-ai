@@ -422,6 +422,43 @@ def build_report():
             user_players=(
                 user_players
             ),
+        # -----------------------------
+    # TALENT SCOUT + TRADE
+    # -----------------------------
+
+    try:
+        scout_synergy = (
+            analyze_trade_scout_synergy(
+                rostered_dataset=(
+                    dataset
+                ),
+                user_before=(
+                    user_players
+                ),
+                user_after=(
+                    result[
+                        "new_user"
+                    ]
+                ),
+                lineups=lineups,
+                unavailable=(
+                    unavailable
+                ),
+                state_path=(
+                    root
+                    / "data"
+                    / "scout_state.json"
+                ),
+            )
+        )
+
+    except Exception as exc:
+        print(
+            "Talent Scout synergy:",
+            exc,
+        )
+
+        scout_synergy = None
             all_opponents=(
                 opponents
             ),
@@ -928,7 +965,258 @@ def build_report():
                     f"{safe(warning)}"
                 )
             )
+    # -----------------------------
+    # TALENT SCOUT
+    # -----------------------------
 
+    if scout_synergy:
+        lines.extend(
+            [
+                "",
+                "🕵️ <b>TALENT SCOUT + TRADE</b>",
+                (
+                    f"Svincolati interessanti "
+                    f"analizzati: "
+                    f"<b>"
+                    f"{scout_synergy['candidates_count']}"
+                    f"</b>"
+                ),
+                "",
+            ]
+        )
+
+        best_before = (
+            scout_synergy[
+                "best_before"
+            ]
+        )
+
+        best_after = (
+            scout_synergy[
+                "best_after"
+            ]
+        )
+
+        lines.append(
+            "🔵 <b>SCENARIO A — "
+            "NON FAI IL TRADE</b>"
+        )
+
+        if best_before:
+            candidate = (
+                best_before[
+                    "candidate"
+                ]
+            )
+
+            cut = (
+                best_before[
+                    "cut"
+                ]
+            )
+
+            lines.extend(
+                [
+                    (
+                        f"📤 Taglio: "
+                        f"{safe(cut.name)} "
+                        f"(TV "
+                        f"{best_before['cut_tv']:.1f})"
+                    ),
+                    (
+                        f"📥 Target febbraio: "
+                        f"<b>"
+                        f"{safe(candidate.name)}"
+                        f"</b> "
+                        f"({candidate.role}, "
+                        f"{safe(candidate.club)})"
+                    ),
+                    (
+                        f"Scout Score: "
+                        f"<b>"
+                        f"{best_before['scout_score']:.1f}"
+                        f"</b> "
+                        f"{scout_label(best_before['scout_score'])}"
+                    ),
+                    (
+                        f"Trade Value comparabile: "
+                        f"{best_before['candidate_tv']:.1f}"
+                    ),
+                    (
+                        f"📈 Miglioramento rosa: "
+                        f"<b>"
+                        f"+{scout_synergy['wait_for_scout_gain']:.2f}"
+                        f"</b>"
+                    ),
+                ]
+            )
+
+        else:
+            lines.append(
+                "Nessuno svincolato produce "
+                "un upgrade sufficiente."
+            )
+
+        lines.extend(
+            [
+                "",
+                "🟣 <b>SCENARIO B — "
+                "TRADE + ASTA FEBBRAIO</b>",
+            ]
+        )
+
+        if best_after:
+            candidate = (
+                best_after[
+                    "candidate"
+                ]
+            )
+
+            cut = (
+                best_after[
+                    "cut"
+                ]
+            )
+
+            lines.extend(
+                [
+                    (
+                        f"📤 Taglio: "
+                        f"{safe(cut.name)} "
+                        f"(TV "
+                        f"{best_after['cut_tv']:.1f})"
+                    ),
+                    (
+                        f"📥 Target febbraio: "
+                        f"<b>"
+                        f"{safe(candidate.name)}"
+                        f"</b> "
+                        f"({candidate.role}, "
+                        f"{safe(candidate.club)})"
+                    ),
+                    (
+                        f"Scout Score: "
+                        f"<b>"
+                        f"{best_after['scout_score']:.1f}"
+                        f"</b> "
+                        f"{scout_label(best_after['scout_score'])}"
+                    ),
+                    (
+                        f"Trend: "
+                        f"{best_after['trend_score']:.0f}/100"
+                    ),
+                    (
+                        f"📈 Trade + svincolato "
+                        f"vs rosa attuale: "
+                        f"<b>"
+                        f"+{scout_synergy['trade_plus_scout_gain']:.2f}"
+                        f"</b>"
+                    ),
+                ]
+            )
+
+        synergy = (
+            scout_synergy[
+                "synergy_vs_wait"
+            ]
+        )
+
+        lines.extend(
+            [
+                "",
+                "⚖️ <b>IL TRADE AIUTA "
+                "DAVVERO IL PIANO FEBBRAIO?</b>",
+                (
+                    f"Delta rispetto a "
+                    f"non fare il trade: "
+                    f"<b>"
+                    f"{synergy:+.2f}"
+                    f"</b>"
+                ),
+            ]
+        )
+
+        if synergy >= 0.30:
+            lines.append(
+                "🟢 Sì. Lo scambio crea "
+                "un percorso di miglioramento "
+                "sensibilmente superiore."
+            )
+
+        elif synergy >= 0.10:
+            lines.append(
+                "🟡 Leggermente. Il trade "
+                "migliora anche la prospettiva "
+                "dell'asta, ma non in modo decisivo."
+            )
+
+        elif synergy > -0.10:
+            lines.append(
+                "➖ Quasi neutro. Lo svincolato "
+                "interessante sarebbe utile "
+                "anche senza effettuare il trade."
+            )
+
+        else:
+            lines.append(
+                "🔴 No. Aspettare l'asta "
+                "di febbraio offre un percorso "
+                "migliore del trade proposto."
+            )
+
+        if (
+            scout_synergy[
+                "after_moves"
+            ]
+        ):
+            lines.extend(
+                [
+                    "",
+                    "👀 <b>ALTRI TARGET "
+                    "POST-TRADE</b>",
+                ]
+            )
+
+            for move in (
+                scout_synergy[
+                    "after_moves"
+                ][:3]
+            ):
+                candidate = (
+                    move[
+                        "candidate"
+                    ]
+                )
+
+                lines.append(
+                    (
+                        f"• "
+                        f"<b>"
+                        f"{safe(candidate.name)}"
+                        f"</b> "
+                        f"({candidate.role}) "
+                        f"— taglio "
+                        f"{safe(move['cut'].name)} "
+                        f"| +{move['gain']:.2f} "
+                        f"| Scout "
+                        f"{move['scout_score']:.0f}"
+                    )
+                )
+
+        lines.extend(
+            [
+                "",
+                "ℹ️ <i>"
+                "La simulazione Talent Scout "
+                "indica il potenziale tecnico "
+                "degli svincolati attuali. "
+                "Non presuppone che il giocatore "
+                "sia effettivamente acquistato "
+                "all'asta di febbraio né considera "
+                "ancora concorrenza e crediti."
+                "</i>",
+            ]
+        )
     lines.extend(
         [
             "",
