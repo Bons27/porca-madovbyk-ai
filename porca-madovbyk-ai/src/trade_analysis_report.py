@@ -19,6 +19,10 @@ from .fantacalcio_statistics import (
 from .formation_report import (
     build_evaluated_players,
 )
+from .league_calendar import (
+    find_match_by_seriea_round,
+    load_league_calendar,
+)
 from .league_dataset import (
     build_league_dataset,
 )
@@ -26,6 +30,7 @@ from .league_rosters import (
     load_league_rosters,
 )
 from .lineup_optimizer import (
+    STRATEGIES,
     optimize_formations,
 )
 from .market_source import (
@@ -34,6 +39,9 @@ from .market_source import (
 from .trade_analyzer import (
     analyze_trade,
     parse_package,
+)
+from .trade_competition_impact import (
+    analyze_competition_impact,
 )
 from .trade_engine import (
     player_value,
@@ -81,7 +89,7 @@ def package_text(
     )
 
 
-def get_best_balanced(
+def get_balanced_formations(
     squad,
     context,
     lineups,
@@ -107,27 +115,23 @@ def get_best_balanced(
 
     if not formations:
         raise RuntimeError(
-            "Impossibile generare "
-            "una formazione Balanced."
+            "Nessuna formazione "
+            "Balanced disponibile."
         )
 
-    return {
-        "evaluated": evaluated,
-        "formations": formations,
-        "best": formations[0],
-    }
+    return formations
 
 
 def find_formation(
     formations,
-    formation_name,
+    name,
 ):
     for formation in formations:
         if (
             formation[
                 "formation"
             ]
-            == formation_name
+            == name
         ):
             return formation
 
@@ -137,68 +141,95 @@ def find_formation(
 def starter_names(
     formation,
 ):
-    return [
+    return {
         item["player"].name
         for item
         in formation["starters"]
-    ]
+    }
 
 
-def starter_changes(
-    before,
-    after,
+def delta_text(
+    value,
+    digits=2,
 ):
-    before_names = (
-        starter_names(
-            before
-        )
-    )
-
-    after_names = (
-        starter_names(
-            after
-        )
-    )
-
-    before_keys = {
-        name.lower(): name
-        for name in before_names
-    }
-
-    after_keys = {
-        name.lower(): name
-        for name in after_names
-    }
-
-    exited = [
-        name
-        for key, name
-        in before_keys.items()
-        if key not in after_keys
-    ]
-
-    entered = [
-        name
-        for key, name
-        in after_keys.items()
-        if key not in before_keys
-    ]
-
-    return entered, exited
-
-
-def delta_text(value):
     if value > 0:
         return (
-            f"📈 +{value:.2f}"
+            f"📈 +{value:.{digits}f}"
         )
 
     if value < 0:
         return (
-            f"📉 {value:.2f}"
+            f"📉 {value:.{digits}f}"
         )
 
-    return "➖ 0.00"
+    return (
+        f"➖ {value:.{digits}f}"
+    )
+
+
+def build_teams_after_trade(
+    teams,
+    user_team,
+    opponent_name,
+    new_user,
+    new_opponent,
+):
+    result = {
+        name: list(squad)
+        for name, squad
+        in teams.items()
+    }
+
+    result[
+        user_team
+    ] = list(
+        new_user
+    )
+
+    result[
+        opponent_name
+    ] = list(
+        new_opponent
+    )
+
+    return result
+
+
+def competition_comment(
+    delta,
+):
+    if delta >= 0.50:
+        return (
+            "🔥 Forte miglioramento immediato."
+        )
+
+    if delta >= 0.20:
+        return (
+            "✅ Miglioramento concreto "
+            "nel rendimento della giornata."
+        )
+
+    if delta > 0:
+        return (
+            "🟡 Vantaggio immediato "
+            "positivo ma limitato."
+        )
+
+    if delta == 0:
+        return (
+            "➖ Impatto immediato neutro."
+        )
+
+    if delta > -0.20:
+        return (
+            "🟠 Piccolo peggioramento "
+            "nella giornata attuale."
+        )
+
+    return (
+        "🔴 Peggioramento immediato "
+        "significativo."
+    )
 
 
 def build_report():
@@ -226,9 +257,9 @@ def build_report():
         __file__
     ).resolve().parents[1]
 
-    # --------------------------------
+    # -----------------------------
     # DATABASE
-    # --------------------------------
+    # -----------------------------
 
     league_players = (
         load_league_rosters(
@@ -238,16 +269,8 @@ def build_report():
         )
     )
 
-    print(
-        "Recupero listone..."
-    )
-
     catalog = (
         fetch_player_catalog()
-    )
-
-    print(
-        "Recupero statistiche..."
     )
 
     statistics = (
@@ -259,9 +282,7 @@ def build_report():
             league_players,
             catalog,
             statistics,
-        )[
-            "players"
-        ]
+        )["players"]
     )
 
     if len(dataset) != 200:
@@ -282,7 +303,9 @@ def build_report():
     )
 
     user_players = (
-        teams[user_team]
+        teams[
+            user_team
+        ]
     )
 
     opponents = {
@@ -292,26 +315,56 @@ def build_report():
         if name != user_team
     }
 
-    # --------------------------------
-    # DATI LIVE
-    # --------------------------------
-
-    all_names = [
-        player.name
-        for player in dataset
-    ]
-
-    print(
-        "Recupero giornata..."
-    )
+    # -----------------------------
+    # GIORNATA
+    # -----------------------------
 
     context = (
         fetch_matchday_context()
     )
 
-    print(
-        "Recupero titolarità..."
+    seriea_matchday = (
+        context[
+            "matchday"
+        ]
     )
+
+    calendar = (
+        load_league_calendar(
+            root
+            / "data"
+            / "league_calendar.csv"
+        )
+    )
+
+    league_match = (
+        find_match_by_seriea_round(
+            calendar,
+            user_team,
+            seriea_matchday,
+        )
+    )
+
+    if not league_match:
+        raise RuntimeError(
+            "Partita di campionato "
+            "non trovata."
+        )
+
+    league_opponent_name = (
+        league_match[
+            "opponent"
+        ]
+    )
+
+    # -----------------------------
+    # LIVE
+    # -----------------------------
+
+    all_names = [
+        player.name
+        for player in dataset
+    ]
 
     try:
         lineups = (
@@ -319,15 +372,10 @@ def build_report():
         )
     except Exception as exc:
         print(
-            "Probabili non disponibili:",
+            "Probabili:",
             exc,
         )
-
         lineups = {}
-
-    print(
-        "Recupero indisponibili..."
-    )
 
     try:
         unavailable = (
@@ -337,15 +385,10 @@ def build_report():
         )
     except Exception as exc:
         print(
-            "Indisponibili non disponibili:",
+            "Indisponibili:",
             exc,
         )
-
         unavailable = {}
-
-    print(
-        "Recupero matchup..."
-    )
 
     try:
         market_fixtures = (
@@ -353,15 +396,14 @@ def build_report():
         )
     except Exception as exc:
         print(
-            "Quote non disponibili:",
+            "Quote:",
             exc,
         )
-
         market_fixtures = {}
 
-    # --------------------------------
+    # -----------------------------
     # TRADE VALUE
-    # --------------------------------
+    # -----------------------------
 
     values = (
         build_trade_values(
@@ -371,41 +413,86 @@ def build_report():
         )
     )
 
-    # --------------------------------
-    # ANALISI SCAMBIO
-    # --------------------------------
-
-    result = analyze_trade(
-        user_players=(
-            user_players
-        ),
-        all_opponents=(
-            opponents
-        ),
-        give_names=(
-            parse_package(
-                give_text
-            )
-        ),
-        receive_names=(
-            parse_package(
-                receive_text
-            )
-        ),
-        values=values,
+    result = (
+        analyze_trade(
+            user_players=(
+                user_players
+            ),
+            all_opponents=(
+                opponents
+            ),
+            give_names=(
+                parse_package(
+                    give_text
+                )
+            ),
+            receive_names=(
+                parse_package(
+                    receive_text
+                )
+            ),
+            values=values,
+        )
     )
 
-    # --------------------------------
-    # FORMAZIONE PRIMA
-    # --------------------------------
-
-    print(
-        "Ottimizzazione formazione "
-        "prima dello scambio..."
+    opponent_name = (
+        result[
+            "opponent"
+        ]
     )
 
-    before_data = (
-        get_best_balanced(
+    new_user = (
+        result[
+            "new_user"
+        ]
+    )
+
+    # Ricostruiamo anche la
+    # nuova rosa dell'altra squadra.
+    outgoing_keys = {
+        player.name.lower()
+        for player
+        in result[
+            "incoming"
+        ]
+    }
+
+    new_opponent = [
+        player
+        for player
+        in teams[
+            opponent_name
+        ]
+        if player.name.lower()
+        not in outgoing_keys
+    ]
+
+    new_opponent.extend(
+        result[
+            "outgoing"
+        ]
+    )
+
+    teams_after = (
+        build_teams_after_trade(
+            teams=teams,
+            user_team=user_team,
+            opponent_name=(
+                opponent_name
+            ),
+            new_user=new_user,
+            new_opponent=(
+                new_opponent
+            ),
+        )
+    )
+
+    # -----------------------------
+    # FORMAZIONE PRIMA / DOPO
+    # -----------------------------
+
+    before_formations = (
+        get_balanced_formations(
             user_players,
             context,
             lineups,
@@ -414,20 +501,9 @@ def build_report():
         )
     )
 
-    # --------------------------------
-    # FORMAZIONE DOPO
-    # --------------------------------
-
-    print(
-        "Ottimizzazione formazione "
-        "dopo lo scambio..."
-    )
-
-    after_data = (
-        get_best_balanced(
-            result[
-                "new_user"
-            ],
+    after_formations = (
+        get_balanced_formations(
+            new_user,
             context,
             lineups,
             unavailable,
@@ -436,11 +512,11 @@ def build_report():
     )
 
     before_best = (
-        before_data["best"]
+        before_formations[0]
     )
 
     after_best = (
-        after_data["best"]
+        after_formations[0]
     )
 
     projection_delta = (
@@ -452,96 +528,91 @@ def build_report():
         ]
     )
 
-    start_score_delta = (
-        after_best.get(
-            "average_start_score",
-            0,
-        )
-        - before_best.get(
-            "average_start_score",
-            0,
+    before_names = (
+        starter_names(
+            before_best
         )
     )
 
-    modifier_before = (
-        before_best.get(
-            "modifier",
-            0,
+    after_names = (
+        starter_names(
+            after_best
         )
     )
 
-    modifier_after = (
-        after_best.get(
-            "modifier",
-            0,
+    entered = sorted(
+        after_names
+        - before_names
+    )
+
+    exited = sorted(
+        before_names
+        - after_names
+    )
+
+    # -----------------------------
+    # COMPETIZIONI /24
+    # -----------------------------
+
+    print(
+        "Simulazione Campionato "
+        "+ Battle Royale..."
+    )
+
+    competition = (
+        analyze_competition_impact(
+            teams_before=teams,
+            teams_after=(
+                teams_after
+            ),
+            user_team=user_team,
+            league_opponent_name=(
+                league_opponent_name
+            ),
+            context=context,
+            lineups=lineups,
+            unavailable=(
+                unavailable
+            ),
+            market_fixtures=(
+                market_fixtures
+            ),
         )
     )
 
-    entered, exited = (
-        starter_changes(
-            before_best,
-            after_best,
-        )
+    before_comp = (
+        competition[
+            "before"
+        ]
     )
 
-    # --------------------------------
-    # 4-3-3 / 4-4-2
-    # --------------------------------
+    after_comp = (
+        competition[
+            "after"
+        ]
+    )
 
-    preferred_comparison = {}
+    before_combined = (
+        before_comp[
+            "best"
+        ]
+    )
 
-    for module in (
-        "4-3-3",
-        "4-4-2",
-    ):
-        before_module = (
-            find_formation(
-                before_data[
-                    "formations"
-                ],
-                module,
-            )
-        )
+    after_combined = (
+        after_comp[
+            "best"
+        ]
+    )
 
-        after_module = (
-            find_formation(
-                after_data[
-                    "formations"
-                ],
-                module,
-            )
-        )
-
-        if (
-            before_module
-            and after_module
-        ):
-            preferred_comparison[
-                module
-            ] = {
-                "before": (
-                    before_module
-                ),
-                "after": (
-                    after_module
-                ),
-                "delta": (
-                    after_module[
-                        "total_projection"
-                    ]
-                    - before_module[
-                        "total_projection"
-                    ]
-                ),
-            }
-
-    # --------------------------------
+    # -----------------------------
     # NEGOZIAZIONE
-    # --------------------------------
+    # -----------------------------
 
-    acceptance = result[
-        "acceptance"
-    ]
+    acceptance = (
+        result[
+            "acceptance"
+        ]
+    )
 
     if acceptance:
         negotiation_text = (
@@ -550,21 +621,25 @@ def build_report():
         )
     else:
         negotiation_text = (
-            "🔴 BASSA — proposta "
-            "difficile da far accettare"
+            "🔴 BASSA"
         )
 
-    # --------------------------------
+    # -----------------------------
     # TELEGRAM
-    # --------------------------------
+    # -----------------------------
 
     lines = [
-        "🧠 <b>TRADE ANALYZER V2</b>",
+        "🧠 <b>TRADE ANALYZER V3</b>",
         "",
         (
-            f"📅 Analisi sulla "
-            f"Serie A G"
-            f"{context['matchday']}"
+            f"📅 Serie A "
+            f"<b>G{seriea_matchday}</b>"
+        ),
+        (
+            f"🏟 Campionato vs "
+            f"<b>"
+            f"{safe(league_opponent_name)}"
+            f"</b>"
         ),
         "",
         "🔄 <b>PROPOSTA</b>",
@@ -588,34 +663,34 @@ def build_report():
             + "</b>"
         ),
         (
-            f"👤 Controparte: "
+            f"👤 Tratti con: "
             f"<b>"
-            f"{safe(result['opponent'])}"
+            f"{safe(opponent_name)}"
             f"</b>"
         ),
         "",
         (
-            f"⚖️ <b>VERDETTO: "
+            f"⚖️ <b>VERDETTO STRUTTURALE: "
             f"{result['decision']}</b>"
         ),
         "",
         "📊 <b>VALORE ROSA</b>",
         (
-            f"Forza prima: "
+            f"Prima: "
             f"{result['user_before']:.2f}"
         ),
         (
-            f"Forza dopo: "
+            f"Dopo: "
             f"{result['user_after']:.2f}"
         ),
         (
-            f"Variazione: "
+            f"Delta: "
             f"<b>"
             f"{result['user_gain']:+.2f}"
             f"</b>"
         ),
         "",
-        "⚽ <b>IMPATTO SULLA FORMAZIONE</b>",
+        "⚽ <b>MIGLIOR XI BALANCED</b>",
         (
             f"Prima: "
             f"<b>"
@@ -633,58 +708,55 @@ def build_report():
             f"{after_best['total_projection']:.2f}"
         ),
         (
-            f"Variazione FV: "
+            f"Delta FV: "
             f"<b>"
             f"{delta_text(projection_delta)}"
             f"</b>"
         ),
-        (
-            f"Start Score medio: "
-            f"{before_best.get('average_start_score', 0):.1f}"
-            f" → "
-            f"{after_best.get('average_start_score', 0):.1f} "
-            f"({start_score_delta:+.1f})"
-        ),
-        (
-            f"Modificatore difesa: "
-            f"{modifier_before:+.0f}"
-            f" → "
-            f"{modifier_after:+.0f}"
-        ),
         "",
-        "🎯 <b>MODULI PREFERITI</b>",
+        "🎯 <b>4-3-3 / 4-4-2</b>",
     ]
 
     for module in (
         "4-3-3",
         "4-4-2",
     ):
-        data = (
-            preferred_comparison.get(
-                module
-            )
-        )
-
-        if not data:
-            continue
-
         before_module = (
-            data["before"]
+            find_formation(
+                before_formations,
+                module,
+            )
         )
 
         after_module = (
-            data["after"]
-        )
-
-        lines.append(
-            (
-                f"<b>{module}</b>: "
-                f"{before_module['total_projection']:.2f}"
-                f" → "
-                f"{after_module['total_projection']:.2f} "
-                f"({data['delta']:+.2f})"
+            find_formation(
+                after_formations,
+                module,
             )
         )
+
+        if (
+            before_module
+            and after_module
+        ):
+            delta = (
+                after_module[
+                    "total_projection"
+                ]
+                - before_module[
+                    "total_projection"
+                ]
+            )
+
+            lines.append(
+                (
+                    f"<b>{module}</b>: "
+                    f"{before_module['total_projection']:.2f}"
+                    f" → "
+                    f"{after_module['total_projection']:.2f} "
+                    f"({delta:+.2f})"
+                )
+            )
 
     lines.extend(
         [
@@ -693,80 +765,133 @@ def build_report():
         ]
     )
 
-    if not entered and not exited:
+    if entered:
         lines.append(
-            "➖ Nessuna variazione "
+            "📥 Entra: <b>"
+            + ", ".join(
+                safe(name)
+                for name in entered
+            )
+            + "</b>"
+        )
+
+    if exited:
+        lines.append(
+            "📤 Esce: "
+            + ", ".join(
+                safe(name)
+                for name in exited
+            )
+        )
+
+    if (
+        not entered
+        and not exited
+    ):
+        lines.append(
+            "➖ Nessun cambio "
             "nell'undici titolare."
         )
 
-    else:
-        if entered:
-            lines.append(
-                "📥 Entra: <b>"
-                + ", ".join(
-                    safe(name)
-                    for name in entered
-                )
-                + "</b>"
-            )
-
-        if exited:
-            lines.append(
-                "📤 Esce: "
-                + ", ".join(
-                    safe(name)
-                    for name in exited
-                )
-            )
-
     lines.extend(
         [
             "",
-            "🧩 <b>IMPATTO PER REPARTO</b>",
-        ]
-    )
-
-    for role in (
-        "P",
-        "D",
-        "C",
-        "A",
-    ):
-        delta = (
-            result[
-                "role_delta"
-            ][role]
-        )
-
-        if delta > 0:
-            symbol = "📈"
-        elif delta < 0:
-            symbol = "📉"
-        else:
-            symbol = "➖"
-
-        lines.append(
-            (
-                f"{symbol} "
-                f"{role}: "
-                f"{delta:+.2f}"
-            )
-        )
-
-    lines.extend(
-        [
+            "🏆 <b>IMPATTO COMPETIZIONI</b>",
             "",
-            "💰 <b>VALORE NEGOZIALE</b>",
+            "🏟 <b>CAMPIONATO</b>",
             (
-                f"Valore percepito ceduto: "
+                f"Prima: "
+                f"{competition['league_before']:.2f}/3"
+            ),
+            (
+                f"Dopo: "
+                f"{competition['league_after']:.2f}/3"
+            ),
+            (
+                f"Delta: "
+                f"<b>"
+                f"{delta_text(competition['league_delta'])}"
+                f"</b>"
+            ),
+            "",
+            "⚔️ <b>BATTLE ROYALE</b>",
+            (
+                f"Prima: "
+                f"{competition['battle_before']:.2f}/21"
+            ),
+            (
+                f"Dopo: "
+                f"{competition['battle_after']:.2f}/21"
+            ),
+            (
+                f"Delta: "
+                f"<b>"
+                f"{delta_text(competition['battle_delta'])}"
+                f"</b>"
+            ),
+            "",
+            "🥇 <b>TOTALE /24</b>",
+            (
+                f"Prima: "
+                f"<b>"
+                f"{competition['combined_before']:.2f}"
+                f"/24</b>"
+            ),
+            (
+                f"Dopo: "
+                f"<b>"
+                f"{competition['combined_after']:.2f}"
+                f"/24</b>"
+            ),
+            (
+                f"Variazione: "
+                f"<b>"
+                f"{delta_text(competition['combined_delta'])}"
+                f"</b>"
+            ),
+            (
+                competition_comment(
+                    competition[
+                        "combined_delta"
+                    ]
+                )
+            ),
+            "",
+            "🎛 <b>STRATEGIA OTTIMA</b>",
+            (
+                f"Prima: "
+                f"{STRATEGIES[
+                    before_comp[
+                        'strategy'
+                    ]
+                ]['label']} "
+                f"{before_combined[
+                    'formation'
+                ]['formation']}"
+            ),
+            (
+                f"Dopo: "
+                f"{STRATEGIES[
+                    after_comp[
+                        'strategy'
+                    ]
+                ]['label']} "
+                f"{after_combined[
+                    'formation'
+                ]['formation']}"
+            ),
+            "",
+            "💰 <b>NEGOZIAZIONE</b>",
+            (
+                f"Valore ceduto: "
                 f"{result['give_market_value']:.1f}"
             ),
             (
-                f"Valore percepito ricevuto: "
+                f"Valore ricevuto: "
                 f"{result['receive_market_value']:.1f}"
             ),
             (
-                f"Beneficio controparte: "
+                f"Beneficio altra rosa: "
                 f"{result['opponent_gain']:+.2f}"
             ),
             (
@@ -778,7 +903,9 @@ def build_report():
         ]
     )
 
-    if result["warnings"]:
+    if result[
+        "warnings"
+    ]:
         lines.extend(
             [
                 "",
@@ -798,82 +925,74 @@ def build_report():
                 )
             )
 
-    # --------------------------------
-    # INTERPRETAZIONE FORMAZIONE
-    # --------------------------------
-
     lines.extend(
         [
             "",
-            "🧭 <b>LETTURA TECNICA</b>",
+            "🧭 <b>INTERPRETAZIONE</b>",
         ]
     )
 
-    if projection_delta >= 0.75:
+    if (
+        result["user_gain"] < 0
+    ):
         lines.append(
-            (
-                "🔥 Lo scambio produce "
-                "un miglioramento importante "
-                "anche nell'XI titolare."
-            )
+            "❌ Lo scambio peggiora "
+            "la struttura della rosa."
         )
 
-    elif projection_delta >= 0.30:
+    elif (
+        result["user_gain"] < 0.25
+    ):
         lines.append(
-            (
-                "✅ Miglioramento concreto "
-                "della formazione."
-            )
-        )
-
-    elif projection_delta > 0:
-        lines.append(
-            (
-                "⚠️ La rosa migliora, "
-                "ma l'effetto sull'XI "
-                "è molto contenuto."
-            )
-        )
-
-    elif projection_delta == 0:
-        lines.append(
-            (
-                "➖ Lo scambio non modifica "
-                "la proiezione del miglior XI."
-            )
+            "⚠️ Il miglioramento strutturale "
+            "è troppo piccolo per essere "
+            "particolarmente interessante."
         )
 
     else:
         lines.append(
-            (
-                "❌ La formazione prevista "
-                "peggiora nonostante il valore "
-                "complessivo dello scambio."
-            )
+            "✅ Lo scambio migliora "
+            "la struttura complessiva."
         )
 
     if (
-        result["user_gain"] > 0
-        and projection_delta <= 0
+        competition[
+            "combined_delta"
+        ] < -0.20
     ):
         lines.append(
-            (
-                "⚠️ Il beneficio è soprattutto "
-                "di profondità rosa, non di "
-                "formazione titolare."
-            )
+            "🔴 Nella giornata attuale "
+            "lo scambio avrebbe però "
+            "un impatto negativo rilevante."
+        )
+
+    elif (
+        competition[
+            "combined_delta"
+        ] > 0.20
+    ):
+        lines.append(
+            "🟢 Anche l'impatto immediato "
+            "nelle competizioni è positivo."
+        )
+
+    else:
+        lines.append(
+            "🟡 L'impatto sulla singola "
+            "giornata è secondario: "
+            "va privilegiato il valore "
+            "di medio-lungo periodo."
         )
 
     lines.extend(
         [
             "",
             "ℹ️ <i>"
-            "Il verdetto generale valuta "
-            "la struttura della rosa. "
-            "L'impatto formazione misura invece "
-            "cosa cambierebbe realmente "
-            "schierando il miglior XI con "
-            "i dati live della giornata."
+            "Il dato /24 riguarda esclusivamente "
+            "la giornata corrente e non è una "
+            "stima stagionale. Serve come controllo "
+            "tattico, non deve prevalere da solo "
+            "sulla qualità strutturale dello scambio."
             "</i>",
         ]
     )
@@ -884,7 +1003,7 @@ def build_report():
                 "",
                 "⚠️ <i>"
                 "Quote matchup non disponibili: "
-                "utilizzato il fallback "
+                "utilizzato fallback "
                 "casa/trasferta."
                 "</i>",
             ]
@@ -903,7 +1022,7 @@ def main():
     )
 
     print(
-        "Trade Analyzer V2 completato."
+        "Trade Analyzer V3 completato."
     )
 
 
