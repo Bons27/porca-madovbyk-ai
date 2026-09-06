@@ -1,0 +1,47 @@
+name: Repair Auction
+
+on:
+  workflow_dispatch:
+
+jobs:
+  repair-auction:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: porca-madovbyk-ai
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check Python syntax
+        working-directory: porca-madovbyk-ai
+        run: |
+          python -m py_compile src/repair_rules.py
+          python -m py_compile src/outside_list_source.py
+          python -m py_compile src/repair_auction_engine.py
+          python -m py_compile src/repair_auction_report.py
+
+      - name: Run Repair Auction
+        working-directory: porca-madovbyk-ai
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m src.repair_auction_report
+
+      - name: Notify failure
+        if: failure()
+        working-directory: porca-madovbyk-ai
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python -c "from src.telegram_bot import send_message; send_message('⚠️ <b>Repair Auction</b>\nErrore durante la preparazione del piano asta.')"
