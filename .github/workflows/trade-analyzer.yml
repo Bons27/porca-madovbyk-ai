@@ -1,0 +1,42 @@
+name: Valuta Scambio
+
+on:
+  workflow_dispatch:
+    inputs:
+      give:
+        description: "Giocatori che cedi, separati da +"
+        required: true
+        type: string
+
+      receive:
+        description: "Giocatori che ricevi, separati da +"
+        required: true
+        type: string
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: porca-madovbyk-ai
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Analyze trade
+        working-directory: porca-madovbyk-ai
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TRADE_GIVE: ${{ inputs.give }}
+          TRADE_RECEIVE: ${{ inputs.receive }}
+        run: python -m src.trade_analysis_report
