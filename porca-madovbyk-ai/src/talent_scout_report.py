@@ -16,11 +16,14 @@ from .fantacalcio_source import (
 from .fantacalcio_statistics import (
     fetch_statistics_catalog,
 )
+from .scout_history_analysis import (
+    enrich_with_history,
+    load_scout_history,
+)
 from .talent_scout import (
     calculate_scout_scores,
     enrich_free_agents,
     load_free_agents,
-    scout_label,
 )
 from .telegram_bot import (
     send_long_message,
@@ -91,7 +94,14 @@ def save_state(
                 key: value
                 for key, value
                 in player.items()
-                if key != "key"
+                if (
+                    key != "key"
+                    and key
+                    not in (
+                        "trend_7_details",
+                        "trend_30_details",
+                    )
+                )
             }
             for player in players
         },
@@ -118,6 +128,14 @@ def append_history(
     players,
     now,
 ):
+    """
+    Manteniamo lo stesso formato
+    dello storico V1.
+
+    Trend 7/30 e Breakout Score
+    vengono ricalcolati dinamicamente.
+    """
+
     exists = path.exists()
 
     with open(
@@ -202,6 +220,58 @@ def append_history(
             )
 
 
+def trend_text(value):
+    if value is None:
+        return "n/d"
+
+    if value >= 70:
+        return (
+            f"{value:.0f} 🔥"
+        )
+
+    if value >= 60:
+        return (
+            f"{value:.0f} 📈"
+        )
+
+    if value >= 45:
+        return (
+            f"{value:.0f} ➖"
+        )
+
+    return (
+        f"{value:.0f} 📉"
+    )
+
+
+def format_player(
+    player,
+):
+    return (
+        f"• <b>{safe(player['name'])}</b> "
+        f"({player['role']}, "
+        f"{safe(player['club'])})\n"
+        f"  Scout "
+        f"<b>{player['scout_score']:.1f}</b> "
+        f"{player['scout_category']}\n"
+        f"  Breakout "
+        f"<b>{player['breakout_score']:.1f}</b> "
+        f"| FVM {player['fvmp']} "
+        f"| Q {player['current_value']}\n"
+        f"  PV {player['games']} "
+        f"| MV "
+        f"{player['average_vote']:.2f} "
+        f"| FM "
+        f"{player['fantasy_average']:.2f}\n"
+        f"  Tit. "
+        f"{player['probability']:.0f}% "
+        f"| 7g "
+        f"{trend_text(player['trend_7'])} "
+        f"| 30g "
+        f"{trend_text(player['trend_30'])}"
+    )
+
+
 def find_alerts(
     players,
     previous_players,
@@ -226,12 +296,16 @@ def find_alerts(
         old_score = float(
             previous.get(
                 "scout_score",
-                0,
+                player[
+                    "scout_score"
+                ],
             )
         )
 
         score_delta = (
-            player["scout_score"]
+            player[
+                "scout_score"
+            ]
             - old_score
         )
 
@@ -256,7 +330,9 @@ def find_alerts(
         )
 
         probability_delta = (
-            player["probability"]
+            player[
+                "probability"
+            ]
             - previous.get(
                 "probability",
                 player[
@@ -265,12 +341,53 @@ def find_alerts(
             )
         )
 
-        games_delta = (
-            player["games"]
-            - previous.get(
-                "games",
-                player["games"],
+        old_breakout = (
+            previous.get(
+                "breakout_score"
             )
+        )
+
+        breakout_delta = 0.0
+        breakout_alert = False
+
+        if old_breakout is not None:
+            breakout_delta = (
+                player[
+                    "breakout_score"
+                ]
+                - float(
+                    old_breakout
+                )
+            )
+
+            breakout_alert = (
+                (
+                    float(
+                        old_breakout
+                    )
+                    < 80
+                    and player[
+                        "breakout_score"
+                    ]
+                    >= 80
+                )
+                or breakout_delta >= 8
+            )
+
+        old_category = (
+            previous.get(
+                "scout_category",
+                "",
+            )
+        )
+
+        became_breakout = (
+            old_category
+            != "🚀 BREAKOUT"
+            and player[
+                "scout_category"
+            ]
+            == "🚀 BREAKOUT"
         )
 
         became_target = (
@@ -280,37 +397,47 @@ def find_alerts(
             ] >= 70
         )
 
-        strong_new_vote = (
-            games_delta > 0
-            and player[
-                "fantasy_average"
-            ] >= 6.5
-        )
-
         if (
             became_target
+            or became_breakout
+            or breakout_alert
             or score_delta >= 6
             or fvm_delta >= 8
             or quote_delta >= 2
             or probability_delta >= 20
-            or strong_new_vote
         ):
             alerts.append(
-                (
-                    player,
-                    round(
-                        score_delta,
-                        1,
+                {
+                    "player": (
+                        player
                     ),
-                )
+                    "score_delta": (
+                        round(
+                            score_delta,
+                            1,
+                        )
+                    ),
+                    "breakout_delta": (
+                        round(
+                            breakout_delta,
+                            1,
+                        )
+                    ),
+                }
             )
 
     alerts.sort(
         key=lambda item: (
-            item[0][
+            item[
+                "player"
+            ][
+                "breakout_score"
+            ],
+            item[
+                "player"
+            ][
                 "scout_score"
             ],
-            item[1],
         ),
         reverse=True,
     )
@@ -318,24 +445,57 @@ def find_alerts(
     return alerts
 
 
-def format_player(player):
-    return (
-        f"• <b>{safe(player['name'])}</b> "
-        f"({player['role']}, "
-        f"{safe(player['club'])})\n"
-        f"  Scout "
-        f"<b>{player['scout_score']:.1f}</b> "
-        f"{scout_label(player)}"
-        f" | FVM {player['fvmp']}\n"
-        f"  PV {player['games']} "
-        f"| MV "
-        f"{player['average_vote']:.2f} "
-        f"| FM "
-        f"{player['fantasy_average']:.2f}\n"
-        f"  Tit. "
-        f"{player['probability']:.0f}% "
-        f"| Trend "
-        f"{player['trend_score']:.0f}"
+def build_alert_report(
+    alerts,
+):
+    lines = [
+        "🚨 <b>TALENT SCOUT ALERT V2</b>",
+        "",
+    ]
+
+    for alert in alerts[:8]:
+        player = alert[
+            "player"
+        ]
+
+        lines.append(
+            format_player(
+                player
+            )
+        )
+
+        if (
+            alert[
+                "score_delta"
+            ]
+            != 0
+        ):
+            lines.append(
+                (
+                    f"  Δ Scout: "
+                    f"{alert['score_delta']:+.1f}"
+                )
+            )
+
+        if (
+            alert[
+                "breakout_delta"
+            ]
+            != 0
+        ):
+            lines.append(
+                (
+                    f"  Δ Breakout: "
+                    f"<b>"
+                    f"{alert['breakout_delta']:+.1f}"
+                    f"</b>"
+                )
+            )
+
+        lines.append("")
+
+    return "\n".join(
+        lines
     )
 
 
@@ -360,19 +520,59 @@ def build_digest(
         ]
     ]
 
+    breakouts = sorted(
+        (
+            player
+            for player in active
+            if player[
+                "trend_7"
+            ]
+            is not None
+        ),
+        key=lambda player: (
+            player[
+                "breakout_score"
+            ],
+            player[
+                "scout_score"
+            ],
+        ),
+        reverse=True,
+    )
+
+    value_picks = sorted(
+        (
+            player
+            for player in active
+            if player[
+                "scout_category"
+            ]
+            == "💎 VALUE"
+        ),
+        key=lambda player: (
+            player[
+                "value_pick_score"
+            ],
+            player[
+                "scout_score"
+            ],
+        ),
+        reverse=True,
+    )
+
     lines = [
-        "🕵️ <b>PORCA MADOVBYK TALENT SCOUT</b>",
+        "🕵️ <b>PORCA MADOVBYK TALENT SCOUT V2</b>",
         "",
         (
             f"📅 "
             f"{now.strftime('%d/%m/%Y')}"
         ),
         (
-            f"Svincolati nel database: "
+            f"Svincolati database: "
             f"<b>{len(players)}</b>"
         ),
         (
-            f"Acquistabili monitorati: "
+            f"Acquistabili: "
             f"<b>{len(active)}</b>"
         ),
         (
@@ -380,13 +580,84 @@ def build_digest(
             f"<b>{len(outside)}</b>"
         ),
         "",
-        "🏆 <b>TOP TARGET SVINCOLATI</b>",
+        "🏆 <b>TOP TARGET ATTUALI</b>",
     ]
 
-    for player in active[:10]:
+    for player in active[:8]:
         lines.append(
-            format_player(player)
+            format_player(
+                player
+            )
         )
+
+    lines.extend(
+        [
+            "",
+            "🚀 <b>BREAKOUT WATCH</b>",
+        ]
+    )
+
+    if not breakouts:
+        lines.append(
+            (
+                "Storico ancora insufficiente. "
+                "Il Trend 7 giorni inizierà "
+                "a popolarsi dopo circa una settimana."
+            )
+        )
+
+    else:
+        for player in (
+            breakouts[:8]
+        ):
+            lines.append(
+                (
+                    f"• <b>"
+                    f"{safe(player['name'])}"
+                    f"</b> "
+                    f"({player['role']}) "
+                    f"— Breakout "
+                    f"<b>"
+                    f"{player['breakout_score']:.1f}"
+                    f"</b> "
+                    f"| 7g "
+                    f"{trend_text(player['trend_7'])} "
+                    f"| 30g "
+                    f"{trend_text(player['trend_30'])}"
+                )
+            )
+
+    lines.extend(
+        [
+            "",
+            "💎 <b>VALUE PICKS</b>",
+        ]
+    )
+
+    if not value_picks:
+        lines.append(
+            "Nessun Value Pick forte "
+            "al momento."
+        )
+
+    else:
+        for player in (
+            value_picks[:5]
+        ):
+            lines.append(
+                (
+                    f"• <b>"
+                    f"{safe(player['name'])}"
+                    f"</b> "
+                    f"({player['role']}) "
+                    f"— Scout "
+                    f"{player['scout_score']:.1f} "
+                    f"| Q "
+                    f"{player['current_value']} "
+                    f"| Value "
+                    f"{player['value_pick_score']:.1f}"
+                )
+            )
 
     lines.extend(
         [
@@ -404,7 +675,9 @@ def build_digest(
         role_players = [
             player
             for player in active
-            if player["role"]
+            if player[
+                "role"
+            ]
             == role
         ][:3]
 
@@ -419,14 +692,12 @@ def build_digest(
                 (
                     f"• "
                     f"{safe(player['name'])} "
-                    f"— "
-                    f"<b>"
-                    f"{player['scout_score']:.1f}"
-                    f"</b> "
+                    f"— Scout "
+                    f"{player['scout_score']:.1f} "
+                    f"| Breakout "
+                    f"{player['breakout_score']:.1f} "
                     f"| FVM "
-                    f"{player['fvmp']} "
-                    f"| FM "
-                    f"{player['fantasy_average']:.2f}"
+                    f"{player['fvmp']}"
                 )
             )
 
@@ -439,48 +710,71 @@ def build_digest(
             ]
         )
 
-        for (
-            player,
-            delta,
-        ) in alerts[:8]:
+        for alert in alerts[:6]:
+            player = alert[
+                "player"
+            ]
+
             lines.append(
                 (
                     f"• <b>"
                     f"{safe(player['name'])}"
                     f"</b> "
-                    f"— Scout "
+                    f"— "
+                    f"{player['scout_category']} "
+                    f"| Scout "
                     f"{player['scout_score']:.1f} "
-                    f"({delta:+.1f})"
+                    f"| Breakout "
+                    f"{player['breakout_score']:.1f}"
                 )
             )
 
-    return "\n".join(
-        lines
+    lines.extend(
+        [
+            "",
+            "📚 <b>MATURITÀ DATI</b>",
+        ]
     )
 
+    maximum_history = max(
+        (
+            player[
+                "history_days"
+            ]
+            for player in active
+        ),
+        default=0,
+    )
 
-def build_alert_report(
-    alerts,
-):
-    lines = [
-        "🚨 <b>TALENT SCOUT ALERT</b>",
-        "",
-    ]
+    lines.append(
+        (
+            f"Storico disponibile: "
+            f"<b>{maximum_history} giorni</b>"
+        )
+    )
 
-    for (
-        player,
-        delta,
-    ) in alerts[:10]:
+    if maximum_history < 7:
         lines.append(
-            format_player(
-                player
+            (
+                "🟡 Trend 7g ancora "
+                "in fase di costruzione."
             )
         )
 
+    elif maximum_history < 30:
         lines.append(
             (
-                f"  Δ Scout Score: "
-                f"<b>{delta:+.1f}</b>"
+                "🟢 Trend 7g operativo. "
+                "Trend 30g ancora "
+                "in costruzione."
+            )
+        )
+
+    else:
+        lines.append(
+            (
+                "🟢 Trend 7g e 30g "
+                "entrambi operativi."
             )
         )
 
@@ -505,7 +799,7 @@ def main():
     previous_players = (
         previous_state.get(
             "players",
-            {}
+            {},
         )
     )
 
@@ -528,7 +822,7 @@ def main():
     )
 
     print(
-        "Recupero listone live..."
+        "Recupero listone..."
     )
 
     catalog = (
@@ -536,7 +830,7 @@ def main():
     )
 
     print(
-        "Recupero statistiche live..."
+        "Recupero statistiche..."
     )
 
     statistics = (
@@ -551,6 +845,7 @@ def main():
         lineups = (
             fetch_probable_lineups()
         )
+
     except Exception as exc:
         print(
             "Titolarità non disponibile:",
@@ -574,6 +869,7 @@ def main():
                 candidate_names
             )
         )
+
     except Exception as exc:
         print(
             "Indisponibili "
@@ -582,6 +878,10 @@ def main():
         )
 
         unavailable = {}
+
+    print(
+        "Arricchimento svincolati..."
+    )
 
     enriched = (
         enrich_free_agents(
@@ -597,6 +897,24 @@ def main():
         calculate_scout_scores(
             enriched,
             previous_players,
+        )
+    )
+
+    print(
+        "Analisi storico 7/30 giorni..."
+    )
+
+    history = (
+        load_scout_history(
+            paths["history"]
+        )
+    )
+
+    players = (
+        enrich_with_history(
+            players,
+            history,
+            now,
         )
     )
 
@@ -628,6 +946,24 @@ def main():
         outside_count,
     )
 
+    maximum_history = max(
+        (
+            player[
+                "history_days"
+            ]
+            for player in players
+            if not player[
+                "outside_list"
+            ]
+        ),
+        default=0,
+    )
+
+    print(
+        "Giorni storico:",
+        maximum_history,
+    )
+
     alerts = find_alerts(
         players,
         previous_players,
@@ -643,7 +979,6 @@ def main():
         == "yes"
     )
 
-    # Digest settimanale ogni lunedì.
     weekly_digest = (
         now.weekday() == 0
     )
@@ -674,12 +1009,16 @@ def main():
             "significativo."
         )
 
+    # Prima salviamo lo storico
+    # del run corrente.
     append_history(
         paths["history"],
         players,
         now,
     )
 
+    # Poi aggiorniamo lo stato
+    # usato per il confronto successivo.
     save_state(
         paths["state"],
         players,
@@ -687,7 +1026,7 @@ def main():
     )
 
     print(
-        "Talent Scout aggiornato."
+        "Talent Scout V2 aggiornato."
     )
 
 
