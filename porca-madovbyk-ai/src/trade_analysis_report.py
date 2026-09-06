@@ -1,5 +1,9 @@
 import html
 import os
+from .trade_scout_synergy import (
+    analyze_trade_scout_synergy,
+    scout_label,
+)
 from collections import defaultdict
 from pathlib import Path
 
