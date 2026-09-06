@@ -28,6 +28,7 @@ jobs:
           python -m py_compile src/repair_rules.py
           python -m py_compile src/outside_list_source.py
           python -m py_compile src/repair_auction_engine.py
+          python -m py_compile src/repair_auction_optimizer.py
           python -m py_compile src/repair_auction_report.py
 
       - name: Run Repair Auction
@@ -44,4 +45,4 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python -c "from src.telegram_bot import send_message; send_message('⚠️ <b>Repair Auction</b>\nErrore durante la preparazione del piano asta.')"
+          python -c "from src.telegram_bot import send_message; send_message('⚠️ <b>Repair Auction</b>\nErrore durante la costruzione del piano d’asta.')"
