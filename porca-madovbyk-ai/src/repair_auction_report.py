@@ -20,6 +20,10 @@ from .outside_list_source import (
 from .repair_auction_engine import (
     build_repair_plan,
 )
+from .repair_auction_optimizer import (
+    AUCTION_STRATEGIES,
+    build_auction_plans,
+)
 from .telegram_bot import (
     send_long_message,
 )
@@ -34,8 +38,10 @@ def safe(value):
     )
 
 
-def format_credits(value):
-    if float(value).is_integer():
+def credits(value):
+    value = float(value)
+
+    if value.is_integer():
         return str(
             int(value)
         )
@@ -102,7 +108,7 @@ def build_report():
 
     except Exception as exc:
         print(
-            "Asterischi non disponibili:",
+            "Asterischi:",
             exc,
         )
 
@@ -150,7 +156,7 @@ def build_report():
         unavailable = {}
 
     print(
-        "Costruzione piano asta..."
+        "Costruzione Repair Plan..."
     )
 
     plan = (
@@ -178,42 +184,35 @@ def build_report():
         )
     )
 
-    cuts = plan[
-        "cuts"
-    ]
+    print(
+        "Ottimizzazione budget..."
+    )
 
-    budget = plan[
-        "budget"
-    ]
-
-    priorities = plan[
-        "priorities"
-    ]
-
-    targets = plan[
-        "targets"
-    ]
-
-    confirmed_foreign = [
-        item
-        for item in cuts
-        if item[
-            "player"
-        ].outside_list
-    ]
-
-    needs_verification = [
-        item
-        for item in cuts
-        if (
-            item[
-                "player"
-            ].catalog_missing
-            and not item[
-                "player"
-            ].outside_list
+    optimization = (
+        build_auction_plans(
+            plan
         )
-    ]
+    )
+
+    budget = (
+        plan["budget"]
+    )
+
+    priorities = (
+        plan[
+            "priorities"
+        ]
+    )
+
+    cuts = (
+        plan["cuts"]
+    )
+
+    plans = (
+        optimization[
+            "plans"
+        ]
+    )
 
     recommended_cuts = [
         item
@@ -236,54 +235,130 @@ def build_report():
         == "🟠 VALUTARE TAGLIO"
     ]
 
-    protected = [
+    foreign_refunds = [
         item
         for item in cuts
         if item[
-            "category"
-        ]
-        == "🔒 INTOCCABILE"
+            "player"
+        ].outside_list
     ]
 
     lines = [
-        "🛠 <b>PORCA MADOVBYK — REPAIR AUCTION V1</b>",
+        "🛠 <b>PORCA MADOVBYK — REPAIR AUCTION V2</b>",
         "",
-        "📜 <b>REGOLE ASTA FEBBRAIO</b>",
-        "• Crediti precedenti azzerati",
-        "• Budget base: <b>250 cr</b>",
-        "• Tagli illimitati",
-        "• Taglio normale: <b>0 cr</b>",
-        "• Cessione estero con *: <b>50% costo d'asta</b>",
-        "",
-        "💰 <b>BUDGET PREVISTO</b>",
+        "💰 <b>BUDGET FEBBRAIO</b>",
         (
             f"Base: "
-            f"<b>{format_credits(budget['base'])} cr</b>"
+            f"<b>"
+            f"{credits(budget['base'])} cr"
+            f"</b>"
         ),
         (
-            f"Rimborsi estero confermati: "
-            f"<b>+{format_credits(budget['confirmed_refunds'])}</b>"
+            f"Rimborsi estero attuali: "
+            f"<b>"
+            f"+{credits(budget['confirmed_refunds'])} cr"
+            f"</b>"
         ),
         (
-            f"Budget attuale stimato: "
-            f"<b>{format_credits(budget['available'])} cr</b>"
+            f"Disponibile stimato: "
+            f"<b>"
+            f"{credits(budget['available'])} cr"
+            f"</b>"
         ),
+        "",
+        (
+            f"📐 Scala prezzi estate → febbraio: "
+            f"<b>"
+            f"{optimization['price_scale']:.3f}"
+            f"</b>"
+        ),
+        "",
+        "🎯 <b>PRIORITÀ REPARTI</b>",
     ]
 
-    if (
-        budget[
-            "possible_extra"
-        ]
-        > 0
+    for role in (
+        "P",
+        "D",
+        "C",
+        "A",
     ):
+        priority = (
+            priorities[
+                role
+            ]
+        )
+
         lines.append(
             (
-                f"Extra potenziale da verificare: "
-                f"+{format_credits(budget['possible_extra'])} cr"
+                f"<b>{role}</b>: "
+                f"{priority:.1f}/100 "
+                f"{priority_label(priority)}"
             )
         )
 
-    if confirmed_foreign:
+    lines.extend(
+        [
+            "",
+            "✂️ <b>SITUAZIONE TAGLI</b>",
+        ]
+    )
+
+    if not recommended_cuts:
+        lines.append(
+            "Nessun taglio forte "
+            "al momento."
+        )
+
+    else:
+        for item in (
+            recommended_cuts[:7]
+        ):
+            player = (
+                item[
+                    "player"
+                ]
+            )
+
+            lines.append(
+                (
+                    f"• <b>"
+                    f"{safe(player.name)}"
+                    f"</b> "
+                    f"({player.role}) "
+                    f"— Cut "
+                    f"{item['cut_score']:.0f}/100 "
+                    f"| TV {item['tv']:.1f}"
+                )
+            )
+
+    if evaluate_cuts:
+        lines.append(
+            ""
+        )
+
+        lines.append(
+            "🟠 <b>Da valutare</b>"
+        )
+
+        for item in (
+            evaluate_cuts[:4]
+        ):
+            player = (
+                item[
+                    "player"
+                ]
+            )
+
+            lines.append(
+                (
+                    f"• {safe(player.name)} "
+                    f"({player.role}) "
+                    f"— Cut "
+                    f"{item['cut_score']:.0f}"
+                )
+            )
+
+    if foreign_refunds:
         lines.extend(
             [
                 "",
@@ -292,266 +367,241 @@ def build_report():
         )
 
         for item in (
-            confirmed_foreign
+            foreign_refunds
         ):
             player = (
-                item["player"]
-            )
-
-            lines.append(
-                (
-                    f"• <b>{safe(player.name)}</b> "
-                    f"— pagato "
-                    f"{player.purchase_cost} "
-                    f"→ rimborso "
-                    f"<b>"
-                    f"{format_credits(item['refund'])}"
-                    f"</b>"
-                )
-            )
-
-    if needs_verification:
-        lines.extend(
-            [
-                "",
-                "⚠️ <b>DA VERIFICARE SU LEGHE</b>",
-            ]
-        )
-
-        for item in (
-            needs_verification
-        ):
-            player = (
-                item["player"]
-            )
-
-            potential = (
-                player.purchase_cost
-                / 2
-            )
-
-            lines.append(
-                (
-                    f"• {safe(player.name)} "
-                    f"— assente dal listone; "
-                    f"se compare con *: "
-                    f"+{format_credits(potential)} cr"
-                )
-            )
-
-    lines.extend(
-        [
-            "",
-            "🎯 <b>PRIORITÀ PER REPARTO</b>",
-        ]
-    )
-
-    for role in (
-        "P",
-        "D",
-        "C",
-        "A",
-    ):
-        value = priorities[
-            role
-        ]
-
-        lines.append(
-            (
-                f"<b>{role}</b>: "
-                f"{value:.1f}/100 "
-                f"{priority_label(value)}"
-            )
-        )
-
-    lines.extend(
-        [
-            "",
-            "✂️ <b>TAGLI CONSIGLIATI</b>",
-        ]
-    )
-
-    if not recommended_cuts:
-        lines.append(
-            "Nessun taglio obbligato "
-            "al momento."
-        )
-
-    for item in (
-        recommended_cuts[:8]
-    ):
-        player = (
-            item["player"]
-        )
-
-        lines.append(
-            (
-                f"• <b>{safe(player.name)}</b> "
-                f"({player.role}) "
-                f"— Cut "
-                f"<b>{item['cut_score']:.1f}</b> "
-                f"| TV {item['tv']:.1f}"
-            )
-        )
-
-        if (
-            item[
-                "replacement"
-            ]
-            is not None
-        ):
-            replacement = (
                 item[
-                    "replacement"
+                    "player"
                 ]
             )
 
             lines.append(
                 (
-                    f"  ↳ miglior svincolato attuale: "
-                    f"{safe(replacement.name)} "
-                    f"(TV "
-                    f"{item['replacement_tv']:.1f}, "
-                    f"Δ "
-                    f"{item['replacement_gap']:+.1f})"
-                )
-            )
-
-    if evaluate_cuts:
-        lines.extend(
-            [
-                "",
-                "🟠 <b>TAGLI DA VALUTARE</b>",
-            ]
-        )
-
-        for item in (
-            evaluate_cuts[:6]
-        ):
-            player = (
-                item["player"]
-            )
-
-            lines.append(
-                (
                     f"• {safe(player.name)} "
-                    f"({player.role}) "
-                    f"— Cut "
-                    f"{item['cut_score']:.1f} "
-                    f"| TV {item['tv']:.1f}"
+                    f"— pagato "
+                    f"{player.purchase_cost} "
+                    f"→ "
+                    f"<b>"
+                    f"+{credits(item['refund'])} cr"
+                    f"</b>"
                 )
             )
 
-    if protected:
-        lines.extend(
-            [
-                "",
-                "🔒 <b>NUCLEO DA PROTEGGERE</b>",
-            ]
-        )
+    # -----------------------------
+    # PIANI D'ASTA
+    # -----------------------------
 
-        for item in (
-            protected[:8]
-        ):
-            player = (
-                item["player"]
-            )
-
-            lines.append(
-                (
-                    f"• {safe(player.name)} "
-                    f"({player.role}) "
-                    f"— TV {item['tv']:.1f}"
-                )
-            )
-
-    lines.extend(
-        [
-            "",
-            "🏹 <b>PRIMI TARGET ASTA</b>",
-            (
-                "<i>Offerta max V1 = stima "
-                "euristica basata sui prezzi "
-                "reali della vostra asta, "
-                "Trade Value, Scout Score "
-                "e priorità del reparto.</i>"
-            ),
-        ]
-    )
-
-    for role in (
-        "P",
-        "D",
-        "C",
-        "A",
+    for strategy in (
+        "aggressive",
+        "balanced",
+        "value",
     ):
-        role_targets = [
-            item
-            for item in targets
-            if item[
-                "player"
-            ].role == role
-        ][:3]
-
-        lines.append(
-            f"\n<b>{role}</b>"
+        auction_plan = (
+            plans[
+                strategy
+            ]
         )
 
-        if not role_targets:
+        config = (
+            AUCTION_STRATEGIES[
+                strategy
+            ]
+        )
+
+        lines.extend(
+            [
+                "",
+                (
+                    f"<b>"
+                    f"{config['label']}"
+                    f"</b>"
+                ),
+            ]
+        )
+
+        if not auction_plan[
+            "actions"
+        ]:
             lines.append(
-                "Nessun target forte."
+                "Nessun piano conveniente."
             )
 
             continue
 
-        for item in (
-            role_targets
+        lines.extend(
+            [
+                (
+                    f"Acquisti: "
+                    f"<b>"
+                    f"{len(auction_plan['actions'])}"
+                    f"</b>"
+                ),
+                (
+                    f"Spesa attesa: "
+                    f"~"
+                    f"{credits(auction_plan['expected_spend'])} cr"
+                ),
+                (
+                    f"Massimo impegnabile: "
+                    f"<b>"
+                    f"{credits(auction_plan['max_commitment'])} cr"
+                    f"</b>"
+                ),
+                (
+                    f"Riserva garantita: "
+                    f"<b>"
+                    f"{credits(auction_plan['reserve'])} cr"
+                    f"</b>"
+                ),
+                (
+                    f"Upgrade tecnico stimato: "
+                    f"<b>"
+                    f"+{auction_plan['total_gain']:.2f}"
+                    f"</b>"
+                ),
+                "",
+            ]
+        )
+
+        for (
+            index,
+            action,
+        ) in enumerate(
+            auction_plan[
+                "actions"
+            ],
+            start=1,
         ):
-            player = (
-                item["player"]
+            target = (
+                action[
+                    "target"
+                ]
+            )
+
+            cut = (
+                action[
+                    "cut"
+                ]
+            )
+
+            max_bid = (
+                action[
+                    "bid_caps"
+                ][strategy]
             )
 
             lines.extend(
                 [
                     (
-                        f"• <b>{safe(player.name)}</b> "
-                        f"({safe(player.club)})"
+                        f"<b>{index}. "
+                        f"{safe(target.name)}</b> "
+                        f"({target.role}, "
+                        f"{safe(target.club)})"
                     ),
                     (
-                        f"  TV {item['tv']:.1f} "
-                        f"| Scout "
-                        f"{item['scout_score']:.1f} "
+                        f"   ✂️ Taglio: "
+                        f"{safe(cut.name)}"
+                    ),
+                    (
+                        f"   TV "
+                        f"{action['cut_tv']:.1f}"
+                        f" → "
+                        f"<b>"
+                        f"{action['target_tv']:.1f}"
+                        f"</b> "
+                        f"| Δ "
+                        f"{action['raw_gain']:+.1f}"
+                    ),
+                    (
+                        f"   Scout "
+                        f"{action['scout_score']:.1f} "
                         f"| Breakout "
-                        f"{item['breakout_score']:.1f}"
+                        f"{action['breakout_score']:.1f}"
                     ),
                     (
-                        f"  Prezzo comparabili: "
-                        f"~{item['market_estimate']:.0f} cr "
-                        f"| <b>MAX V1 "
-                        f"{item['max_bid']} cr</b>"
+                        f"   Prezzo atteso: "
+                        f"~"
+                        f"{credits(action['estimated_price'])} cr"
+                        f" | <b>MAX "
+                        f"{max_bid} cr</b>"
                     ),
                 ]
             )
+
+    # -----------------------------
+    # LETTURA STRATEGICA
+    # -----------------------------
+
+    balanced = (
+        plans[
+            "balanced"
+        ]
+    )
+
+    lines.extend(
+        [
+            "",
+            "🧭 <b>PIANO CONSIGLIATO OGGI</b>",
+        ]
+    )
+
+    if balanced[
+        "actions"
+    ]:
+        lines.append(
+            "⚖️ <b>BILANCIATO</b>"
+        )
+
+        lines.append(
+            (
+                f"Impegno massimo: "
+                f"{credits(balanced['max_commitment'])}"
+                f"/"
+                f"{credits(budget['available'])} cr"
+            )
+        )
+
+        lines.append(
+            (
+                f"Riserva: "
+                f"<b>"
+                f"{credits(balanced['reserve'])} cr"
+                f"</b>"
+            )
+        )
+
+        lines.append(
+            (
+                "Non superare i MAX indicati: "
+                "se un target sale oltre il cap, "
+                "passa all'alternativa."
+            )
+        )
+
+    else:
+        lines.append(
+            "Nessuna operazione abbastanza "
+            "vantaggiosa al momento."
+        )
 
     lines.extend(
         [
             "",
             "ℹ️ <i>"
-            "A febbraio il prezzo pagato in estate "
-            "non è un motivo per trattenere un "
-            "giocatore scarso: sui tagli normali "
-            "quel costo è ormai irrecuperabile. "
-            "Il costo storico conta invece per "
-            "calcolare il rimborso dei giocatori "
-            "ceduti all'estero."
+            "I prezzi V2 sono stime, non "
+            "previsioni certe dell'asta. "
+            "I prezzi estivi vengono normalizzati "
+            "sulla nuova economia da 250 crediti "
+            "e corretti per scarsità, Scout Score, "
+            "Breakout e necessità del reparto."
             "</i>",
             "",
             "⚠️ <i>"
-            "Per prezzi d'acquisto dispari, "
-            "il rimborso viene per ora mantenuto "
-            "matematicamente al 50% "
-            "(es. 51 → 25,5) finché non definiamo "
-            "la regola di arrotondamento della lega."
+            "Il massimo indicato è un tetto: "
+            "non è un invito a raggiungerlo. "
+            "Se il giocatore costa meno, "
+            "i crediti risparmiati restano "
+            "disponibili per i target successivi."
             "</i>",
         ]
     )
@@ -569,7 +619,7 @@ def main():
     )
 
     print(
-        "Repair Auction V1 completata."
+        "Repair Auction V2 completata."
     )
 
 
