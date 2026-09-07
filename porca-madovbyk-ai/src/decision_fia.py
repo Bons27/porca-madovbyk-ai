@@ -1,13 +1,11 @@
 """FIA V3 adapter shared by the decision engines.
 
-The dashboard already shows FIA next to every player.  This module makes the
-same signal available to lineup, trade, scouting and repair-auction models
-without duplicating the historical-model logic in every engine.
+This module exposes the same FIA signal to lineup, trade, scouting and repair
+auction models and also provides counterfactual deltas for explainability.
 
-The FIA is deliberately a secondary signal: current form, availability and
-fantasy production must continue to dominate decisions.  A positive FIA can
-therefore break close calls, but it cannot turn an unavailable or poor player
-into a top recommendation by itself.
+FIA remains deliberately secondary: current form, availability, fantasy
+production and market value must dominate.  The explainability helpers report
+how much a player's score changes compared with a neutral FIA=50 context.
 """
 
 from pathlib import Path
@@ -18,6 +16,12 @@ from .fantacalcio_source import normalize_name
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CACHE_TTL_SECONDS = 1800
+
+ENGINE_WEIGHTS = {
+    "formation": 0.05,
+    "trade": 0.07,
+    "scout": 0.08,
+}
 
 _CACHE = {
     "loaded_at": 0.0,
@@ -44,7 +48,7 @@ def clear_decision_fia_cache():
 def get_decision_fia_context(force=False):
     """Return the FIA V3 player context, cached for 30 minutes.
 
-    Failure is intentionally non-fatal.  Every decision model can continue
+    Failure is intentionally non-fatal. Every decision model can continue
     with a neutral FIA when live sources are temporarily unavailable.
     """
 
@@ -90,13 +94,17 @@ def player_fia(name):
         "model": data.get("fia_model", "V3"),
         "history": _safe_float(data.get("fia_history")),
         "current": _safe_float(data.get("fia_current")),
+        "average_vote": _safe_float(data.get("average_vote")),
+        "games": int(_safe_float(data.get("games"), 0) or 0),
+        "role": data.get("role"),
+        "club": data.get("club"),
     }
 
 
 def fia_decision_score(name):
     """Map FIA points of MV to a neutral-at-50 score for weighted models.
 
-    +0.10 FIA -> 60/100, -0.10 -> 40/100.  Extreme values are capped so FIA
+    +0.10 FIA -> 60/100, -0.10 -> 40/100. Extreme values are capped so FIA
     remains a supporting signal rather than dominating the core metrics.
     """
 
@@ -112,11 +120,45 @@ def fia_decision_score(name):
     )
 
 
+def fia_weighted_delta(name, engine):
+    """Return the score change caused by FIA versus a neutral FIA=50.
+
+    The returned value is expressed in the native 0-100 score points of the
+    selected engine. Example: FIA Score 60 with formation weight 5% produces
+    +0.50 Start Score points versus a neutral FIA context.
+    """
+
+    if engine not in ENGINE_WEIGHTS:
+        raise ValueError(f"Motore FIA sconosciuto: {engine}")
+
+    score = fia_decision_score(name)
+    weight = ENGINE_WEIGHTS[engine]
+
+    return round(
+        (score - 50.0) * weight,
+        3,
+    )
+
+
+def fia_start_score_delta(name):
+    return fia_weighted_delta(name, "formation")
+
+
+def fia_trade_value_delta(name):
+    return fia_weighted_delta(name, "trade")
+
+
+def fia_scout_score_delta(name):
+    return fia_weighted_delta(name, "scout")
+
+
 def fia_projection_adjustment(name, role):
     """Small expected-points correction derived from FIA.
 
-    FIA is measured on pure vote, not directly on fantasy points.  The
-    correction is therefore intentionally conservative and capped at ±0.25.
+    This helper is kept for future calibrated projection work. FIA is measured
+    on pure vote, not directly on fantasy points, so the correction is capped.
+    The current lineup engine does not add this on top of the 5% Start Score
+    weight, avoiding double counting.
     """
 
     fia = player_fia(name)["fia"]
@@ -135,3 +177,22 @@ def fia_projection_adjustment(name, role):
         max(-0.25, min(0.25, fia * role_multiplier)),
         3,
     )
+
+
+def fia_impact_label(name, engine, digits=2):
+    """Compact human-readable FIA impact label for reports and dashboard."""
+
+    data = player_fia(name)
+    fia = data.get("fia")
+    delta = fia_weighted_delta(name, engine)
+
+    if fia is None:
+        return "FIA n/d · impatto neutro"
+
+    metric = {
+        "formation": "SS",
+        "trade": "TV",
+        "scout": "Scout",
+    }[engine]
+
+    return f"FIA {fia:+.2f} · Δ{metric} FIA {delta:+.{digits}f}"
