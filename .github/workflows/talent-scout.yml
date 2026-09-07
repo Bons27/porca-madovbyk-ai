@@ -46,6 +46,7 @@ jobs:
         run: |
           python -m py_compile src/decision_fia.py
           python -m py_compile src/player_context_v3.py
+          python -m py_compile src/text_enrichment.py
           python -m py_compile src/talent_scout.py
           python -m py_compile src/talent_scout_fia.py
           python -m py_compile src/scout_history_analysis.py
