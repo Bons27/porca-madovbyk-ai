@@ -47,6 +47,11 @@ if not exist ".venv\Scripts\python.exe" (
 )
 
 echo.
+echo Pulisco la cache Python locale...
+if exist "src\__pycache__" rmdir /s /q "src\__pycache__"
+if exist "__pycache__" rmdir /s /q "__pycache__"
+
+echo.
 echo Preparo Dashboard V5.2 e FIA spiegabile...
 ".venv\Scripts\python.exe" -m src.build_dashboard_v5
 if errorlevel 1 goto :error
@@ -79,8 +84,8 @@ if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\talent_scout_report_fia.py
 if errorlevel 1 goto :error
 
-REM py_compile controlla solo la sintassi: questo test verifica anche gli import reali.
-".venv\Scripts\python.exe" -c "from src.decision_fia import fia_start_score_delta, fia_trade_value_delta, fia_scout_score_delta; from src.decision_explainable_reports import build_formation_report, build_trade_report; print('FIA V5.2 import check: OK')"
+REM Questo test verifica gli import reali e stampa il file effettivamente caricato.
+".venv\Scripts\python.exe" -c "import src.decision_fia as d; from src.decision_fia import fia_start_score_delta, fia_trade_value_delta, fia_scout_score_delta; from src.decision_explainable_reports import build_formation_report, build_trade_report; print('FIA module:', d.__file__); print('FIA version:', getattr(d, 'MODULE_VERSION', 'n/d')); print('FIA V5.2 import check: OK')"
 if errorlevel 1 goto :stale_code
 
 echo.
