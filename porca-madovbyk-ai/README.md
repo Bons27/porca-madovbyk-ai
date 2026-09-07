@@ -1,56 +1,68 @@
 # Porca MaDovbyk AI
 
-Agente automatico per la gestione della squadra di Fantacalcio **Porca MaDovbyk**.
+Agente automatico gratuito per la gestione della squadra di Fantacalcio **Porca MaDovbyk**.
 
-## Stato del progetto
+## Versione stabile
 
-V1 — Step 1 completato:
+**Dashboard V5.1 · FIA V3 decision engine**
 
-- rosa importata dal CSV di Leghe Fantacalcio;
-- configurazione della lega salvata nel codice;
-- soglie gol 66 / 71 / 76 / ... implementate;
-- modificatore difesa implementato;
-- test automatici GitHub Actions predisposti.
+La parte di explainability FIA V5.2 è stata accantonata dal percorso stabile. Il FIA V3 resta attivo nei motori decisionali già collaudati.
 
-## Regole principali
+## Funzioni principali
 
-- Modalità: Classic
-- 8 partecipanti
-- Moduli: 3-4-3, 3-5-2, 4-4-2, 4-3-3, 4-5-1, 5-4-1, 5-3-2
-- 5 sostituzioni
-- Modificatore difesa con portiere incluso
-- Gol: 1° a 66, 2° a 71, poi +1 gol ogni 5 punti
+- Formazione consigliata per Campionato e Battle Royale.
+- Trade Analyzer per scambi specifici.
+- Talent Scout degli svincolati con storico e trend.
+- Asta di riparazione di febbraio con tagli, budget e target.
+- Simulatore asta contro le altre 7 squadre.
+- Control Center riepilogativo.
+- Storico FIA allenatore × ruolo.
+- Notifiche automatiche Telegram in uscita.
+- Automazioni GitHub Actions per report e scouting.
 
-### Modificatore difesa
+## Regole lega
 
-Si applica solo se dopo le sostituzioni restano almeno 4 difensori e almeno 4 difensori hanno un voto valido.
-Con il portiere incluso, la media usa:
+- Modalità Classic.
+- 8 partecipanti.
+- Rosa: 3 P, 8 D, 8 C, 6 A.
+- Moduli: 3-4-3, 3-5-2, 4-4-2, 4-3-3, 4-5-1, 5-4-1, 5-3-2.
+- 5 sostituzioni.
+- Bonus: assist +1, clean sheet +1, rigore parato +3, gol +3, rigore segnato +3.
+- Malus: gol subito -1, rigore sbagliato -3, autogol -2, espulsione -1, ammonizione -0.5.
+- Modificatore difesa con portiere incluso: +1 / +3 / +6 in base alla media dei voti puri.
+- Soglie gol: 66, 71, poi +1 gol ogni 5 punti.
 
-- voto puro del portiere;
-- migliori 3 voti puri dei difensori.
+## Avvio quotidiano
 
-Bonus:
+Dalla cartella `porca-madovbyk-ai`:
 
-- media < 6: 0
-- 6 <= media < 6.5: +1
-- 6.5 <= media < 7: +3
-- media >= 7: +6
+- `Porca MaDovbyk AI.vbs` → avvio silenzioso, senza finestra nera.
+- `Avvia Porca MaDovbyk AI.bat` → avvio diagnostico, utile se qualcosa non funziona.
+- `Chiudi Porca MaDovbyk AI.bat` → chiude la Dashboard locale sulla porta 8501.
 
-## Avvio locale
+La Dashboard viene aperta su:
 
-Dalla cartella del progetto:
+`http://localhost:8501`
 
-```bash
-python -m src.main
-```
+## Aggiornamento
 
-## Test
+Se Git non è disponibile nel PATH, aggiornare con GitHub Desktop:
 
-```bash
-python -m unittest discover -s tests -v
-```
+1. Fetch origin.
+2. Pull origin, se disponibile.
+3. Avviare nuovamente la Dashboard.
+
+## Automazioni
+
+- **Agente Automatico**: controlla le finestre pre-giornata e invia il report Telegram quando previsto.
+- **Talent Scout**: aggiorna quotidianamente gli svincolati e lo storico scouting.
+- **FIA History**: aggiorna lo storico FIA quando sono disponibili nuove giornate.
+- **Dashboard V5.1 Smoke Test**: verifica che il runtime stabile venga generato e compilato correttamente.
+
+## Dati
+
+Il progetto usa dati pubblici Fantacalcio/Serie A, file di lega locali e dataset storici costruiti dalle stagioni precedenti. I file generati localmente, l'ambiente `.venv` e le cache Python non vengono versionati.
 
 ## Sicurezza
 
-Non caricare mai token Telegram, chiavi API o password direttamente nel repository.
-Useremo **GitHub Actions Secrets** nei prossimi passaggi.
+Token Telegram, chiavi API e password non devono essere inseriti nel codice o nei file del repository. I segreti operativi restano nei GitHub Actions Secrets.
