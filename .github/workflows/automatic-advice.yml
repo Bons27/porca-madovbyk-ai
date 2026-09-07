@@ -42,19 +42,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Check FIA decision engine syntax
+      - name: Check stable decision engine syntax
         working-directory: porca-madovbyk-ai
         run: |
           python -m py_compile src/decision_fia.py
-          python -m py_compile src/decision_explainable_reports.py
-          python -m py_compile src/explainable_reports_v52.py
-          python -m py_compile src/control_center_explainable.py
-          python -m py_compile src/repair_report_explainable.py
-          python -m py_compile src/text_enrichment.py
-          python -m py_compile src/auto_advice_explainable.py
           python -m py_compile src/player_context_v3.py
           python -m py_compile src/start_score.py
           python -m py_compile src/trade_value.py
+          python -m py_compile src/final_advice_report.py
+          python -m py_compile src/auto_advice.py
 
       - name: Check deadline and generate advice
         working-directory: porca-madovbyk-ai
@@ -62,7 +58,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           AUTO_FORCE: ${{ inputs.force }}
-        run: python -m src.auto_advice_explainable
+        run: python -m src.auto_advice
 
       - name: Save automation state
         working-directory: porca-madovbyk-ai
@@ -72,9 +68,7 @@ jobs:
             git config user.email "actions@github.com"
 
             git add data/automation_state.json
-
             git commit -m "Update automation state [skip ci]"
-
             git push
           else
             echo "Nessuno stato da aggiornare."
