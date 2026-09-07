@@ -80,7 +80,7 @@ def build():
     text = replace_once(
         text,
         "    from src.repair_auction_report import build_report",
-        "    from src.decision_explainable_reports import build_repair_report as build_report",
+        "    from src.repair_report_explainable import build_report",
         "Repair explainable",
     )
 
