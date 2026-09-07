@@ -67,35 +67,35 @@ def build():
     text = replace_once(
         text,
         "    from src.trade_analysis_report import build_report",
-        "    from src.decision_explainable_reports import build_trade_report as build_report",
+        "    from src.explainable_reports_v52 import build_trade_report as build_report",
         "Trade explainable",
     )
 
     text = replace_once(
         text,
         "    from src.final_advice_report import build_report",
-        "    from src.decision_explainable_reports import build_formation_report as build_report",
+        "    from src.explainable_reports_v52 import build_formation_report as build_report",
         "Formation explainable",
     )
 
     text = replace_once(
         text,
         "    from src.repair_auction_report import build_report",
-        "    from src.repair_report_explainable import build_report",
+        "    from src.explainable_reports_v52 import build_repair_report as build_report",
         "Repair explainable",
     )
 
     text = replace_once(
         text,
         "    from src.repair_auction_simulation_report import build_report",
-        "    from src.decision_explainable_reports import build_simulation_report as build_report",
+        "    from src.explainable_reports_v52 import build_simulation_report as build_report",
         "Simulation explainable",
     )
 
     text = replace_once(
         text,
         "    from src.dashboard_report import build_report",
-        "    from src.control_center_explainable import build_report",
+        "    from src.explainable_reports_v52 import build_control_center_report as build_report",
         "Control Center explainable",
     )
 
