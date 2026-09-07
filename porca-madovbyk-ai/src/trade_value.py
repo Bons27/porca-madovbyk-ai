@@ -1,5 +1,9 @@
 from collections import defaultdict
 
+from .decision_fia import (
+    fia_decision_score,
+    player_fia,
+)
 from .fantacalcio_source import (
     find_player,
     normalize_name,
@@ -159,8 +163,9 @@ def build_trade_values(
     """
     Crea Trade Value 0-100.
 
-    Il confronto viene effettuato
-    all'interno dello stesso ruolo.
+    Il confronto viene effettuato all'interno dello stesso ruolo. FIA V3
+    entra come segnale di contesto al 7%: sufficiente per distinguere profili
+    vicini, ma non abbastanza da sovrascrivere FVM, rendimento e titolarità.
     """
 
     by_role = defaultdict(list)
@@ -186,13 +191,23 @@ def build_trade_values(
             player.fantasy_average,
         )
 
+        fia_data = player_fia(
+            player.name
+        )
+
         item = {
             "player": player,
-            "availability": (
-                availability
-            ),
+            "availability": availability,
             "reg_mv": reg_mv,
             "reg_fm": reg_fm,
+            "fia": fia_data.get("fia"),
+            "fia_score": fia_decision_score(
+                player.name
+            ),
+            "fia_confidence": fia_data.get(
+                "confidence",
+                0.0,
+            ),
         }
 
         enriched.append(
@@ -277,15 +292,19 @@ def build_trade_values(
                 )
             )
 
+            # V3 weights.  The old core remains dominant (93%).
             score = (
-                fvm_score * 0.35
-                + quote_score * 0.10
-                + fm_score * 0.25
+                fvm_score * 0.33
+                + quote_score * 0.08
+                + fm_score * 0.24
                 + mv_score * 0.10
                 + item[
                     "availability"
-                ] * 0.15
+                ] * 0.13
                 + usage_score * 0.05
+                + item[
+                    "fia_score"
+                ] * 0.07
             )
 
             key = normalize_name(
@@ -322,6 +341,21 @@ def build_trade_values(
                 ),
                 "reg_mv": round(
                     item["reg_mv"],
+                    3,
+                ),
+                "fia": item.get("fia"),
+                "fia_score": round(
+                    item["fia_score"],
+                    1,
+                ),
+                "fia_confidence": round(
+                    float(
+                        item.get(
+                            "fia_confidence",
+                            0.0,
+                        )
+                        or 0.0
+                    ),
                     3,
                 ),
             }
