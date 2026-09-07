@@ -1,21 +1,17 @@
-name: FIA Smoke Test
+name: Dashboard V5.1 Smoke Test
 
 on:
   push:
     paths:
       - "porca-madovbyk-ai/app_v4.py"
       - "porca-madovbyk-ai/src/build_dashboard_v5.py"
+      - "porca-madovbyk-ai/src/player_context_v3.py"
+      - "porca-madovbyk-ai/src/fia_coach_dashboard.py"
       - "porca-madovbyk-ai/src/decision_fia.py"
-      - "porca-madovbyk-ai/src/decision_explainable_reports.py"
-      - "porca-madovbyk-ai/src/explainable_reports_v52.py"
-      - "porca-madovbyk-ai/src/control_center_explainable.py"
-      - "porca-madovbyk-ai/src/repair_report_explainable.py"
-      - "porca-madovbyk-ai/src/text_enrichment.py"
       - "porca-madovbyk-ai/src/start_score.py"
       - "porca-madovbyk-ai/src/trade_value.py"
       - "porca-madovbyk-ai/src/talent_scout_fia.py"
       - "porca-madovbyk-ai/src/talent_scout_report_fia.py"
-      - "porca-madovbyk-ai/src/auto_advice_explainable.py"
       - ".github/workflows/fia-smoke-test.yml"
 
   workflow_dispatch:
@@ -37,22 +33,23 @@ jobs:
         working-directory: porca-madovbyk-ai
         run: pip install -r requirements.txt
 
-      - name: Build Dashboard V5.2
+      - name: Build stable Dashboard V5.1
         working-directory: porca-madovbyk-ai
         run: python -m src.build_dashboard_v5
 
-      - name: Compile FIA modules
+      - name: Compile stable modules
         working-directory: porca-madovbyk-ai
         run: |
           python -m py_compile _app_runtime_v5.py
+          python -m py_compile src/player_context_v3.py
+          python -m py_compile src/fia_coach_dashboard.py
           python -m py_compile src/decision_fia.py
-          python -m py_compile src/decision_explainable_reports.py
-          python -m py_compile src/explainable_reports_v52.py
-          python -m py_compile src/control_center_explainable.py
-          python -m py_compile src/repair_report_explainable.py
-          python -m py_compile src/text_enrichment.py
           python -m py_compile src/start_score.py
           python -m py_compile src/trade_value.py
           python -m py_compile src/talent_scout_fia.py
           python -m py_compile src/talent_scout_report_fia.py
-          python -m py_compile src/auto_advice_explainable.py
+
+      - name: Verify stable FIA core imports
+        working-directory: porca-madovbyk-ai
+        run: |
+          python -c "from src.decision_fia import player_fia, fia_decision_score; print('Dashboard V5.1 core: OK')"
