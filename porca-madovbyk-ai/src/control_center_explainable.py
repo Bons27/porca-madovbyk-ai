@@ -32,6 +32,6 @@ def build_report():
 
     return _insert_before(
         report,
-        "🏆 <b>COMPETIZIONI</b>",
+        "📈 <b>COMPETIZIONI</b>",
         "\n".join(lines),
     )
