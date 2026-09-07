@@ -3,8 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ==========================================
-echo   Porca MaDovbyk AI - Avvio Dashboard
-
+echo   Porca MaDovbyk AI - Dashboard V3
 echo ==========================================
 
 where git >nul 2>&1
@@ -47,9 +46,9 @@ if not exist ".venv\Scripts\python.exe" (
 )
 
 echo.
-echo Avvio Porca MaDovbyk AI...
+echo Avvio Porca MaDovbyk AI V3...
 start "" http://localhost:8501
-".venv\Scripts\python.exe" -m streamlit run app.py --server.port 8501
+".venv\Scripts\python.exe" -m streamlit run app_v3.py --server.port 8501
 
 goto :end
 
