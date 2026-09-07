@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ==========================================
-echo   Porca MaDovbyk AI - Dashboard V5
+echo   Porca MaDovbyk AI - Dashboard V5 + FIA Decision Engine
 echo ==========================================
 
 where git >nul 2>&1
@@ -50,13 +50,22 @@ echo Preparo Dashboard V5 e FIA storico...
 ".venv\Scripts\python.exe" -m src.build_dashboard_v5
 if errorlevel 1 goto :error
 
+echo Verifico motori FIA...
 ".venv\Scripts\python.exe" -m py_compile _app_runtime_v5.py
 if errorlevel 1 goto :error
-
 ".venv\Scripts\python.exe" -m py_compile src\fia_coach_dashboard.py
 if errorlevel 1 goto :error
-
 ".venv\Scripts\python.exe" -m py_compile src\player_context_v3.py
+if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\decision_fia.py
+if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\start_score.py
+if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\trade_value.py
+if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\talent_scout_fia.py
+if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\talent_scout_report_fia.py
 if errorlevel 1 goto :error
 
 echo.
