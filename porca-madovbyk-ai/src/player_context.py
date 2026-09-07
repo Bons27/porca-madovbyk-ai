@@ -97,8 +97,6 @@ def calculate_fia_details(records):
 
         group_mv = weighted / games
         raw_delta = group_mv - baseline
-
-        # Shrinkage iniziale: evita letture aggressive con pochi voti.
         reliability = games / (games + 12.0)
         fia = _clamp(raw_delta * reliability)
 
@@ -171,11 +169,8 @@ def coach_for_round(assignments, season, club, matchday):
     return None
 
 
-def current_coach_map(assignments, season=CURRENT_SEASON):
-    """
-    Restituisce la guida tecnica più recente registrata per ogni club.
-    Le righe del CSV vengono aggiornate quando cambia una panchina.
-    """
+def current_coach_entry_map(assignments, season=CURRENT_SEASON):
+    """Ultima assegnazione registrata per ogni club nella stagione."""
 
     latest = {}
 
@@ -189,9 +184,13 @@ def current_coach_map(assignments, season=CURRENT_SEASON):
         if previous is None or row["start_round"] > previous["start_round"]:
             latest[key] = row
 
+    return latest
+
+
+def current_coach_map(assignments, season=CURRENT_SEASON):
     return {
         club: row["coach"]
-        for club, row in latest.items()
+        for club, row in current_coach_entry_map(assignments, season).items()
     }
 
 
@@ -247,8 +246,6 @@ def historical_coach_profile(profiles_data, coach, role):
 def build_live_records(root=None):
     """
     Costruisce l'universo corrente dei giocatori con ruolo, club, PV e MV.
-    Usa le rose della lega per i 200 giocatori acquistati e free_agents.csv
-    per gli altri, aggiornando i valori con le statistiche Fantacalcio live.
     """
 
     root = Path(root or Path(__file__).resolve().parents[1])
@@ -268,7 +265,6 @@ def build_live_records(root=None):
         statistics,
     )["players"]
 
-    # Deduplica prudenziale: il giocatore della rosa ha precedenza.
     records_by_key = {}
 
     for player in dataset:
@@ -371,7 +367,7 @@ def context_from_records(records, root=None):
 
     current_details = calculate_fia_details(records)
     assignments = load_coach_assignments(root)
-    coaches = current_coach_map(assignments, CURRENT_SEASON)
+    coach_entries = current_coach_entry_map(assignments, CURRENT_SEASON)
     profiles_data = load_fia_coach_profiles(root)
 
     context = {}
@@ -388,11 +384,13 @@ def context_from_records(records, root=None):
 
         current = None
         coach = None
+        coach_entry = None
         history = None
 
         if club and role in VALID_ROLES:
             current = current_details.get((club.casefold(), role))
-            coach = coaches.get(club.casefold())
+            coach_entry = coach_entries.get(club.casefold())
+            coach = coach_entry.get("coach") if coach_entry else None
             history = historical_coach_profile(
                 profiles_data,
                 coach,
@@ -400,6 +398,16 @@ def context_from_records(records, root=None):
             )
 
         current_fia = current.get("fia") if current else None
+
+        # Dopo un cambio allenatore non attribuiamo al nuovo tecnico i voti
+        # accumulati dal predecessore. Usiamo solo il campione del suo stint,
+        # ricostruito dagli snapshot incrementali. Prima del suo esordio: n/d.
+        if coach_entry and coach_entry.get("start_round", 1) > 1:
+            if history and history.get("current_season_fia") is not None:
+                current_fia = _safe_float(history.get("current_season_fia"))
+            else:
+                current_fia = None
+
         history_fia = history.get("fia") if history else None
         history_confidence = (
             _safe_float(history.get("confidence"))
@@ -407,8 +415,6 @@ def context_from_records(records, root=None):
             else 0.0
         )
 
-        # FIA V2: contesto corrente + memoria storica dell'allenatore sul ruolo.
-        # La componente storica cresce gradualmente con la confidenza del campione.
         if current_fia is not None and history_fia is not None:
             history_weight = min(
                 0.50,
@@ -438,6 +444,11 @@ def context_from_records(records, root=None):
             "games": _safe_int(item.get("games")),
             "average_vote": _safe_float(item.get("average_vote")),
             "coach": coach,
+            "coach_start_round": (
+                coach_entry.get("start_round")
+                if coach_entry
+                else None
+            ),
             "fia": fia,
             "fia_current": current_fia,
             "fia_history": history_fia,
@@ -468,6 +479,7 @@ def player_context(context, name):
             "games": 0,
             "average_vote": 0.0,
             "coach": None,
+            "coach_start_round": None,
             "fia": None,
             "fia_current": None,
             "fia_history": None,
@@ -518,6 +530,7 @@ def fia_breakdown(context, name):
 
     return {
         "coach": data.get("coach"),
+        "coach_start_round": data.get("coach_start_round"),
         "current": data.get("fia_current"),
         "history": data.get("fia_history"),
         "final": data.get("fia"),
