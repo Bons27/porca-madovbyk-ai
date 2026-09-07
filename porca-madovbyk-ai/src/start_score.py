@@ -1,5 +1,6 @@
 from .decision_fia import (
     fia_decision_score,
+    fia_start_score_delta,
     player_fia,
 )
 
@@ -253,6 +254,9 @@ def calculate_start_score(
     fia_score = fia_decision_score(
         player.name
     )
+    fia_delta = fia_start_score_delta(
+        player.name
+    )
 
     # Infortunato o squalificato:
     # non deve mai emergere come scelta.
@@ -266,6 +270,7 @@ def calculate_start_score(
             "matchup": 0.0,
             "fia": fia_value,
             "fia_score": fia_score,
+            "fia_delta": 0.0,
         }
 
     form = calculate_form_score(
@@ -345,6 +350,10 @@ def calculate_start_score(
         ),
         "fia": fia_value,
         "fia_score": fia_score,
+        "fia_delta": round(
+            fia_delta,
+            2,
+        ),
     }
 
 
