@@ -4,7 +4,7 @@ This module exposes the same FIA signal to lineup, trade, scouting and repair
 auction models and also provides counterfactual deltas for explainability.
 
 FIA remains deliberately secondary: current form, availability, fantasy
-production and market value must dominate.  The explainability helpers report
+production and market value must dominate. The explainability helpers report
 how much a player's score changes compared with a neutral FIA=50 context.
 """
 
@@ -14,6 +14,7 @@ from time import monotonic
 from .fantacalcio_source import normalize_name
 
 
+MODULE_VERSION = "V5.2.1"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CACHE_TTL_SECONDS = 1800
 
@@ -102,11 +103,7 @@ def player_fia(name):
 
 
 def fia_decision_score(name):
-    """Map FIA points of MV to a neutral-at-50 score for weighted models.
-
-    +0.10 FIA -> 60/100, -0.10 -> 40/100. Extreme values are capped so FIA
-    remains a supporting signal rather than dominating the core metrics.
-    """
+    """Map FIA points of MV to a neutral-at-50 score for weighted models."""
 
     data = player_fia(name)
     fia = data["fia"]
@@ -121,12 +118,7 @@ def fia_decision_score(name):
 
 
 def fia_weighted_delta(name, engine):
-    """Return the score change caused by FIA versus a neutral FIA=50.
-
-    The returned value is expressed in the native 0-100 score points of the
-    selected engine. Example: FIA Score 60 with formation weight 5% produces
-    +0.50 Start Score points versus a neutral FIA context.
-    """
+    """Return the score change caused by FIA versus neutral FIA=50."""
 
     if engine not in ENGINE_WEIGHTS:
         raise ValueError(f"Motore FIA sconosciuto: {engine}")
@@ -153,13 +145,7 @@ def fia_scout_score_delta(name):
 
 
 def fia_projection_adjustment(name, role):
-    """Small expected-points correction derived from FIA.
-
-    This helper is kept for future calibrated projection work. FIA is measured
-    on pure vote, not directly on fantasy points, so the correction is capped.
-    The current lineup engine does not add this on top of the 5% Start Score
-    weight, avoiding double counting.
-    """
+    """Small expected-points correction derived from FIA."""
 
     fia = player_fia(name)["fia"]
 
