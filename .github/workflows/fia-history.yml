@@ -44,6 +44,11 @@ jobs:
           python -m py_compile src/player_context.py
           python -m py_compile src/fia_history.py
           python -m py_compile src/fia_history_update.py
+          python -m py_compile tests/test_fia_history.py
+
+      - name: Run FIA unit tests
+        working-directory: porca-madovbyk-ai
+        run: python -m unittest tests.test_fia_history
 
       - name: Update FIA history
         working-directory: porca-madovbyk-ai
