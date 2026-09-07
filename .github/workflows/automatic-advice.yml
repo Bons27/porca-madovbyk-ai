@@ -46,6 +46,8 @@ jobs:
         working-directory: porca-madovbyk-ai
         run: |
           python -m py_compile src/decision_fia.py
+          python -m py_compile src/decision_explainable_reports.py
+          python -m py_compile src/auto_advice_explainable.py
           python -m py_compile src/player_context_v3.py
           python -m py_compile src/start_score.py
           python -m py_compile src/trade_value.py
@@ -56,7 +58,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           AUTO_FORCE: ${{ inputs.force }}
-        run: python -m src.auto_advice
+        run: python -m src.auto_advice_explainable
 
       - name: Save automation state
         working-directory: porca-madovbyk-ai
