@@ -57,6 +57,27 @@ def build():
         "pagina FIA Allenatori",
     )
 
+    text = replace_once(
+        text,
+        'page = st.session_state["page"]\n\n\n# ============================================================\n# PAGINE',
+        (
+            'page = st.session_state["page"]\n\n\n'
+            'if page != "Home":\n'
+            '    nav_home_col, nav_space_col = st.columns([1, 5])\n'
+            '    with nav_home_col:\n'
+            '        st.button(\n'
+            '            "← Home",\n'
+            '            key=f"top_back_home_{page}",\n'
+            '            use_container_width=True,\n'
+            '            on_click=go_to,\n'
+            '            args=("Home",),\n'
+            '        )\n\n\n'
+            '# ============================================================\n'
+            '# PAGINE'
+        ),
+        "pulsante Home superiore",
+    )
+
     text = text.replace(
         'st.caption("Dashboard V4 · MV + FIA")',
         'st.caption("Dashboard V5.1 · FIA V3 decision engine")',
@@ -78,6 +99,21 @@ def build():
     )
     if banner_old in text:
         text = text.replace(banner_old, banner_new, 1)
+
+    text += (
+        '\n\n# Navigazione rapida a fine pagina.\n'
+        'if st.session_state.get("page") != "Home":\n'
+        '    st.divider()\n'
+        '    bottom_home_col, bottom_space_col = st.columns([1, 5])\n'
+        '    with bottom_home_col:\n'
+        '        st.button(\n'
+        '            "🏠 Torna alla Home",\n'
+        '            key=f"bottom_back_home_{st.session_state.get(\'page\')}",\n'
+        '            use_container_width=True,\n'
+        '            on_click=go_to,\n'
+        '            args=("Home",),\n'
+        '        )\n'
+    )
 
     TARGET.write_text(text, encoding="utf-8")
     print(f"Dashboard V5.1 generata: {TARGET.name}")
