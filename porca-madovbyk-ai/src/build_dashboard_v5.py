@@ -36,7 +36,8 @@ def build():
             "\n\nfrom src.decision_fia import (\n"
             "    fia_scout_score_delta,\n"
             "    fia_trade_value_delta,\n"
-            ")\n\n"
+            ")\n"
+            "from src.text_enrichment import annotate_text\n\n"
             "PROJECT_ROOT = Path(__file__).resolve().parent"
         ),
         "import explainability FIA",
