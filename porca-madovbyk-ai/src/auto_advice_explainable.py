@@ -1,7 +1,7 @@
-"""Automatic-advice entrypoint with FIA explainability enabled."""
+"""Automatic-advice entrypoint with FIA V5.2 explainability enabled."""
 
 from . import auto_advice
-from .decision_explainable_reports import build_formation_report
+from .explainable_reports_v52 import build_formation_report
 
 
 auto_advice.build_report = build_formation_report
