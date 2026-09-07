@@ -1,2 +1,16 @@
-# Generated locally by src.build_dashboard_v5
+# Generated dashboard runtime
 _app_runtime_v5.py
+
+# Local Python environment
+.venv/
+__pycache__/
+*.pyc
+
+# Local logs and temporary files
+*.log
+*.tmp
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
