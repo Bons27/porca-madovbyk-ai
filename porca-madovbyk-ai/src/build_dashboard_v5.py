@@ -46,7 +46,7 @@ def build():
     text = replace_once(
         text,
         '    st.info(\n        "Da V4 ogni giocatore viene mostrato con **MV** e **FIA**. "\n        "FIA positivo = il ruolo sta rendendo sopra la media di ruolo della Serie A nel contesto tecnico del club; negativo = sotto media."\n    )',
-        '    st.info(\n        "Dashboard V5: ogni giocatore mantiene **MV** e **FIA V3**. "\n        "Il FIA finale combina il rendimento corrente 2026/27 con lo storico allenatore×ruolo ricostruito dal 2023/24 al 2025/26."\n    )',
+        '    st.info(\n        "Dashboard V5.1: ogni giocatore mantiene **MV** e **FIA V3**. "\n        "Il FIA combina corrente 2026/27 e storico allenatore×ruolo 2023/24–2025/26 e ora entra anche nei motori di **Formazione, Trade, Talent Scout e Asta**."\n    )',
         "descrizione Home V5",
     )
 
@@ -59,11 +59,11 @@ def build():
 
     text = text.replace(
         'st.caption("Dashboard V4 · MV + FIA")',
-        'st.caption("Dashboard V5 · FIA V3 storico")',
+        'st.caption("Dashboard V5.1 · FIA V3 decision engine")',
     )
     text = text.replace(
         'c4.metric("Versione", "Dashboard V4")',
-        'c4.metric("Versione", "Dashboard V5")',
+        'c4.metric("Versione", "Dashboard V5.1")',
     )
 
     banner_old = (
@@ -73,14 +73,14 @@ def build():
     )
     banner_new = (
         '    st.caption(\n'
-        '        "FIA V3 = corrente 2026/27 + storico allenatore×ruolo 2023/24–2025/26."\n'
+        '        "FIA V3 = corrente + storico allenatore×ruolo; segnale attivo nei motori decisionali."\n'
         '    )'
     )
     if banner_old in text:
         text = text.replace(banner_old, banner_new, 1)
 
     TARGET.write_text(text, encoding="utf-8")
-    print(f"Dashboard V5 generata: {TARGET.name}")
+    print(f"Dashboard V5.1 generata: {TARGET.name}")
 
 
 if __name__ == "__main__":
