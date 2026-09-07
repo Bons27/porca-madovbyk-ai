@@ -32,6 +32,23 @@ HISTORY_FIELDS = [
     "CurrentFIA",
 ]
 
+SNAPSHOT_COMPARE_FIELDS = [
+    "Season",
+    "Round",
+    "Club",
+    "Coach",
+    "Role",
+    "ClubWeightedVotes",
+    "ClubGames",
+    "LeagueWeightedVotes",
+    "LeagueGames",
+    "ClubMV",
+    "LeagueMV",
+    "RawDelta",
+    "Reliability",
+    "CurrentFIA",
+]
+
 
 def _safe_float(value, default=0.0):
     try:
@@ -185,6 +202,16 @@ def coach_for_interval(assignments, season, club, start_round, end_round):
     return next(iter(coaches)) if coaches else None
 
 
+def _same_snapshot(existing, candidate):
+    if not existing:
+        return False
+
+    return all(
+        str(existing.get(field, "")) == str(candidate.get(field, ""))
+        for field in SNAPSHOT_COMPARE_FIELDS
+    )
+
+
 def upsert_snapshot(
     existing_rows,
     aggregates,
@@ -241,6 +268,11 @@ def upsert_snapshot(
             item["role"],
         )
 
+        existing = keyed.get(key)
+
+        if _same_snapshot(existing, row):
+            continue
+
         keyed[key] = row
         written += 1
 
@@ -251,8 +283,8 @@ def interval_samples(history_rows, assignments):
     """
     Trasforma snapshot cumulativi in campioni incrementali.
 
-    Questo evita di contare più volte le stesse giornate: per ogni nuovo
-    snapshot utilizziamo solo i voti aggiunti rispetto allo snapshot precedente.
+    In questo modo la stessa giornata non viene contata più volte e i cambi
+    allenatore possono essere isolati quando esiste uno snapshot prima e dopo.
     """
 
     grouped = defaultdict(list)
@@ -283,11 +315,9 @@ def interval_samples(history_rows, assignments):
                 continue
 
             start_round = 1
-            previous_round = 0
 
             if previous is not None:
-                previous_round = _safe_int(previous.get("Round"))
-                start_round = previous_round + 1
+                start_round = _safe_int(previous.get("Round")) + 1
 
             coach = coach_for_interval(
                 assignments,
@@ -312,8 +342,8 @@ def interval_samples(history_rows, assignments):
                 league_weighted -= _safe_float(previous.get("LeagueWeightedVotes"))
                 league_games -= _safe_int(previous.get("LeagueGames"))
 
-            # Correzioni statistiche e trasferimenti possono creare delta
-            # negativi: meglio saltarli che sporcare lo storico.
+            # Correzioni statistiche e trasferimenti possono produrre delta
+            # negativi: li scartiamo invece di sporcare lo storico.
             if club_games <= 0 or league_games <= 0:
                 previous = row
                 continue
@@ -342,6 +372,32 @@ def interval_samples(history_rows, assignments):
     return samples
 
 
+def _weighted_raw_delta(items, use_recency=False, newest_abs_round=None):
+    weighted_delta = 0.0
+    total_weight = 0.0
+    raw_games = 0
+
+    for item in items:
+        if use_recency:
+            age_rounds = max(
+                0,
+                newest_abs_round - _absolute_round(item["season"], item["round"]),
+            )
+            recency = 0.985 ** age_rounds
+        else:
+            recency = 1.0
+
+        weight = item["games"] * recency
+        weighted_delta += item["raw_delta"] * weight
+        total_weight += weight
+        raw_games += item["games"]
+
+    if total_weight <= 0:
+        return None, 0.0, 0
+
+    return weighted_delta / total_weight, total_weight, raw_games
+
+
 def build_coach_profiles(history_rows, assignments):
     samples = interval_samples(history_rows, assignments)
 
@@ -353,6 +409,11 @@ def build_coach_profiles(history_rows, assignments):
         for sample in samples
     )
 
+    newest_season = max(
+        (sample["season"] for sample in samples),
+        key=_season_start_year,
+    )
+
     buckets = defaultdict(list)
 
     for sample in samples:
@@ -361,43 +422,42 @@ def build_coach_profiles(history_rows, assignments):
     profiles = defaultdict(dict)
 
     for (coach, role), items in buckets.items():
-        weighted_delta = 0.0
-        effective_games = 0.0
-        raw_games = 0
-        clubs = set()
-        seasons = set()
-        latest = None
+        raw_average, effective_games, raw_games = _weighted_raw_delta(
+            items,
+            use_recency=True,
+            newest_abs_round=newest_abs_round,
+        )
 
-        for item in items:
-            age_rounds = max(
-                0,
-                newest_abs_round - _absolute_round(item["season"], item["round"]),
-            )
-
-            # Decadimento lento: il passato resta utile ma pesa meno.
-            recency = 0.985 ** age_rounds
-            weight = item["games"] * recency
-
-            weighted_delta += item["raw_delta"] * weight
-            effective_games += weight
-            raw_games += item["games"]
-            clubs.add(item["club"])
-            seasons.add(item["season"])
-
-            if latest is None or _absolute_round(
-                item["season"], item["round"]
-            ) > _absolute_round(latest["season"], latest["round"]):
-                latest = item
-
-        if effective_games <= 0:
+        if raw_average is None or effective_games <= 0:
             continue
 
-        raw_average = weighted_delta / effective_games
-
-        # Lo storico deve guadagnarsi peso: circa 30 voti equivalenti
-        # portano la confidenza al 50%.
         confidence = effective_games / (effective_games + 30.0)
         historical_fia = _clamp(raw_average * confidence)
+
+        current_items = [
+            item
+            for item in items
+            if item["season"] == newest_season
+        ]
+
+        current_raw, _current_weight, current_games = _weighted_raw_delta(
+            current_items,
+            use_recency=False,
+        )
+
+        if current_raw is not None and current_games > 0:
+            current_confidence = current_games / (current_games + 12.0)
+            current_season_fia = _clamp(current_raw * current_confidence)
+        else:
+            current_confidence = 0.0
+            current_season_fia = None
+
+        clubs = sorted({item["club"] for item in items})
+        seasons = sorted({item["season"] for item in items})
+        latest = max(
+            items,
+            key=lambda item: _absolute_round(item["season"], item["round"]),
+        )
 
         profiles[coach][role] = {
             "fia": round(historical_fia, 5),
@@ -406,10 +466,22 @@ def build_coach_profiles(history_rows, assignments):
             "sample_games": raw_games,
             "effective_games": round(effective_games, 2),
             "intervals": len(items),
-            "clubs": sorted(clubs),
-            "seasons": sorted(seasons),
-            "last_season": latest["season"] if latest else None,
-            "last_round": latest["round"] if latest else None,
+            "clubs": clubs,
+            "seasons": seasons,
+            "last_season": latest["season"],
+            "last_round": latest["round"],
+            "current_season_fia": (
+                round(current_season_fia, 5)
+                if current_season_fia is not None
+                else None
+            ),
+            "current_season_raw_delta": (
+                round(current_raw, 5)
+                if current_raw is not None
+                else None
+            ),
+            "current_season_confidence": round(current_confidence, 5),
+            "current_season_games": current_games,
         }
 
     return dict(profiles)
@@ -423,7 +495,10 @@ def save_profiles(path, profiles, season, matchday, captured_at):
         "updated_at": captured_at,
         "season": season,
         "last_round": matchday,
-        "method": "FIA V2 = contesto corrente + storico allenatore/ruolo da intervalli incrementali",
+        "method": (
+            "FIA V2 = contesto corrente + storico allenatore/ruolo "
+            "da intervalli incrementali con decadimento temporale"
+        ),
         "profiles": profiles,
     }
 
@@ -472,7 +547,6 @@ def update_fia_history(root=None, season=CURRENT_SEASON, matchday=None):
         )
 
     aggregates = aggregate_live_records(records)
-
     clubs = {item["club"].casefold() for item in aggregates}
 
     if len(clubs) < 18:
@@ -498,22 +572,20 @@ def update_fia_history(root=None, season=CURRENT_SEASON, matchday=None):
         captured_at,
     )
 
-    save_history(history_path, history)
+    if written > 0 or not history_path.exists():
+        save_history(history_path, history)
 
-    profiles = build_coach_profiles(
-        history,
-        assignments,
-    )
-
-    save_profiles(
-        profiles_path,
-        profiles,
-        season,
-        matchday,
-        captured_at,
-    )
-
+    profiles = build_coach_profiles(history, assignments)
     profile_count = sum(len(role_map) for role_map in profiles.values())
+
+    if written > 0 or not profiles_path.exists():
+        save_profiles(
+            profiles_path,
+            profiles,
+            season,
+            matchday,
+            captured_at,
+        )
 
     return {
         "season": season,
@@ -523,5 +595,9 @@ def update_fia_history(root=None, season=CURRENT_SEASON, matchday=None):
         "coaches": len(profiles),
         "records": len(records),
         "clubs": len(clubs),
-        "message": "Storico FIA aggiornato.",
+        "message": (
+            "Storico FIA aggiornato."
+            if written > 0
+            else "Giornata già acquisita: nessuna variazione da salvare."
+        ),
     }
