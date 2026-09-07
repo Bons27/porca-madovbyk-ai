@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from .decision_fia import (
     fia_decision_score,
+    fia_trade_value_delta,
     player_fia,
 )
 from .fantacalcio_source import (
@@ -166,19 +167,19 @@ def build_trade_values(
     Il confronto viene effettuato all'interno dello stesso ruolo. FIA V3
     entra come segnale di contesto al 7%: sufficiente per distinguere profili
     vicini, ma non abbastanza da sovrascrivere FVM, rendimento e titolarità.
+
+    Per trasparenza salviamo anche il controfattuale con FIA neutro, così ogni
+    report può mostrare quanti punti TV sono realmente dovuti al FIA.
     """
 
     by_role = defaultdict(list)
-
     enriched = []
 
     for player in players:
-        availability = (
-            _availability(
-                player,
-                lineups,
-                unavailable,
-            )
+        availability = _availability(
+            player,
+            lineups,
+            unavailable,
         )
 
         reg_mv = regressed_average(
@@ -204,34 +205,28 @@ def build_trade_values(
             "fia_score": fia_decision_score(
                 player.name
             ),
+            "fia_delta": fia_trade_value_delta(
+                player.name
+            ),
             "fia_confidence": fia_data.get(
                 "confidence",
                 0.0,
             ),
         }
 
-        enriched.append(
-            item
-        )
-
-        by_role[
-            player.role
-        ].append(item)
+        enriched.append(item)
+        by_role[player.role].append(item)
 
     values = {}
 
-    for role, role_players in (
-        by_role.items()
-    ):
+    for role, role_players in by_role.items():
         fvm_values = [
             item["player"].fvmp
             for item in role_players
         ]
 
         quote_values = [
-            item[
-                "player"
-            ].current_value
+            item["player"].current_value
             for item in role_players
         ]
 
@@ -246,65 +241,55 @@ def build_trade_values(
         ]
 
         pv_values = [
-            item[
-                "player"
-            ].games_with_vote
+            item["player"].games_with_vote
             for item in role_players
         ]
 
         for item in role_players:
-            player = item[
-                "player"
-            ]
+            player = item["player"]
 
-            fvm_score = (
-                percentile_rank(
-                    player.fvmp,
-                    fvm_values,
-                )
+            fvm_score = percentile_rank(
+                player.fvmp,
+                fvm_values,
             )
 
-            quote_score = (
-                percentile_rank(
-                    player.current_value,
-                    quote_values,
-                )
+            quote_score = percentile_rank(
+                player.current_value,
+                quote_values,
             )
 
-            fm_score = (
-                percentile_rank(
-                    item["reg_fm"],
-                    fm_values,
-                )
+            fm_score = percentile_rank(
+                item["reg_fm"],
+                fm_values,
             )
 
-            mv_score = (
-                percentile_rank(
-                    item["reg_mv"],
-                    mv_values,
-                )
+            mv_score = percentile_rank(
+                item["reg_mv"],
+                mv_values,
             )
 
-            usage_score = (
-                percentile_rank(
-                    player.games_with_vote,
-                    pv_values,
-                )
+            usage_score = percentile_rank(
+                player.games_with_vote,
+                pv_values,
             )
 
-            # V3 weights.  The old core remains dominant (93%).
-            score = (
+            core_score = (
                 fvm_score * 0.33
                 + quote_score * 0.08
                 + fm_score * 0.24
                 + mv_score * 0.10
-                + item[
-                    "availability"
-                ] * 0.13
+                + item["availability"] * 0.13
                 + usage_score * 0.05
-                + item[
-                    "fia_score"
-                ] * 0.07
+            )
+
+            score_neutral_fia = (
+                core_score
+                + 50.0 * 0.07
+            )
+
+            score = (
+                core_score
+                + item["fia_score"] * 0.07
             )
 
             key = normalize_name(
@@ -315,6 +300,14 @@ def build_trade_values(
                 "player": player,
                 "score": round(
                     clamp(score),
+                    2,
+                ),
+                "score_neutral_fia": round(
+                    clamp(score_neutral_fia),
+                    2,
+                ),
+                "fia_delta": round(
+                    item["fia_delta"],
                     2,
                 ),
                 "fvm_score": round(
@@ -330,9 +323,7 @@ def build_trade_values(
                     1,
                 ),
                 "availability": round(
-                    item[
-                        "availability"
-                    ],
+                    item["availability"],
                     1,
                 ),
                 "reg_fm": round(
