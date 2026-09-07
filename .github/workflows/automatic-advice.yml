@@ -42,6 +42,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Check FIA decision engine syntax
+        working-directory: porca-madovbyk-ai
+        run: |
+          python -m py_compile src/decision_fia.py
+          python -m py_compile src/player_context_v3.py
+          python -m py_compile src/start_score.py
+          python -m py_compile src/trade_value.py
+
       - name: Check deadline and generate advice
         working-directory: porca-madovbyk-ai
         env:
