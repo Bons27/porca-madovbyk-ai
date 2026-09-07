@@ -1,0 +1,100 @@
+{
+  "version": "FIA V3 historical backfill",
+  "source_seasons": ["2023-24", "2024-25", "2025-26"],
+  "method": "Player-adjusted ridge model on Fantacalcio matchday votes; special 6* votes excluded; season-role baselines removed; recent seasons weighted more.",
+  "records_used": 32311,
+  "special_votes_excluded": 3403,
+  "profiles": {
+    "Carlos Cuesta": {
+      "A": {"confidence": 0.7009, "effective_votes": 82.0, "fia": -0.034, "sample_votes": 82, "seasons": ["2025-26"]},
+      "C": {"confidence": 0.8554, "effective_votes": 207.0, "fia": -0.0287, "sample_votes": 207, "seasons": ["2025-26"]},
+      "D": {"confidence": 0.8478, "effective_votes": 195.0, "fia": -0.0225, "sample_votes": 195, "seasons": ["2025-26"]},
+      "P": {"confidence": 0.5205, "effective_votes": 38.0, "fia": -0.0311, "sample_votes": 38, "seasons": ["2025-26"]},
+      "_source_name": "Cuesta"
+    },
+    "Cesc Fabregas": {
+      "A": {"confidence": 0.8347, "effective_votes": 176.8, "fia": -0.0427, "sample_votes": 187, "seasons": ["2024-25", "2025-26"]},
+      "C": {"confidence": 0.9129, "effective_votes": 366.9, "fia": 0.087, "sample_votes": 404, "seasons": ["2024-25", "2025-26"]},
+      "D": {"confidence": 0.9114, "effective_votes": 359.9, "fia": 0.0336, "sample_votes": 390, "seasons": ["2024-25", "2025-26"]},
+      "P": {"confidence": 0.6691, "effective_votes": 70.8, "fia": -0.0725, "sample_votes": 77, "seasons": ["2024-25", "2025-26"]},
+      "_source_name": "Fabregas"
+    },
+    "Cristian Chivu": {
+      "A": {"confidence": 0.8107, "effective_votes": 149.9, "fia": 0.0647, "sample_votes": 156, "seasons": ["2024-25", "2025-26"]},
+      "C": {"confidence": 0.878, "effective_votes": 252.0, "fia": 0.1137, "sample_votes": 263, "seasons": ["2024-25", "2025-26"]},
+      "D": {"confidence": 0.8764, "effective_votes": 248.1, "fia": 0.101, "sample_votes": 258, "seasons": ["2024-25", "2025-26"]},
+      "P": {"confidence": 0.5878, "effective_votes": 49.9, "fia": -0.0393, "sample_votes": 52, "seasons": ["2024-25", "2025-26"]},
+      "_source_name": "Chivu"
+    },
+    "Daniele De Rossi": {
+      "A": {"confidence": 0.7872, "effective_votes": 129.5, "fia": 0.0673, "sample_votes": 144, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "C": {"confidence": 0.8668, "effective_votes": 227.9, "fia": -0.0141, "sample_votes": 262, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "D": {"confidence": 0.8614, "effective_votes": 217.5, "fia": -0.02, "sample_votes": 249, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "P": {"confidence": 0.5677, "effective_votes": 46.0, "fia": -0.0372, "sample_votes": 52, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "_source_name": "De Rossi"
+    },
+    "Eusebio Di Francesco": {
+      "A": {"confidence": 0.8741, "effective_votes": 242.9, "fia": -0.0441, "sample_votes": 287, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "C": {"confidence": 0.9415, "effective_votes": 563.8, "fia": -0.0029, "sample_votes": 661, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "D": {"confidence": 0.9266, "effective_votes": 442.0, "fia": -0.0955, "sample_votes": 523, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "P": {"confidence": 0.7353, "effective_votes": 97.2, "fia": 0.037, "sample_votes": 115, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "_source_name": "Di Francesco"
+    },
+    "Fabio Pisacane": {
+      "A": {"confidence": 0.7619, "effective_votes": 112.0, "fia": 0.0192, "sample_votes": 112, "seasons": ["2025-26"]},
+      "C": {"confidence": 0.838, "effective_votes": 181.0, "fia": 0.001, "sample_votes": 181, "seasons": ["2025-26"]},
+      "D": {"confidence": 0.856, "effective_votes": 208.0, "fia": -0.0002, "sample_votes": 208, "seasons": ["2025-26"]},
+      "P": {"confidence": 0.5205, "effective_votes": 38.0, "fia": 0.0236, "sample_votes": 38, "seasons": ["2025-26"]},
+      "_source_name": "Pisacane"
+    },
+    "Gian Piero Gasperini": {
+      "A": {"confidence": 0.8772, "effective_votes": 249.9, "fia": 0.1206, "sample_votes": 291, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "C": {"confidence": 0.9295, "effective_votes": 461.3, "fia": 0.0737, "sample_votes": 548, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "D": {"confidence": 0.944, "effective_votes": 590.2, "fia": 0.0638, "sample_votes": 700, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "P": {"confidence": 0.7353, "effective_votes": 97.2, "fia": -0.0197, "sample_votes": 115, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "_source_name": "Gasperini"
+    },
+    "Ivan Juric": {
+      "A": {"confidence": 0.7804, "effective_votes": 124.4, "fia": -0.0205, "sample_votes": 158, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "C": {"confidence": 0.8537, "effective_votes": 204.3, "fia": -0.0256, "sample_votes": 261, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "D": {"confidence": 0.8681, "effective_votes": 230.4, "fia": 0.0221, "sample_votes": 298, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "P": {"confidence": 0.5587, "effective_votes": 44.3, "fia": -0.0589, "sample_votes": 57, "seasons": ["2023-24", "2024-25", "2025-26"]},
+      "_source_name": "Juric"
+    },
+    "Kosta Runjaic": {
+      "A": {"confidence": 0.827, "effective_votes": 167.4, "fia": 0.0112, "sample_votes": 184, "seasons": ["2024-25", "2025-26"]},
+      "C": {"confidence": 0.9089, "effective_votes": 349.1, "fia": -0.0037, "sample_votes": 379, "seasons": ["2024-25", "2025-26"]},
+      "D": {"confidence": 0.9178, "effective_votes": 390.7, "fia": -0.0324, "sample_votes": 423, "seasons": ["2024-25", "2025-26"]},
+      "P": {"confidence": 0.6696, "effective_votes": 70.9, "fia": -0.0549, "sample_votes": 77, "seasons": ["2024-25", "2025-26"]},
+      "_source_name": "Runjaic"
+    },
+    "Luciano Spalletti": {
+      "A": {"confidence": 0.6957, "effective_votes": 80.0, "fia": 0.047, "sample_votes": 80, "seasons": ["2025-26"]},
+      "C": {"confidence": 0.8223, "effective_votes": 162.0, "fia": 0.0428, "sample_votes": 162, "seasons": ["2025-26"]},
+      "D": {"confidence": 0.7853, "effective_votes": 128.0, "fia": 0.0499, "sample_votes": 128, "seasons": ["2025-26"]},
+      "P": {"confidence": 0.4615, "effective_votes": 30.0, "fia": -0.0325, "sample_votes": 30, "seasons": ["2025-26"]},
+      "_source_name": "Spalletti"
+    },
+    "Massimiliano Allegri": {
+      "A": {"confidence": 0.8294, "effective_votes": 170.2, "fia": -0.1327, "sample_votes": 205, "seasons": ["2023-24", "2025-26"]},
+      "C": {"confidence": 0.9125, "effective_votes": 364.9, "fia": -0.048, "sample_votes": 427, "seasons": ["2023-24", "2025-26"]},
+      "D": {"confidence": 0.8908, "effective_votes": 285.6, "fia": 0.0417, "sample_votes": 330, "seasons": ["2023-24", "2025-26"]},
+      "P": {"confidence": 0.6472, "effective_votes": 64.2, "fia": 0.038, "sample_votes": 75, "seasons": ["2023-24", "2025-26"]},
+      "_source_name": "Allegri"
+    },
+    "Maurizio Sarri": {
+      "A": {"confidence": 0.8334, "effective_votes": 175.1, "fia": -0.0901, "sample_votes": 200, "seasons": ["2023-24", "2025-26"]},
+      "C": {"confidence": 0.9014, "effective_votes": 319.9, "fia": -0.0658, "sample_votes": 370, "seasons": ["2023-24", "2025-26"]},
+      "D": {"confidence": 0.8909, "effective_votes": 285.7, "fia": -0.089, "sample_votes": 325, "seasons": ["2023-24", "2025-26"]},
+      "P": {"confidence": 0.622, "effective_votes": 57.6, "fia": 0.0552, "sample_votes": 66, "seasons": ["2023-24", "2025-26"]},
+      "_source_name": "Sarri"
+    },
+    "Paolo Vanoli": {
+      "A": {"confidence": 0.7947, "effective_votes": 135.5, "fia": -0.0319, "sample_votes": 151, "seasons": ["2024-25", "2025-26"]},
+      "C": {"confidence": 0.8953, "effective_votes": 299.4, "fia": -0.0285, "sample_votes": 328, "seasons": ["2024-25", "2025-26"]},
+      "D": {"confidence": 0.9074, "effective_votes": 343.0, "fia": -0.0403, "sample_votes": 379, "seasons": ["2024-25", "2025-26"]},
+      "P": {"confidence": 0.6313, "effective_votes": 59.9, "fia": 0.0515, "sample_votes": 66, "seasons": ["2024-25", "2025-26"]},
+      "_source_name": "Vanoli"
+    }
+  }
+}
