@@ -63,6 +63,8 @@ if errorlevel 1 goto :error
 if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\control_center_explainable.py
 if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\repair_report_explainable.py
+if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\start_score.py
 if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\trade_value.py
