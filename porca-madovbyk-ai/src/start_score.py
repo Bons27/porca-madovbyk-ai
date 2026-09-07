@@ -1,3 +1,9 @@
+from .decision_fia import (
+    fia_decision_score,
+    player_fia,
+)
+
+
 def clamp(
     value,
     minimum=0.0,
@@ -238,6 +244,16 @@ def calculate_start_score(
         )
     )
 
+    fia_data = player_fia(
+        player.name
+    )
+    fia_value = fia_data.get(
+        "fia"
+    )
+    fia_score = fia_decision_score(
+        player.name
+    )
+
     # Infortunato o squalificato:
     # non deve mai emergere come scelta.
     if availability == 0:
@@ -248,6 +264,8 @@ def calculate_start_score(
                 player
             ),
             "matchup": 0.0,
+            "fia": fia_value,
+            "fia_score": fia_score,
         }
 
     form = calculate_form_score(
@@ -262,29 +280,32 @@ def calculate_start_score(
         )
     )
 
-    # Titolarità domina il modello.
-    # Gli altri pesi cambiano
-    # leggermente per ruolo.
+    # FIA V3 è un segnale secondario: pesa il 5%.
+    # Titolarità resta di gran lunga la componente dominante.
     weights = {
         "P": {
-            "availability": 0.55,
+            "availability": 0.50,
             "form": 0.20,
             "matchup": 0.25,
+            "fia": 0.05,
         },
         "D": {
-            "availability": 0.55,
+            "availability": 0.50,
             "form": 0.25,
             "matchup": 0.20,
+            "fia": 0.05,
         },
         "C": {
-            "availability": 0.55,
+            "availability": 0.50,
             "form": 0.30,
             "matchup": 0.15,
+            "fia": 0.05,
         },
         "A": {
-            "availability": 0.55,
+            "availability": 0.50,
             "form": 0.30,
             "matchup": 0.15,
+            "fia": 0.05,
         },
     }
 
@@ -301,6 +322,8 @@ def calculate_start_score(
         * role_weights["form"]
         + matchup
         * role_weights["matchup"]
+        + fia_score
+        * role_weights["fia"]
     )
 
     return {
@@ -320,6 +343,8 @@ def calculate_start_score(
             matchup,
             1,
         ),
+        "fia": fia_value,
+        "fia_score": fia_score,
     }
 
 
