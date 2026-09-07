@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ==========================================
-echo   Porca MaDovbyk AI - Dashboard V5 + FIA Decision Engine
+echo   Porca MaDovbyk AI - Dashboard V5.2 + FIA Spiegabile
 echo ==========================================
 
 where git >nul 2>&1
@@ -46,7 +46,7 @@ if not exist ".venv\Scripts\python.exe" (
 )
 
 echo.
-echo Preparo Dashboard V5 e FIA storico...
+echo Preparo Dashboard V5.2 e FIA spiegabile...
 ".venv\Scripts\python.exe" -m src.build_dashboard_v5
 if errorlevel 1 goto :error
 
@@ -59,6 +59,10 @@ if errorlevel 1 goto :error
 if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\decision_fia.py
 if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\decision_explainable_reports.py
+if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\control_center_explainable.py
+if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\start_score.py
 if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\trade_value.py
@@ -69,7 +73,7 @@ if errorlevel 1 goto :error
 if errorlevel 1 goto :error
 
 echo.
-echo Avvio Porca MaDovbyk AI V5...
+echo Avvio Porca MaDovbyk AI V5.2...
 start "" http://localhost:8501
 ".venv\Scripts\python.exe" -m streamlit run _app_runtime_v5.py --server.port 8501
 
@@ -77,7 +81,7 @@ goto :end
 
 :error
 echo.
-echo ERRORE: non sono riuscito ad avviare la Dashboard V5.
+echo ERRORE: non sono riuscito ad avviare la Dashboard V5.2.
 echo Controlla le righe sopra per il dettaglio dell'errore.
 pause
 
