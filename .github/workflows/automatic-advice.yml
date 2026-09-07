@@ -47,6 +47,10 @@ jobs:
         run: |
           python -m py_compile src/decision_fia.py
           python -m py_compile src/decision_explainable_reports.py
+          python -m py_compile src/explainable_reports_v52.py
+          python -m py_compile src/control_center_explainable.py
+          python -m py_compile src/repair_report_explainable.py
+          python -m py_compile src/text_enrichment.py
           python -m py_compile src/auto_advice_explainable.py
           python -m py_compile src/player_context_v3.py
           python -m py_compile src/start_score.py
