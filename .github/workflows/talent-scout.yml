@@ -44,9 +44,13 @@ jobs:
       - name: Check Python syntax
         working-directory: porca-madovbyk-ai
         run: |
+          python -m py_compile src/decision_fia.py
+          python -m py_compile src/player_context_v3.py
           python -m py_compile src/talent_scout.py
+          python -m py_compile src/talent_scout_fia.py
           python -m py_compile src/scout_history_analysis.py
           python -m py_compile src/talent_scout_report.py
+          python -m py_compile src/talent_scout_report_fia.py
 
       - name: Run Talent Scout
         working-directory: porca-madovbyk-ai
@@ -54,7 +58,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           SCOUT_FORCE_REPORT: ${{ github.event.inputs.force_report }}
-        run: python -m src.talent_scout_report
+        run: python -m src.talent_scout_report_fia
 
       - name: Save scouting history
         working-directory: porca-madovbyk-ai
