@@ -7,6 +7,7 @@ from .fantacalcio_source import normalize_name
 
 CURRENT_SEASON = base.CURRENT_SEASON
 VALID_ROLES = base.VALID_ROLES
+_LEGACY_BUILD_FALLBACK_CONTEXT = base.build_fallback_context
 
 
 def load_historical_backfill(root=None):
@@ -222,9 +223,9 @@ def build_player_context(root=None):
 
 
 def build_fallback_context(root=None):
-    # Il fallback originale resta preferibile quando le fonti live falliscono:
-    # evita di attribuire un FIA storico a un club/ruolo non più verificabile.
-    return base.build_fallback_context(root)
+    # Conserviamo il fallback V2 originale anche se il modulo legacy viene
+    # monkey-patchato dal launcher FIA V3.
+    return _LEGACY_BUILD_FALLBACK_CONTEXT(root)
 
 
 def player_context(context, name):
