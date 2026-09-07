@@ -1,3 +1,5 @@
+import csv
+import json
 from collections import defaultdict
 from pathlib import Path
 
@@ -10,6 +12,7 @@ from .talent_scout import load_free_agents
 
 
 VALID_ROLES = {"P", "D", "C", "A"}
+CURRENT_SEASON = "2026-27"
 
 
 def _safe_float(value, default=0.0):
@@ -26,6 +29,10 @@ def _safe_int(value, default=0):
         return default
 
 
+def _clamp(value, minimum=-0.50, maximum=0.50):
+    return max(minimum, min(maximum, value))
+
+
 def _record(name, role, club, games, average_vote):
     return {
         "name": str(name or "").strip(),
@@ -36,17 +43,13 @@ def _record(name, role, club, games, average_vote):
     }
 
 
-def calculate_fia(records):
+def calculate_fia_details(records):
     """
-    Calcola il FIA (Fattore Impatto Allenatore) come proxy del contesto
-    tecnico di un ruolo nel club.
+    FIA corrente del contesto tecnico club/ruolo.
 
-    FIA = differenziale tra MV media del ruolo nel club e MV media dello
-    stesso ruolo in Serie A, attenuato in base alla quantità di voti.
-
-    Il risultato è espresso in punti di MV (es. +0.12 / -0.08).
-    Non è una stima causale pura dell'allenatore: è un indicatore interno
-    del rendimento del ruolo nel contesto tecnico corrente.
+    Per ogni ruolo confronta la MV ponderata del ruolo nel club con la MV
+    ponderata dello stesso ruolo in Serie A. Il differenziale viene ridotto
+    quando il numero di voti è ancora basso.
     """
 
     role_totals = defaultdict(lambda: [0.0, 0])
@@ -61,39 +64,193 @@ def calculate_fia(records):
         if role not in VALID_ROLES or not club or games <= 0 or mv <= 0:
             continue
 
-        role_totals[role][0] += mv * games
+        weighted_votes = mv * games
+
+        role_totals[role][0] += weighted_votes
         role_totals[role][1] += games
 
         key = (club.casefold(), role)
-        club_role_totals[key][0] += mv * games
+        club_role_totals[key][0] += weighted_votes
         club_role_totals[key][1] += games
 
     role_averages = {}
+
     for role, (weighted, games) in role_totals.items():
         role_averages[role] = weighted / games if games else 0.0
 
-    fia_by_group = {}
+    details = {}
 
     for key, (weighted, games) in club_role_totals.items():
-        club, role = key
+        _club, role = key
         baseline = role_averages.get(role, 0.0)
 
         if not games or baseline <= 0:
-            fia_by_group[key] = None
+            details[key] = {
+                "fia": None,
+                "raw_delta": None,
+                "group_mv": None,
+                "baseline_mv": baseline or None,
+                "games": games,
+                "reliability": 0.0,
+            }
             continue
 
         group_mv = weighted / games
+        raw_delta = group_mv - baseline
 
-        # Shrinkage: a inizio stagione evitiamo letture troppo aggressive.
+        # Shrinkage iniziale: evita letture aggressive con pochi voti.
         reliability = games / (games + 12.0)
-        fia = (group_mv - baseline) * reliability
+        fia = _clamp(raw_delta * reliability)
 
-        fia_by_group[key] = max(-0.50, min(0.50, fia))
+        details[key] = {
+            "fia": fia,
+            "raw_delta": raw_delta,
+            "group_mv": group_mv,
+            "baseline_mv": baseline,
+            "games": games,
+            "reliability": reliability,
+        }
 
-    return fia_by_group
+    return details
 
 
-def build_player_context(root=None):
+def calculate_fia(records):
+    """Compatibilità con il FIA V1: restituisce solo il valore finale."""
+
+    return {
+        key: value.get("fia")
+        for key, value in calculate_fia_details(records).items()
+    }
+
+
+def load_coach_assignments(root=None):
+    root = Path(root or Path(__file__).resolve().parents[1])
+    path = root / "data" / "coach_assignments.csv"
+
+    if not path.exists():
+        return []
+
+    rows = []
+
+    with open(path, "r", encoding="utf-8-sig", newline="") as file:
+        reader = csv.DictReader(file, delimiter=";")
+
+        for row in reader:
+            club = str(row.get("Club", "")).strip()
+            coach = str(row.get("Coach", "")).strip()
+            season = str(row.get("Season", "")).strip()
+
+            if not club or not coach or not season:
+                continue
+
+            rows.append(
+                {
+                    "season": season,
+                    "club": club,
+                    "coach": coach,
+                    "start_round": _safe_int(row.get("StartRound"), 1),
+                    "end_round": _safe_int(row.get("EndRound"), 38),
+                    "source": str(row.get("Source", "")).strip(),
+                }
+            )
+
+    return rows
+
+
+def coach_for_round(assignments, season, club, matchday):
+    club_key = str(club or "").strip().casefold()
+
+    for row in assignments:
+        if row["season"] != season:
+            continue
+        if row["club"].casefold() != club_key:
+            continue
+        if row["start_round"] <= matchday <= row["end_round"]:
+            return row["coach"]
+
+    return None
+
+
+def current_coach_map(assignments, season=CURRENT_SEASON):
+    """
+    Restituisce la guida tecnica più recente registrata per ogni club.
+    Le righe del CSV vengono aggiornate quando cambia una panchina.
+    """
+
+    latest = {}
+
+    for row in assignments:
+        if row["season"] != season:
+            continue
+
+        key = row["club"].casefold()
+        previous = latest.get(key)
+
+        if previous is None or row["start_round"] > previous["start_round"]:
+            latest[key] = row
+
+    return {
+        club: row["coach"]
+        for club, row in latest.items()
+    }
+
+
+def load_fia_coach_profiles(root=None):
+    root = Path(root or Path(__file__).resolve().parents[1])
+    path = root / "data" / "fia_coach_profiles.json"
+
+    if not path.exists():
+        return {
+            "updated_at": None,
+            "season": CURRENT_SEASON,
+            "last_round": None,
+            "profiles": {},
+        }
+
+    try:
+        with open(path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        if not isinstance(data, dict):
+            raise ValueError("Formato profili FIA non valido")
+
+        data.setdefault("profiles", {})
+        return data
+
+    except Exception:
+        return {
+            "updated_at": None,
+            "season": CURRENT_SEASON,
+            "last_round": None,
+            "profiles": {},
+        }
+
+
+def historical_coach_profile(profiles_data, coach, role):
+    if not coach or role not in VALID_ROLES:
+        return None
+
+    coach_profiles = profiles_data.get("profiles", {}).get(coach, {})
+    profile = coach_profiles.get(role)
+
+    if not isinstance(profile, dict):
+        return None
+
+    fia = profile.get("fia")
+
+    if fia is None:
+        return None
+
+    return profile
+
+
+def build_live_records(root=None):
+    """
+    Costruisce l'universo corrente dei giocatori con ruolo, club, PV e MV.
+    Usa le rose della lega per i 200 giocatori acquistati e free_agents.csv
+    per gli altri, aggiornando i valori con le statistiche Fantacalcio live.
+    """
+
     root = Path(root or Path(__file__).resolve().parents[1])
 
     roster_path = root / "data" / "league_rosters.csv"
@@ -102,10 +259,6 @@ def build_player_context(root=None):
     league_players = load_league_rosters(roster_path)
     free_agents = load_free_agents(free_agents_path)
 
-    records = []
-
-    # Dati live Fantacalcio. Se una delle due fonti fallisce, il chiamante
-    # può usare build_fallback_context().
     catalog = fetch_player_catalog()
     statistics = fetch_statistics_catalog()
 
@@ -115,18 +268,25 @@ def build_player_context(root=None):
         statistics,
     )["players"]
 
+    # Deduplica prudenziale: il giocatore della rosa ha precedenza.
+    records_by_key = {}
+
     for player in dataset:
-        records.append(
-            _record(
-                player.name,
-                player.role,
-                player.club,
-                player.games_with_vote,
-                player.average_vote,
-            )
+        record = _record(
+            player.name,
+            player.role,
+            player.club,
+            player.games_with_vote,
+            player.average_vote,
         )
+        records_by_key[normalize_name(player.name)] = record
 
     for seed in free_agents:
+        key = normalize_name(seed["name"])
+
+        if key in records_by_key:
+            continue
+
         stat = find_player(
             statistics,
             seed["name"],
@@ -141,17 +301,21 @@ def build_player_context(root=None):
             games = seed.get("games", 0)
             mv = seed.get("average_vote", 0)
 
-        records.append(
-            _record(
-                seed["name"],
-                seed["role"],
-                club,
-                games,
-                mv,
-            )
+        records_by_key[key] = _record(
+            seed["name"],
+            seed["role"],
+            club,
+            games,
+            mv,
         )
 
-    return context_from_records(records)
+    return list(records_by_key.values())
+
+
+def build_player_context(root=None):
+    root = Path(root or Path(__file__).resolve().parents[1])
+    records = build_live_records(root)
+    return context_from_records(records, root=root)
 
 
 def build_fallback_context(root=None):
@@ -161,20 +325,18 @@ def build_fallback_context(root=None):
     roster_path = root / "data" / "league_rosters.csv"
     free_agents_path = root / "data" / "free_agents.csv"
 
-    records = []
+    records_by_key = {}
 
     try:
         league_players = load_league_rosters(roster_path)
 
         for player in league_players:
-            records.append(
-                _record(
-                    player.name,
-                    player.role,
-                    "",
-                    0,
-                    0,
-                )
+            records_by_key[normalize_name(player.name)] = _record(
+                player.name,
+                player.role,
+                "",
+                0,
+                0,
             )
     except Exception:
         pass
@@ -183,23 +345,35 @@ def build_fallback_context(root=None):
         free_agents = load_free_agents(free_agents_path)
 
         for seed in free_agents:
-            records.append(
-                _record(
-                    seed["name"],
-                    seed["role"],
-                    seed.get("club"),
-                    seed.get("games", 0),
-                    seed.get("average_vote", 0),
-                )
+            key = normalize_name(seed["name"])
+
+            if key in records_by_key:
+                continue
+
+            records_by_key[key] = _record(
+                seed["name"],
+                seed["role"],
+                seed.get("club"),
+                seed.get("games", 0),
+                seed.get("average_vote", 0),
             )
     except Exception:
         pass
 
-    return context_from_records(records)
+    return context_from_records(
+        list(records_by_key.values()),
+        root=root,
+    )
 
 
-def context_from_records(records):
-    fia_by_group = calculate_fia(records)
+def context_from_records(records, root=None):
+    root = Path(root or Path(__file__).resolve().parents[1])
+
+    current_details = calculate_fia_details(records)
+    assignments = load_coach_assignments(root)
+    coaches = current_coach_map(assignments, CURRENT_SEASON)
+    profiles_data = load_fia_coach_profiles(root)
+
     context = {}
 
     for item in records:
@@ -212,11 +386,50 @@ def context_from_records(records):
 
         key = normalize_name(name)
 
-        fia = None
+        current = None
+        coach = None
+        history = None
+
         if club and role in VALID_ROLES:
-            fia = fia_by_group.get(
-                (club.casefold(), role)
+            current = current_details.get((club.casefold(), role))
+            coach = coaches.get(club.casefold())
+            history = historical_coach_profile(
+                profiles_data,
+                coach,
+                role,
             )
+
+        current_fia = current.get("fia") if current else None
+        history_fia = history.get("fia") if history else None
+        history_confidence = (
+            _safe_float(history.get("confidence"))
+            if history
+            else 0.0
+        )
+
+        # FIA V2: contesto corrente + memoria storica dell'allenatore sul ruolo.
+        # La componente storica cresce gradualmente con la confidenza del campione.
+        if current_fia is not None and history_fia is not None:
+            history_weight = min(
+                0.50,
+                0.15 + 0.35 * history_confidence,
+            )
+            fia = (
+                current_fia * (1.0 - history_weight)
+                + history_fia * history_weight
+            )
+        elif current_fia is not None:
+            history_weight = 0.0
+            fia = current_fia
+        elif history_fia is not None:
+            history_weight = 1.0
+            fia = history_fia
+        else:
+            history_weight = 0.0
+            fia = None
+
+        if fia is not None:
+            fia = _clamp(fia)
 
         context[key] = {
             "name": name,
@@ -224,7 +437,22 @@ def context_from_records(records):
             "club": club,
             "games": _safe_int(item.get("games")),
             "average_vote": _safe_float(item.get("average_vote")),
+            "coach": coach,
             "fia": fia,
+            "fia_current": current_fia,
+            "fia_history": history_fia,
+            "fia_history_weight": history_weight,
+            "fia_confidence": history_confidence,
+            "fia_sample_games": (
+                _safe_int(history.get("sample_games"))
+                if history
+                else 0
+            ),
+            "fia_intervals": (
+                _safe_int(history.get("intervals"))
+                if history
+                else 0
+            ),
         }
 
     return context
@@ -239,7 +467,14 @@ def player_context(context, name):
             "club": "",
             "games": 0,
             "average_vote": 0.0,
+            "coach": None,
             "fia": None,
+            "fia_current": None,
+            "fia_history": None,
+            "fia_history_weight": 0.0,
+            "fia_confidence": 0.0,
+            "fia_sample_games": 0,
+            "fia_intervals": 0,
         },
     )
 
@@ -278,6 +513,21 @@ def player_suffix(context, name):
     )
 
 
+def fia_breakdown(context, name):
+    data = player_context(context, name)
+
+    return {
+        "coach": data.get("coach"),
+        "current": data.get("fia_current"),
+        "history": data.get("fia_history"),
+        "final": data.get("fia"),
+        "history_weight": data.get("fia_history_weight", 0.0),
+        "confidence": data.get("fia_confidence", 0.0),
+        "sample_games": data.get("fia_sample_games", 0),
+        "intervals": data.get("fia_intervals", 0),
+    }
+
+
 def annotate_text(text, context):
     """Aggiunge MV e FIA accanto ai nomi noti presenti in un testo."""
 
@@ -297,13 +547,7 @@ def annotate_text(text, context):
         if name not in result:
             continue
 
-        replacement = (
-            f"{name} [{player_suffix(context, name)}]"
-        )
-
-        result = result.replace(
-            name,
-            replacement,
-        )
+        replacement = f"{name} [{player_suffix(context, name)}]"
+        result = result.replace(name, replacement)
 
     return result
