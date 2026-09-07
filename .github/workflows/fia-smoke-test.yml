@@ -7,8 +7,10 @@ on:
       - "porca-madovbyk-ai/src/build_dashboard_v5.py"
       - "porca-madovbyk-ai/src/decision_fia.py"
       - "porca-madovbyk-ai/src/decision_explainable_reports.py"
+      - "porca-madovbyk-ai/src/explainable_reports_v52.py"
       - "porca-madovbyk-ai/src/control_center_explainable.py"
       - "porca-madovbyk-ai/src/repair_report_explainable.py"
+      - "porca-madovbyk-ai/src/text_enrichment.py"
       - "porca-madovbyk-ai/src/start_score.py"
       - "porca-madovbyk-ai/src/trade_value.py"
       - "porca-madovbyk-ai/src/talent_scout_fia.py"
@@ -45,8 +47,10 @@ jobs:
           python -m py_compile _app_runtime_v5.py
           python -m py_compile src/decision_fia.py
           python -m py_compile src/decision_explainable_reports.py
+          python -m py_compile src/explainable_reports_v52.py
           python -m py_compile src/control_center_explainable.py
           python -m py_compile src/repair_report_explainable.py
+          python -m py_compile src/text_enrichment.py
           python -m py_compile src/start_score.py
           python -m py_compile src/trade_value.py
           python -m py_compile src/talent_scout_fia.py
