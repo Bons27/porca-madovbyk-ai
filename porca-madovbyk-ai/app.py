@@ -195,8 +195,8 @@ def render_report(report):
 
 
 def go_to(page):
+    """Callback di navigazione sicuro per i pulsanti della Home."""
     st.session_state["page"] = page
-    st.rerun()
 
 
 if "page" not in st.session_state:
@@ -282,12 +282,14 @@ if page == "Home":
                 "Calcola la formazione consigliata usando Campionato, Battle Royale, titolarità e matchup."
             )
 
-            if st.button(
+            st.button(
                 "Apri Formazione",
                 use_container_width=True,
                 type="primary",
-            ):
-                go_to("Formazione")
+                on_click=go_to,
+                args=("Formazione",),
+                key="open_formation",
+            )
 
     with right:
         with st.container(border=True):
@@ -296,11 +298,13 @@ if page == "Home":
                 "Inserisci cosa cedi e cosa ricevi e ottieni un verdetto sintetico sullo scambio."
             )
 
-            if st.button(
+            st.button(
                 "Apri Trade Analyzer",
                 use_container_width=True,
-            ):
-                go_to("Trade Analyzer")
+                on_click=go_to,
+                args=("Trade Analyzer",),
+                key="open_trade",
+            )
 
     st.subheader("Prossimi moduli")
     st.info(
