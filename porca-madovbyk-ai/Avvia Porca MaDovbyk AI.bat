@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ==========================================
-echo   Porca MaDovbyk AI - Dashboard V5.2 + FIA Spiegabile
+echo   Porca MaDovbyk AI - Dashboard V5.1 STABILE
 echo ==========================================
 
 where git >nul 2>&1
@@ -47,16 +47,22 @@ if not exist ".venv\Scripts\python.exe" (
 )
 
 echo.
+echo Chiudo eventuale vecchia Dashboard sulla porta 8501...
+for /f "tokens=5" %%P in ('netstat -ano ^| findstr ":8501" ^| findstr "LISTENING"') do (
+    taskkill /PID %%P /F >nul 2>&1
+)
+
 echo Pulisco la cache Python locale...
 if exist "src\__pycache__" rmdir /s /q "src\__pycache__"
 if exist "__pycache__" rmdir /s /q "__pycache__"
+if exist "_app_runtime_v5.py" del /q "_app_runtime_v5.py"
 
 echo.
-echo Preparo Dashboard V5.2 e FIA spiegabile...
+echo Preparo Dashboard V5.1 stabile...
 ".venv\Scripts\python.exe" -m src.build_dashboard_v5
 if errorlevel 1 goto :error
 
-echo Verifico motori FIA...
+echo Verifico Dashboard V5.1...
 ".venv\Scripts\python.exe" -m py_compile _app_runtime_v5.py
 if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\fia_coach_dashboard.py
@@ -65,31 +71,15 @@ if errorlevel 1 goto :error
 if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\decision_fia.py
 if errorlevel 1 goto :error
-".venv\Scripts\python.exe" -m py_compile src\decision_explainable_reports.py
-if errorlevel 1 goto :error
-".venv\Scripts\python.exe" -m py_compile src\explainable_reports_v52.py
-if errorlevel 1 goto :error
-".venv\Scripts\python.exe" -m py_compile src\control_center_explainable.py
-if errorlevel 1 goto :error
-".venv\Scripts\python.exe" -m py_compile src\repair_report_explainable.py
-if errorlevel 1 goto :error
-".venv\Scripts\python.exe" -m py_compile src\text_enrichment.py
-if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\start_score.py
 if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\trade_value.py
 if errorlevel 1 goto :error
-".venv\Scripts\python.exe" -m py_compile src\talent_scout_fia.py
+".venv\Scripts\python.exe" -c "from src.decision_fia import player_fia, fia_decision_score; print('FIA V5.1 core check: OK')"
 if errorlevel 1 goto :error
-".venv\Scripts\python.exe" -m py_compile src\talent_scout_report_fia.py
-if errorlevel 1 goto :error
-
-REM Questo test verifica gli import reali e stampa il file effettivamente caricato.
-".venv\Scripts\python.exe" -c "import src.decision_fia as d; from src.decision_fia import fia_start_score_delta, fia_trade_value_delta, fia_scout_score_delta; from src.decision_explainable_reports import build_formation_report, build_trade_report; print('FIA module:', d.__file__); print('FIA version:', getattr(d, 'MODULE_VERSION', 'n/d')); print('FIA V5.2 import check: OK')"
-if errorlevel 1 goto :stale_code
 
 echo.
-echo Avvio Porca MaDovbyk AI V5.2...
+echo Avvio Porca MaDovbyk AI V5.1...
 start "" http://localhost:8501
 ".venv\Scripts\python.exe" -m streamlit run _app_runtime_v5.py --server.port 8501
 
@@ -99,23 +89,14 @@ goto :end
 echo.
 echo ERRORE DI SINCRONIZZAZIONE.
 echo Il pull automatico da GitHub non e riuscito.
-echo Apri GitHub Desktop, seleziona porca-madovbyk-ai, fai Fetch origin e poi Pull origin.
-echo Se GitHub Desktop segnala modifiche locali o conflitti, non avviare la dashboard finche non sono risolti.
-pause
-goto :end
-
-:stale_code
-echo.
-echo CODICE LOCALE NON AGGIORNATO.
-echo Manca almeno una funzione FIA V5.2 richiesta dalla dashboard.
-echo Apri GitHub Desktop, fai Fetch origin e Pull origin, poi rilancia questo file BAT.
+echo Apri GitHub Desktop, fai Fetch origin e Pull origin, poi rilancia il BAT.
 pause
 goto :end
 
 :error
 echo.
-echo ERRORE: non sono riuscito ad avviare la Dashboard V5.2.
-echo Controlla le righe sopra per il dettaglio dell'errore.
+echo ERRORE: avvio Dashboard V5.1 non riuscito.
+echo Copia o fotografa le ultime righe mostrate qui sopra.
 pause
 
 :end
