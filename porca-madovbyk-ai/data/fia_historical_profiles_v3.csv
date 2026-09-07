@@ -1,0 +1,225 @@
+Coach;CoachKey;Role;FIA;Confidence;Stability;SampleVotes;EffectiveVotes;ResidualSD;Clubs;Seasons
+Allegri;allegri;P;0.038;0.6472;0.4008;75;64.2;0.615;Juventus | Milan;2023-24 | 2025-26
+Allegri;allegri;D;0.0417;0.8908;0.5797;330;285.6;0.537;Juventus | Milan;2023-24 | 2025-26
+Allegri;allegri;C;-0.048;0.9125;0.587;427;364.9;0.554;Juventus | Milan;2023-24 | 2025-26
+Allegri;allegri;A;-0.1327;0.8294;0.494;205;170.2;0.679;Juventus | Milan;2023-24 | 2025-26
+Andreazzoli;andreazzoli;P;0.0221;0.2424;0.1412;16;11.2;0.716;Empoli;2023-24
+Andreazzoli;andreazzoli;D;-0.0532;0.5902;0.3882;72;50.4;0.52;Empoli;2023-24
+Andreazzoli;andreazzoli;C;-0.0192;0.6552;0.4455;95;66.5;0.47;Empoli;2023-24
+Andreazzoli;andreazzoli;A;-0.0551;0.505;0.3237;51;35.7;0.56;Empoli;2023-24
+Ballardini;ballardini;P;-0.0198;0.1935;0.1468;12;8.4;0.319;Sassuolo;2023-24
+Ballardini;ballardini;D;-0.0515;0.5413;0.3304;59;41.3;0.638;Sassuolo;2023-24
+Ballardini;ballardini;C;-0.0801;0.5495;0.3581;61;42.7;0.535;Sassuolo;2023-24
+Ballardini;ballardini;A;-0.0722;0.4118;0.252;35;24.5;0.634;Sassuolo;2023-24
+Baroni;baroni;P;-0.0305;0.7072;0.4858;102;84.5;0.456;Lazio | Torino | Verona;2023-24 | 2024-25 | 2025-26
+Baroni;baroni;D;-0.0565;0.9216;0.5751;492;411.2;0.603;Lazio | Torino | Verona;2023-24 | 2024-25 | 2025-26
+Baroni;baroni;C;-0.0796;0.923;0.5841;514;419.3;0.58;Lazio | Torino | Verona;2023-24 | 2024-25 | 2025-26
+Baroni;baroni;A;-0.0377;0.8926;0.5388;346;290.8;0.657;Lazio | Torino | Verona;2023-24 | 2024-25 | 2025-26
+Bigica;bigica;P;-0.0126;0.0196;0.0196;1;0.7;0.0;Sassuolo;2023-24
+Bigica;bigica;D;-0.115;0.0909;0.0564;5;3.5;0.612;Sassuolo;2023-24
+Bigica;bigica;C;-0.082;0.0909;0.0555;5;3.5;0.638;Sassuolo;2023-24
+Bigica;bigica;A;-0.0414;0.0385;0.0355;2;1.4;0.084;Sassuolo;2023-24
+Bocchetti;bocchetti;P;0.0277;0.1611;0.1217;8;6.7;0.324;Monza;2024-25
+Bocchetti;bocchetti;D;-0.177;0.4565;0.2889;35;29.4;0.58;Monza;2024-25
+Bocchetti;bocchetti;C;-0.0601;0.5079;0.3308;43;36.1;0.535;Monza;2024-25
+Bocchetti;bocchetti;A;-0.0707;0.2647;0.1926;15;12.6;0.374;Monza;2024-25
+Brambilla;brambilla;P;-0.0045;0.0278;0.0278;1;1.0;0.0;Juventus;2025-26
+Brambilla;brambilla;D;0.0559;0.1026;0.077;4;4.0;0.332;Juventus;2025-26
+Brambilla;brambilla;C;0.0091;0.0789;0.0623;3;3.0;0.267;Juventus;2025-26
+Brambilla;brambilla;A;0.0496;0.1026;0.0772;4;4.0;0.329;Juventus;2025-26
+Calzona;calzona;P;-0.0331;0.2188;0.1618;14;9.8;0.352;Napoli;2023-24
+Calzona;calzona;D;-0.0798;0.5455;0.3435;60;42.0;0.588;Napoli;2023-24
+Calzona;calzona;C;-0.0708;0.5763;0.3715;68;47.6;0.551;Napoli;2023-24
+Calzona;calzona;A;0.0011;0.4898;0.2837;48;33.6;0.726;Napoli;2023-24
+Cannavaro;cannavaro;P;-0.0146;0.1071;0.0679;6;4.2;0.577;Udinese;2023-24
+Cannavaro;cannavaro;D;0.06;0.4253;0.2915;37;25.9;0.459;Udinese;2023-24
+Cannavaro;cannavaro;C;0.078;0.3056;0.2102;22;15.4;0.454;Udinese;2023-24
+Cannavaro;cannavaro;A;0.0226;0.2424;0.1545;16;11.2;0.569;Udinese;2023-24
+Chivu;chivu;P;-0.0393;0.5878;0.4175;52;49.9;0.408;Inter | Parma;2024-25 | 2025-26
+Chivu;chivu;D;0.101;0.8764;0.569;258;248.1;0.54;Inter | Parma;2024-25 | 2025-26
+Chivu;chivu;C;0.1137;0.878;0.5631;263;252.0;0.559;Inter | Parma;2024-25 | 2025-26
+Chivu;chivu;A;0.0647;0.8107;0.4829;156;149.9;0.679;Inter | Parma;2024-25 | 2025-26
+Cioffi G.;cioffi g;P;0.0122;0.3151;0.2098;23;16.1;0.502;Udinese;2023-24
+Cioffi G.;cioffi g;D;-0.0014;0.7409;0.4855;143;100.1;0.526;Udinese;2023-24
+Cioffi G.;cioffi g;C;0.0406;0.6689;0.4176;101;70.7;0.602;Udinese;2023-24
+Cioffi G.;cioffi g;A;0.0187;0.4737;0.2885;45;31.5;0.642;Udinese;2023-24
+Colantuono;colantuono;P;-0.0247;0.1525;0.0918;9;6.3;0.661;Salernitana;2023-24
+Colantuono;colantuono;D;-0.0438;0.5283;0.35;56;39.2;0.509;Salernitana;2023-24
+Colantuono;colantuono;C;-0.0874;0.505;0.3323;51;35.7;0.52;Salernitana;2023-24
+Colantuono;colantuono;A;-0.034;0.2188;0.1411;14;9.8;0.55;Salernitana;2023-24
+Conceicao S.;conceicao s;P;-0.0316;0.3455;0.2283;22;18.5;0.514;Milan;2024-25
+Conceicao S.;conceicao s;D;-0.0475;0.7178;0.475;106;89.0;0.511;Milan;2024-25
+Conceicao S.;conceicao s;C;-0.0955;0.7017;0.4364;98;82.3;0.608;Milan;2024-25
+Conceicao S.;conceicao s;A;0.0246;0.6459;0.3736;76;63.8;0.729;Milan;2024-25
+Conte;conte;P;0.036;0.6691;0.4626;77;70.8;0.446;Napoli;2024-25 | 2025-26
+Conte;conte;D;0.0243;0.91;0.5896;382;353.8;0.543;Napoli;2024-25 | 2025-26
+Conte;conte;C;0.0975;0.9128;0.5803;396;366.2;0.573;Napoli;2024-25 | 2025-26
+Conte;conte;A;0.0217;0.8122;0.4752;167;151.3;0.709;Napoli;2024-25 | 2025-26
+Criscito;criscito;P;-0.0039;0.0278;0.0278;1;1.0;0.0;Genoa;2025-26
+Criscito;criscito;D;0.0747;0.125;0.091;5;5.0;0.374;Genoa;2025-26
+Criscito;criscito;C;0.0195;0.1463;0.1097;6;6.0;0.334;Genoa;2025-26
+Criscito;criscito;A;-0.0343;0.0789;0.0581;3;3.0;0.36;Genoa;2025-26
+Cuesta;cuesta;P;-0.0311;0.5205;0.3082;38;38.0;0.689;Parma;2025-26
+Cuesta;cuesta;D;-0.0225;0.8478;0.5369;195;195.0;0.579;Parma;2025-26
+Cuesta;cuesta;C;-0.0287;0.8554;0.5752;207;207.0;0.487;Parma;2025-26
+Cuesta;cuesta;A;-0.034;0.7009;0.4505;82;82.0;0.556;Parma;2025-26
+D'Aversa;d aversa;P;-0.0569;0.6447;0.4044;78;63.5;0.594;Empoli | Lecce | Torino;2023-24 | 2024-25 | 2025-26
+D'Aversa;d aversa;D;0.0292;0.9026;0.577;395;324.5;0.564;Empoli | Lecce | Torino;2023-24 | 2024-25 | 2025-26
+D'Aversa;d aversa;C;0.0215;0.8965;0.6028;375;303.2;0.487;Empoli | Lecce | Torino;2023-24 | 2024-25 | 2025-26
+D'Aversa;d aversa;A;-0.0158;0.8571;0.5353;260;209.9;0.601;Empoli | Lecce | Torino;2023-24 | 2024-25 | 2025-26
+De Rossi;de rossi;P;-0.0372;0.5677;0.3618;52;46.0;0.569;Genoa | Roma;2023-24 | 2024-25 | 2025-26
+De Rossi;de rossi;D;-0.02;0.8614;0.5551;249;217.5;0.552;Genoa | Roma;2023-24 | 2024-25 | 2025-26
+De Rossi;de rossi;C;-0.0141;0.8668;0.5631;262;227.9;0.54;Genoa | Roma;2023-24 | 2024-25 | 2025-26
+De Rossi;de rossi;A;0.0673;0.7872;0.4779;144;129.5;0.647;Genoa | Roma;2023-24 | 2024-25 | 2025-26
+Di Francesco;di francesco;P;0.037;0.7353;0.4435;115;97.2;0.658;Frosinone | Lecce | Venezia;2023-24 | 2024-25 | 2025-26
+Di Francesco;di francesco;D;-0.0955;0.9266;0.5933;523;442.0;0.562;Frosinone | Lecce | Venezia;2023-24 | 2024-25 | 2025-26
+Di Francesco;di francesco;C;-0.0029;0.9415;0.6309;661;563.8;0.492;Frosinone | Lecce | Venezia;2023-24 | 2024-25 | 2025-26
+Di Francesco;di francesco;A;-0.0441;0.8741;0.5544;287;242.9;0.576;Frosinone | Lecce | Venezia;2023-24 | 2024-25 | 2025-26
+Dionisi;dionisi;P;0.0187;0.3333;0.2237;25;17.5;0.49;Sassuolo;2023-24
+Dionisi;dionisi;D;-0.0706;0.7076;0.4746;121;84.7;0.491;Sassuolo;2023-24
+Dionisi;dionisi;C;-0.0559;0.697;0.4511;115;80.5;0.545;Sassuolo;2023-24
+Dionisi;dionisi;A;-0.0208;0.6324;0.3918;86;60.2;0.614;Sassuolo;2023-24
+Fabregas;fabregas;P;-0.0725;0.6691;0.4728;77;70.8;0.415;Como;2024-25 | 2025-26
+Fabregas;fabregas;D;0.0336;0.9114;0.6042;390;359.9;0.508;Como;2024-25 | 2025-26
+Fabregas;fabregas;C;0.087;0.9129;0.565;404;366.9;0.616;Como;2024-25 | 2025-26
+Fabregas;fabregas;A;-0.0427;0.8347;0.5084;187;176.8;0.642;Como;2024-25 | 2025-26
+Fonseca;fonseca;P;0.0223;0.2898;0.2088;17;14.3;0.388;Milan;2024-25
+Fonseca;fonseca;D;-0.0463;0.6489;0.392;77;64.7;0.655;Milan;2024-25
+Fonseca;fonseca;C;0.0293;0.6658;0.4173;83;69.7;0.595;Milan;2024-25
+Fonseca;fonseca;A;-0.01;0.5552;0.3271;52;43.7;0.697;Milan;2024-25
+Garcia R.;garcia r;P;-0.0577;0.1935;0.1414;12;8.4;0.368;Napoli;2023-24
+Garcia R.;garcia r;D;0.0062;0.5238;0.339;55;38.5;0.545;Napoli;2023-24
+Garcia R.;garcia r;C;0.0353;0.5763;0.3598;68;47.6;0.602;Napoli;2023-24
+Garcia R.;garcia r;A;0.0308;0.4253;0.2417;37;25.9;0.759;Napoli;2023-24
+Gasperini;gasperini;P;-0.0197;0.7353;0.513;115;97.2;0.433;Atalanta | Roma;2023-24 | 2024-25 | 2025-26
+Gasperini;gasperini;D;0.0638;0.944;0.6172;700;590.2;0.529;Atalanta | Roma;2023-24 | 2024-25 | 2025-26
+Gasperini;gasperini;C;0.0737;0.9295;0.5844;548;461.3;0.59;Atalanta | Roma;2023-24 | 2024-25 | 2025-26
+Gasperini;gasperini;A;0.1206;0.8772;0.4883;291;249.9;0.796;Atalanta | Roma;2023-24 | 2024-25 | 2025-26
+Giampaolo;giampaolo;P;0.0037;0.4684;0.3044;35;30.8;0.539;Cremonese | Lecce;2024-25 | 2025-26
+Giampaolo;giampaolo;D;-0.0358;0.8158;0.5131;175;155.0;0.59;Cremonese | Lecce;2024-25 | 2025-26
+Giampaolo;giampaolo;C;-0.0143;0.8271;0.5476;191;167.5;0.51;Cremonese | Lecce;2024-25 | 2025-26
+Giampaolo;giampaolo;A;0.0375;0.7119;0.4257;98;86.5;0.672;Cremonese | Lecce;2024-25 | 2025-26
+Gilardino;gilardino;P;0.0226;0.6303;0.4487;73;59.7;0.405;Genoa | Pisa;2023-24 | 2024-25 | 2025-26
+Gilardino;gilardino;D;-0.0433;0.9026;0.6034;401;324.5;0.496;Genoa | Pisa;2023-24 | 2024-25 | 2025-26
+Gilardino;gilardino;C;-0.0025;0.9028;0.586;393;325.3;0.541;Genoa | Pisa;2023-24 | 2024-25 | 2025-26
+Gilardino;gilardino;A;-0.0291;0.7843;0.4768;151;127.3;0.645;Genoa | Pisa;2023-24 | 2024-25 | 2025-26
+Gotti;gotti;P;-0.0272;0.328;0.2099;22;17.1;0.563;Lecce;2023-24 | 2024-25
+Gotti;gotti;D;0.0024;0.7123;0.4097;112;86.7;0.738;Lecce;2023-24 | 2024-25
+Gotti;gotti;C;-0.0943;0.6921;0.4634;101;78.7;0.493;Lecce;2023-24 | 2024-25
+Gotti;gotti;A;-0.0703;0.6408;0.4077;81;62.4;0.572;Lecce;2023-24 | 2024-25
+Grosso;grosso;P;-0.0192;0.5205;0.3123;38;38.0;0.667;Sassuolo;2025-26
+Grosso;grosso;D;-0.0462;0.8325;0.5308;174;174.0;0.569;Sassuolo;2025-26
+Grosso;grosso;C;0.0307;0.8444;0.5495;190;190.0;0.537;Sassuolo;2025-26
+Grosso;grosso;A;0.0439;0.7812;0.4502;125;125.0;0.735;Sassuolo;2025-26
+Hiljemark;hiljemark;P;-0.0691;0.3;0.2165;15;15.0;0.386;Pisa;2025-26
+Hiljemark;hiljemark;D;-0.1492;0.6667;0.392;70;70.0;0.7;Pisa;2025-26
+Hiljemark;hiljemark;C;-0.1771;0.7266;0.497;93;93.0;0.462;Pisa;2025-26
+Hiljemark;hiljemark;A;-0.1569;0.5455;0.3528;42;42.0;0.546;Pisa;2025-26
+Inzaghi F.;inzaghi f;P;0.0331;0.2424;0.1589;16;11.2;0.526;Salernitana;2023-24
+Inzaghi F.;inzaghi f;D;-0.0499;0.6454;0.4297;91;63.7;0.502;Salernitana;2023-24
+Inzaghi F.;inzaghi f;C;-0.0155;0.6479;0.4073;92;64.4;0.591;Salernitana;2023-24
+Inzaghi F.;inzaghi f;A;-0.0733;0.4186;0.2595;36;25.2;0.613;Salernitana;2023-24
+Inzaghi S.;inzaghi s;P;0.0526;0.6285;0.4488;77;59.2;0.401;Inter;2023-24 | 2024-25
+Inzaghi S.;inzaghi s;D;0.1464;0.9145;0.6139;487;374.4;0.49;Inter;2023-24 | 2024-25
+Inzaghi S.;inzaghi s;C;0.1107;0.8786;0.5654;329;253.4;0.554;Inter;2023-24 | 2024-25
+Inzaghi S.;inzaghi s;A;0.0553;0.8294;0.4768;221;170.1;0.739;Inter;2023-24 | 2024-25
+Italiano;italiano;P;-0.0167;0.7376;0.5034;116;98.4;0.465;Bologna | Fiorentina;2023-24 | 2024-25 | 2025-26
+Italiano;italiano;D;-0.05;0.9285;0.5873;535;454.8;0.581;Bologna | Fiorentina;2023-24 | 2024-25 | 2025-26
+Italiano;italiano;C;-0.0102;0.939;0.594;630;538.9;0.581;Bologna | Fiorentina;2023-24 | 2024-25 | 2025-26
+Italiano;italiano;A;0.0001;0.8923;0.5531;349;290.0;0.613;Bologna | Fiorentina;2023-24 | 2024-25 | 2025-26
+Juric;juric;P;-0.0589;0.5587;0.3604;57;44.3;0.55;Atalanta | Roma | Torino;2023-24 | 2024-25 | 2025-26
+Juric;juric;D;0.0221;0.8681;0.5632;298;230.4;0.541;Atalanta | Roma | Torino;2023-24 | 2024-25 | 2025-26
+Juric;juric;C;-0.0256;0.8537;0.5427;261;204.3;0.573;Atalanta | Roma | Torino;2023-24 | 2024-25 | 2025-26
+Juric;juric;A;-0.0205;0.7804;0.4646;158;124.4;0.68;Atalanta | Roma | Torino;2023-24 | 2024-25 | 2025-26
+Liverani;liverani;P;0.0246;0.0909;0.0635;5;3.5;0.431;Salernitana;2023-24
+Liverani;liverani;D;-0.135;0.3506;0.2378;27;18.9;0.474;Salernitana;2023-24
+Liverani;liverani;C;-0.0309;0.3902;0.2739;32;22.4;0.425;Salernitana;2023-24
+Liverani;liverani;A;-0.0284;0.1667;0.1249;10;7.0;0.334;Salernitana;2023-24
+Martusciello;martusciello;P;-0.0044;0.0196;0.0196;1;0.7;0.0;Lazio;2023-24
+Martusciello;martusciello;D;-0.0184;0.0909;0.0753;5;3.5;0.208;Lazio;2023-24
+Martusciello;martusciello;C;0.0303;0.1071;0.0812;6;4.2;0.32;Lazio;2023-24
+Martusciello;martusciello;A;0.0261;0.0385;0.0234;2;1.4;0.644;Lazio;2023-24
+Mazzarri;mazzarri;P;0.0253;0.2063;0.1491;13;9.1;0.384;Napoli;2023-24
+Mazzarri;mazzarri;D;-0.0468;0.537;0.3507;58;40.6;0.532;Napoli;2023-24
+Mazzarri;mazzarri;C;-0.0815;0.5652;0.3956;65;45.5;0.429;Napoli;2023-24
+Mazzarri;mazzarri;A;-0.0715;0.3976;0.2297;33;23.1;0.731;Napoli;2023-24
+Montero;montero;P;0.0003;0.0566;0.0464;3;2.1;0.219;Juventus;2023-24
+Montero;montero;D;-0.0175;0.1379;0.0718;8;5.6;0.921;Juventus;2023-24
+Montero;montero;C;-0.0656;0.1803;0.115;11;7.7;0.568;Juventus;2023-24
+Montero;montero;A;0.0182;0.1379;0.0897;8;5.6;0.538;Juventus;2023-24
+Mourinho;mourinho;P;0.0;0.2857;0.2038;20;14.0;0.402;Roma;2023-24
+Mourinho;mourinho;D;-0.0263;0.6774;0.4467;105;73.5;0.517;Roma;2023-24
+Mourinho;mourinho;C;-0.0465;0.6855;0.4428;109;76.3;0.548;Roma;2023-24
+Mourinho;mourinho;A;0.0043;0.5;0.2859;50;35.0;0.749;Roma;2023-24
+Nesta;nesta;P;0.0018;0.4266;0.2765;31;26.0;0.543;Monza;2024-25
+Nesta;nesta;D;-0.059;0.805;0.5333;172;144.5;0.51;Monza;2024-25
+Nesta;nesta;C;-0.1044;0.7642;0.5303;135;113.4;0.441;Monza;2024-25
+Nesta;nesta;A;-0.0519;0.6811;0.4389;89;74.8;0.552;Monza;2024-25
+Nicola;nicola;P;-0.0301;0.6775;0.4422;85;73.5;0.532;Cagliari | Cremonese | Empoli;2023-24 | 2024-25 | 2025-26
+Nicola;nicola;D;0.0131;0.9219;0.5803;476;412.9;0.588;Cagliari | Cremonese | Empoli;2023-24 | 2024-25 | 2025-26
+Nicola;nicola;C;-0.0279;0.9133;0.6057;426;368.5;0.508;Cagliari | Cremonese | Empoli;2023-24 | 2024-25 | 2025-26
+Nicola;nicola;A;0.0019;0.8656;0.5368;262;225.3;0.613;Cagliari | Cremonese | Empoli;2023-24 | 2024-25 | 2025-26
+Palladino;palladino;P;0.0794;0.7129;0.4472;105;86.9;0.594;Atalanta | Fiorentina | Monza;2023-24 | 2024-25 | 2025-26
+Palladino;palladino;D;0.029;0.9312;0.6204;568;474.1;0.501;Atalanta | Fiorentina | Monza;2023-24 | 2024-25 | 2025-26
+Palladino;palladino;C;0.0004;0.9293;0.6073;563;459.8;0.53;Atalanta | Fiorentina | Monza;2023-24 | 2024-25 | 2025-26
+Palladino;palladino;A;0.0575;0.8693;0.5129;274;232.8;0.695;Atalanta | Fiorentina | Monza;2023-24 | 2024-25 | 2025-26
+Paulo Sousa;paulo sousa;P;-0.0165;0.1379;0.0893;8;5.6;0.545;Salernitana;2023-24
+Paulo Sousa;paulo sousa;D;-0.1466;0.4565;0.3011;42;29.4;0.516;Salernitana;2023-24
+Paulo Sousa;paulo sousa;C;-0.0643;0.4505;0.3028;41;28.7;0.488;Salernitana;2023-24
+Paulo Sousa;paulo sousa;A;-0.0606;0.2958;0.1915;21;14.7;0.544;Salernitana;2023-24
+Pecchia;pecchia;P;-0.0294;0.375;0.2433;25;21.0;0.541;Parma;2024-25
+Pecchia;pecchia;D;-0.0637;0.7178;0.4195;106;89.0;0.711;Parma;2024-25
+Pecchia;pecchia;C;-0.0259;0.7601;0.4829;132;110.9;0.574;Parma;2024-25
+Pecchia;pecchia;A;-0.0822;0.7323;0.4865;114;95.8;0.505;Parma;2024-25
+Pioli;pioli;P;-0.0298;0.5159;0.3401;49;37.3;0.517;Fiorentina | Milan;2023-24 | 2025-26
+Pioli;pioli;D;-0.054;0.8424;0.5288;242;187.1;0.593;Fiorentina | Milan;2023-24 | 2025-26
+Pioli;pioli;C;-0.102;0.849;0.5365;258;196.8;0.583;Fiorentina | Milan;2023-24 | 2025-26
+Pioli;pioli;A;-0.0053;0.7421;0.4345;134;100.7;0.708;Fiorentina | Milan;2023-24 | 2025-26
+Pisacane;pisacane;P;0.0236;0.5205;0.3293;38;38.0;0.581;Cagliari;2025-26
+Pisacane;pisacane;D;-0.0002;0.856;0.5556;208;208.0;0.541;Cagliari;2025-26
+Pisacane;pisacane;C;0.001;0.838;0.563;181;181.0;0.488;Cagliari;2025-26
+Pisacane;pisacane;A;0.0192;0.7619;0.4593;112;112.0;0.659;Cagliari;2025-26
+Ranieri C.;ranieri c;P;-0.0047;0.584;0.4012;65;49.1;0.456;Cagliari | Roma;2023-24 | 2024-25
+Ranieri C.;ranieri c;D;-0.0147;0.8767;0.5718;330;248.8;0.533;Cagliari | Roma;2023-24 | 2024-25
+Ranieri C.;ranieri c;C;0.0302;0.8823;0.5711;347;262.4;0.545;Cagliari | Roma;2023-24 | 2024-25
+Ranieri C.;ranieri c;A;0.1034;0.7828;0.4747;167;126.1;0.649;Cagliari | Roma;2023-24 | 2024-25
+Runjaic;runjaic;P;-0.0549;0.6696;0.4479;77;70.9;0.495;Udinese;2024-25 | 2025-26
+Runjaic;runjaic;D;-0.0324;0.9178;0.5812;423;390.7;0.579;Udinese;2024-25 | 2025-26
+Runjaic;runjaic;C;-0.0037;0.9089;0.5944;379;349.1;0.529;Udinese;2024-25 | 2025-26
+Runjaic;runjaic;A;0.0112;0.827;0.5032;184;167.4;0.644;Udinese;2024-25 | 2025-26
+Sammarco;sammarco;P;-0.0001;0.3;0.1813;15;15.0;0.655;Verona;2025-26
+Sammarco;sammarco;D;-0.0547;0.72;0.4899;90;90.0;0.47;Verona;2025-26
+Sammarco;sammarco;C;-0.1086;0.6569;0.4623;67;67.0;0.421;Verona;2025-26
+Sammarco;sammarco;A;-0.098;0.4776;0.2851;32;32.0;0.675;Verona;2025-26
+Sarri;sarri;P;0.0552;0.622;0.4279;66;57.6;0.454;Lazio;2023-24 | 2025-26
+Sarri;sarri;D;-0.089;0.8909;0.5864;325;285.7;0.519;Lazio;2023-24 | 2025-26
+Sarri;sarri;C;-0.0658;0.9014;0.563;370;319.9;0.601;Lazio;2023-24 | 2025-26
+Sarri;sarri;A;-0.0901;0.8334;0.5019;200;175.1;0.661;Lazio;2023-24 | 2025-26
+Sottil A.;sottil a;P;-0.0435;0.1525;0.1032;9;6.3;0.478;Udinese;2023-24
+Sottil A.;sottil a;D;-0.0703;0.537;0.3677;58;40.6;0.461;Udinese;2023-24
+Sottil A.;sottil a;C;-0.0588;0.4253;0.2842;37;25.9;0.497;Udinese;2023-24
+Sottil A.;sottil a;A;-0.1105;0.3506;0.2395;27;18.9;0.464;Udinese;2023-24
+Spalletti;spalletti;P;-0.0325;0.4615;0.3144;30;30.0;0.468;Juventus;2025-26
+Spalletti;spalletti;D;0.0499;0.7853;0.513;128;128.0;0.531;Juventus;2025-26
+Spalletti;spalletti;C;0.0428;0.8223;0.5317;162;162.0;0.547;Juventus;2025-26
+Spalletti;spalletti;A;0.047;0.6957;0.4088;80;80.0;0.702;Juventus;2025-26
+Thiago Motta;thiago motta;P;-0.0039;0.5928;0.4232;67;51.0;0.401;Bologna | Juventus;2023-24 | 2024-25
+Thiago Motta;thiago motta;D;0.1081;0.8699;0.5659;309;234.1;0.537;Bologna | Juventus;2023-24 | 2024-25
+Thiago Motta;thiago motta;C;0.0034;0.9006;0.5716;420;317.2;0.576;Bologna | Juventus;2023-24 | 2024-25
+Thiago Motta;thiago motta;A;0.0164;0.7626;0.4543;144;112.4;0.679;Bologna | Juventus;2023-24 | 2024-25
+Tudor;tudor;P;0.0077;0.3845;0.2826;26;21.9;0.361;Juventus | Lazio;2023-24 | 2024-25 | 2025-26
+Tudor;tudor;D;-0.0149;0.7449;0.4975;122;102.2;0.497;Juventus | Lazio;2023-24 | 2024-25 | 2025-26
+Tudor;tudor;C;0.0166;0.7706;0.5057;141;117.5;0.524;Juventus | Lazio;2023-24 | 2024-25 | 2025-26
+Tudor;tudor;A;-0.0907;0.6644;0.3958;81;69.3;0.679;Juventus | Lazio;2023-24 | 2024-25 | 2025-26
+Vanoli;vanoli;P;0.0515;0.6313;0.3938;66;59.9;0.603;Fiorentina | Torino;2024-25 | 2025-26
+Vanoli;vanoli;D;-0.0403;0.9074;0.5834;379;343.0;0.555;Fiorentina | Torino;2024-25 | 2025-26
+Vanoli;vanoli;C;-0.0285;0.8953;0.5763;328;299.4;0.554;Fiorentina | Torino;2024-25 | 2025-26
+Vanoli;vanoli;A;-0.0319;0.7947;0.4787;151;135.5;0.66;Fiorentina | Torino;2024-25 | 2025-26
+Vieira P.;vieira p;P;0.0463;0.4751;0.3271;36;31.7;0.452;Genoa;2024-25 | 2025-26
+Vieira P.;vieira p;D;0.0148;0.8197;0.5513;182;159.1;0.487;Genoa;2024-25 | 2025-26
+Vieira P.;vieira p;C;-0.0616;0.8275;0.5456;189;167.9;0.517;Genoa;2024-25 | 2025-26
+Vieira P.;vieira p;A;-0.0813;0.7024;0.4425;93;82.6;0.587;Genoa;2024-25 | 2025-26
+Zanetti;zanetti;P;-0.0815;0.6225;0.4258;65;57.7;0.462;Empoli | Verona;2023-24 | 2024-25 | 2025-26
+Zanetti;zanetti;D;-0.196;0.8997;0.5447;352;313.8;0.652;Empoli | Verona;2023-24 | 2024-25 | 2025-26
+Zanetti;zanetti;C;-0.1419;0.8853;0.5667;306;270.1;0.562;Empoli | Verona;2023-24 | 2024-25 | 2025-26
+Zanetti;zanetti;A;-0.0612;0.8374;0.5323;203;180.3;0.573;Empoli | Verona;2023-24 | 2024-25 | 2025-26
