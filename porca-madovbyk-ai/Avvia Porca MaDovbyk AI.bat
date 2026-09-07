@@ -61,6 +61,8 @@ if errorlevel 1 goto :error
 if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\decision_explainable_reports.py
 if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\explainable_reports_v52.py
+if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\control_center_explainable.py
 if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\repair_report_explainable.py
