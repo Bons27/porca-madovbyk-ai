@@ -33,24 +33,30 @@ def build():
         text,
         "\n\nPROJECT_ROOT = Path(__file__).resolve().parent",
         (
-            "\n\nfrom src.player_detail_dashboard import render_player_detail\n\n"
+            "\n\nfrom src.player_detail_dashboard import render_player_detail\n"
+            "from src.chat_dashboard import render_chat_page\n\n"
             "PROJECT_ROOT = Path(__file__).resolve().parent"
         ),
-        "import scheda giocatore",
+        "import scheda giocatore e Chat",
     )
 
     text = replace_once(
         text,
         '    "Talent Scout",\n    "Asta Febbraio",',
-        '    "Talent Scout",\n    "FIA Allenatori",\n    "Asta Febbraio",',
-        "navigazione FIA Allenatori",
+        '    "Talent Scout",\n    "Chat",\n    "FIA Allenatori",\n    "Asta Febbraio",',
+        "navigazione Chat e FIA Allenatori",
     )
 
     text = replace_once(
         text,
         '        ("🕵️ Talent Scout", "Talent Scout", "Svincolati, trend e Breakout Score."),\n        ("🛠 Asta Febbraio", "Asta Febbraio", "Tagli, budget, target e MAX bid."),',
-        '        ("🕵️ Talent Scout", "Talent Scout", "Svincolati, trend e Breakout Score."),\n        ("👔 FIA Allenatori", "FIA Allenatori", "Storico, corrente e impatto finale per P/D/C/A."),\n        ("🛠 Asta Febbraio", "Asta Febbraio", "Tagli, budget, target e MAX bid."),',
-        "card Home FIA Allenatori",
+        (
+            '        ("🕵️ Talent Scout", "Talent Scout", "Svincolati, trend e Breakout Score."),\n'
+            '        ("💬 Chat", "Chat", "Chiedi qualunque cosa direttamente alla chat AI."),\n'
+            '        ("👔 FIA Allenatori", "FIA Allenatori", "Storico, corrente e impatto finale per P/D/C/A."),\n'
+            '        ("🛠 Asta Febbraio", "Asta Febbraio", "Tagli, budget, target e MAX bid."),'
+        ),
+        "card Home Chat e FIA Allenatori",
     )
 
     text = replace_once(
@@ -162,8 +168,18 @@ def build():
     text = replace_once(
         text,
         'elif page == "Asta Febbraio":',
-        'elif page == "FIA Allenatori":\n    from src.fia_coach_dashboard import render_fia_coaches\n\n    render_fia_coaches(\n        PROJECT_ROOT,\n        get_player_context(),\n    )\n\n\nelif page == "Asta Febbraio":',
-        "pagina FIA Allenatori",
+        (
+            'elif page == "Chat":\n'
+            '    render_chat_page()\n\n\n'
+            'elif page == "FIA Allenatori":\n'
+            '    from src.fia_coach_dashboard import render_fia_coaches\n\n'
+            '    render_fia_coaches(\n'
+            '        PROJECT_ROOT,\n'
+            '        get_player_context(),\n'
+            '    )\n\n\n'
+            'elif page == "Asta Febbraio":'
+        ),
+        "pagine Chat e FIA Allenatori",
     )
 
     text = replace_once(
