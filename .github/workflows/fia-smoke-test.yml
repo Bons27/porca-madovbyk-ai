@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "porca-madovbyk-ai/app_v4.py"
+      - "porca-madovbyk-ai/streamlit_app.py"
       - "porca-madovbyk-ai/src/build_dashboard_v5.py"
       - "porca-madovbyk-ai/src/player_context_v3.py"
       - "porca-madovbyk-ai/src/fia_coach_dashboard.py"
@@ -44,6 +45,7 @@ jobs:
       - name: Compile stable modules
         working-directory: porca-madovbyk-ai
         run: |
+          python -m py_compile streamlit_app.py
           python -m py_compile _app_runtime_v5.py
           python -m py_compile src/player_context_v3.py
           python -m py_compile src/fia_coach_dashboard.py
