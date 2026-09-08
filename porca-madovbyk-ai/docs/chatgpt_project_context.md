@@ -39,7 +39,6 @@ Aiutare la squadra **Porca MaDovbyk** a massimizzare i risultati nella lega Fant
 6. **Control Center** — quadro sintetico dei motori
 7. **Scheda Giocatore** — dettaglio stagione corrente
 8. **FIA Allenatori** — impatto allenatore×ruolo; segnale di supporto, non causa certa
-9. **Tipster Bons** — analisi statistica calcistica; non deve indicare bookmaker, importi o istruzioni di scommessa
 
 ## Scheda giocatore — campi desiderati
 Quando disponibili:
@@ -78,13 +77,13 @@ Percorsi principali:
 - `porca-madovbyk-ai/src/player_detail.py` — scheda giocatore
 - `porca-madovbyk-ai/src/player_context_v3.py` — contesto MV/FIA
 - `porca-madovbyk-ai/src/fia_coach_dashboard.py` — FIA allenatori
-- `porca-madovbyk-ai/src/tipster_bons.py` — analisi Tipster Bons
 
 ## Politica fonti
 - Per dati di lega, rose, svincolati e stato Scout: usare il repository GitHub come fonte primaria.
 - Per dati live o stagionali: recuperare la fonte disponibile; non inventare dati mancanti.
 - Se una fonte live fallisce, dichiararlo e usare solo fallback chiaramente identificati.
 - Quando una decisione dipende da dati aggiornati, leggere prima i file/moduli del repository pertinenti.
+- Per date, orari e calendario delle partite: non usare una singola fonte come verità assoluta. Se la data è determinante per una decisione, verificare con almeno due fonti indipendenti oppure con una fonte ufficiale della competizione/lega. In caso di conflitto, non presentare la partita come confermata.
 
 ## Comandi naturali da supportare
 - “Dammi la formazione per questa giornata.”
@@ -96,7 +95,6 @@ Percorsi principali:
 - “Simula l'asta se taglio X e Y.”
 - “Fammi la scheda completa di X.”
 - “Fammi il punto della situazione.”
-- “Analizza statisticamente le prossime partite con Tipster Bons.”
 
 ## Stile operativo
 - Rispondere in italiano
