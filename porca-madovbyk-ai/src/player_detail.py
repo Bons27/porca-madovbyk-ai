@@ -59,19 +59,15 @@ def _clean_url(href):
     return urljoin(BASE_URL, str(href).strip())
 
 
-def fetch_profile_index():
-    """Return normalized player name -> public Fantacalcio profile URL."""
-
-    soup = get_soup(QUOTATIONS_URL)
+def _index_profile_links(soup):
     result = {}
+    seen = set()
 
     selectors = (
         "a.player-name.player-link[href]",
         "a[href*='/serie-a/squadre/']",
         "a[href*='/squadre/']",
     )
-
-    seen = set()
 
     for selector in selectors:
         for anchor in soup.select(selector):
@@ -102,8 +98,7 @@ def fetch_profile_index():
     return result
 
 
-def find_profile_url(player_name):
-    index = fetch_profile_index()
+def _find_url_in_index(index, player_name):
     key = normalize_name(player_name)
 
     if key in index:
@@ -116,6 +111,33 @@ def find_profile_url(player_name):
 
     if len(candidates) == 1:
         return candidates[0]
+
+    return None
+
+
+def fetch_profile_index():
+    """Return normalized player name -> public Fantacalcio profile URL."""
+
+    return _index_profile_links(get_soup(QUOTATIONS_URL))
+
+
+def _club_slug(club):
+    return normalize_name(club).replace(" ", "-")
+
+
+def find_profile_url(player_name, club=None):
+    url = _find_url_in_index(fetch_profile_index(), player_name)
+    if url:
+        return url
+
+    # Fallback: the team page also exposes the complete current roster.
+    if club:
+        team_url = f"{BASE_URL}/serie-a/squadre/{_club_slug(club)}"
+        try:
+            team_index = _index_profile_links(get_soup(team_url))
+            return _find_url_in_index(team_index, player_name)
+        except Exception:
+            pass
 
     return None
 
@@ -151,6 +173,20 @@ def _status_from_metadata(metadata):
     return None
 
 
+def _header_index(headers, expected):
+    expected = expected.casefold()
+    for index, header in enumerate(headers):
+        if expected in header.casefold():
+            return index
+    return None
+
+
+def _cell_at(cells, index):
+    if index is None or index < 0 or index >= len(cells):
+        return ""
+    return cells[index]
+
+
 def _extract_matchday_rows(soup):
     rows = []
 
@@ -162,17 +198,32 @@ def _extract_matchday_rows(soup):
         if "giornata" not in header_text or "voto" not in header_text:
             continue
 
+        day_index = _header_index(headers, "giornata")
+        vote_index = _header_index(headers, "voto")
+        fv_index = _header_index(headers, "fv")
+        entered_index = _header_index(headers, "entrato")
+        exited_index = _header_index(headers, "uscito")
+        bonus_index = _header_index(headers, "bonus")
+
         for row in table.find_all("tr"):
             cells = [cell.get_text(" ", strip=True) for cell in row.find_all("td")]
             if not cells:
                 continue
 
             day = None
-            for value in cells[:3]:
-                match = re.fullmatch(r"\s*(\d{1,2})\s*", value)
+
+            direct_day = _cell_at(cells, day_index)
+            if direct_day:
+                match = re.fullmatch(r"\s*(\d{1,2})\s*", direct_day)
                 if match:
                     day = int(match.group(1))
-                    break
+
+            if day is None:
+                for value in cells[:3]:
+                    match = re.fullmatch(r"\s*(\d{1,2})\s*", value)
+                    if match:
+                        day = int(match.group(1))
+                        break
 
             if day is None:
                 continue
@@ -188,59 +239,67 @@ def _extract_matchday_rows(soup):
             metadata = _row_metadata(row)
             status = _status_from_metadata(metadata)
 
-            vote = None
-            fantasy_vote = None
-            entered = None
-            exited = None
+            vote = _to_float(_cell_at(cells, vote_index))
+            fantasy_vote = _to_float(_cell_at(cells, fv_index))
+            entered = _to_int(_cell_at(cells, entered_index))
+            exited = _to_int(_cell_at(cells, exited_index))
 
-            numeric_values = []
-            for value in cells:
-                if re.fullmatch(r"\d+(?:[.,]\d+)?", value.strip()):
-                    numeric_values.append(value.strip())
+            # Some layouts insert the fixture as an extra cell and shift columns.
+            # If direct header mapping failed, recover vote/FV conservatively.
+            if vote is None:
+                numeric_values = []
+                for value in cells:
+                    if re.fullmatch(r"\d+(?:[.,]\d+)?", value.strip()):
+                        numeric_values.append(value.strip())
 
-            # The first integer is often the matchday. Votes generally follow.
-            if numeric_values:
-                working = list(numeric_values)
-                if _to_int(working[0]) == day:
-                    working = working[1:]
+                if numeric_values:
+                    working = list(numeric_values)
+                    if _to_int(working[0]) == day:
+                        working = working[1:]
 
-                plausible_votes = [
-                    _to_float(value)
-                    for value in working
-                    if _to_float(value) is not None and 1.0 <= _to_float(value) <= 15.0
-                ]
-                if plausible_votes:
-                    vote = plausible_votes[0]
-                    if len(plausible_votes) > 1:
-                        fantasy_vote = plausible_votes[1]
+                    plausible_votes = [
+                        _to_float(value)
+                        for value in working
+                        if _to_float(value) is not None and 1.0 <= _to_float(value) <= 15.0
+                    ]
+                    if plausible_votes:
+                        vote = plausible_votes[0]
+                        if fantasy_vote is None and len(plausible_votes) > 1:
+                            fantasy_vote = plausible_votes[1]
 
             if vote is not None:
-                # If an explicit entrance minute is visible, he came from the bench.
-                entrance_match = re.search(r"(?:entrato|subentrato)[^0-9]{0,8}(\d{1,3})", metadata)
-                if entrance_match:
-                    entered = int(entrance_match.group(1))
+                if entered is not None and entered > 0:
                     status = "Entrato"
-                elif status is None:
-                    status = "Titolare"
+                else:
+                    entrance_match = re.search(
+                        r"(?:entrato|subentrato)[^0-9]{0,8}(\d{1,3})",
+                        metadata,
+                    )
+                    if entrance_match:
+                        entered = int(entrance_match.group(1))
+                        status = "Entrato"
+                    elif status is None:
+                        status = "Titolare"
             elif status is None:
                 status = "Non a voto"
 
-            bonus_malus = ""
-            for value in cells:
-                lowered = value.casefold()
-                if any(
-                    token in lowered
-                    for token in (
-                        "gol",
-                        "assist",
-                        "ammon",
-                        "espuls",
-                        "rigor",
-                        "autorete",
-                    )
-                ):
-                    bonus_malus = value
-                    break
+            bonus_malus = _cell_at(cells, bonus_index)
+            if not bonus_malus:
+                for value in cells:
+                    lowered = value.casefold()
+                    if any(
+                        token in lowered
+                        for token in (
+                            "gol",
+                            "assist",
+                            "ammon",
+                            "espuls",
+                            "rigor",
+                            "autorete",
+                        )
+                    ):
+                        bonus_malus = value
+                        break
 
             rows.append(
                 {
@@ -251,7 +310,7 @@ def _extract_matchday_rows(soup):
                     "fantasy_vote": fantasy_vote,
                     "entered": entered,
                     "exited": exited,
-                    "bonus_malus": bonus_malus,
+                    "bonus_malus": bonus_malus or "",
                 }
             )
 
@@ -268,8 +327,14 @@ def parse_profile_soup(soup, requested_name=""):
     h1 = soup.find("h1")
     name = h1.get_text(" ", strip=True) if h1 else requested_name
 
-    mv = _first_float(r"Media(?:\s+\d{2}[-/]\d{2})?\s+([0-9]+(?:[.,][0-9]+)?)\s*MV", text)
-    fm = _first_float(r"Media(?:\s+\d{2}[-/]\d{2})?.{0,80}?([0-9]+(?:[.,][0-9]+)?)\s*FM", text)
+    mv = _first_float(
+        r"Media(?:\s+\d{2}[-/]\d{2})?\s+([0-9]+(?:[.,][0-9]+)?)\s*MV",
+        text,
+    )
+    fm = _first_float(
+        r"Media(?:\s+\d{2}[-/]\d{2})?.{0,80}?([0-9]+(?:[.,][0-9]+)?)\s*FM",
+        text,
+    )
 
     stats = {
         "games_with_vote": _first_int(r"Partite\s+a\s+voto\s+(\d+)", text),
@@ -336,11 +401,12 @@ def fetch_player_detail(player_name):
         if len(candidates) == 1:
             catalog_player = candidates[0]
 
-    profile_url = find_profile_url(player_name)
+    club = catalog_player.get("club", "") if catalog_player else ""
+    profile_url = find_profile_url(player_name, club=club)
 
     detail = {
         "name": player_name,
-        "club": catalog_player.get("club", "") if catalog_player else "",
+        "club": club,
         "role": catalog_player.get("role", "") if catalog_player else "",
         "average_vote": None,
         "fantasy_average": None,
@@ -356,7 +422,7 @@ def fetch_player_detail(player_name):
         "own_goals": 0,
         "current_value": catalog_player.get("current_value") if catalog_player else None,
         "fvmp": catalog_player.get("fvmp") if catalog_player else None,
-        "usage": {key: {"count": 0, "percentage": 0} for key in STATUS_KEYS},
+        "usage": {label: {"count": 0, "percentage": 0} for label in STATUS_KEYS},
         "matchdays": [],
         "profile_url": profile_url,
         "season": CURRENT_SEASON,
