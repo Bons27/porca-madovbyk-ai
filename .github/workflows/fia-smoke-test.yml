@@ -9,7 +9,11 @@ on:
       - "porca-madovbyk-ai/src/fia_coach_dashboard.py"
       - "porca-madovbyk-ai/src/player_detail.py"
       - "porca-madovbyk-ai/src/player_detail_dashboard.py"
+      - "porca-madovbyk-ai/src/chat_engine.py"
+      - "porca-madovbyk-ai/src/chat_dashboard.py"
       - "porca-madovbyk-ai/tests/test_player_detail.py"
+      - "porca-madovbyk-ai/tests/test_chat_engine.py"
+      - "porca-madovbyk-ai/.gitignore"
       - "porca-madovbyk-ai/src/decision_fia.py"
       - "porca-madovbyk-ai/src/start_score.py"
       - "porca-madovbyk-ai/src/trade_value.py"
@@ -48,6 +52,8 @@ jobs:
           python -m py_compile src/fia_coach_dashboard.py
           python -m py_compile src/player_detail.py
           python -m py_compile src/player_detail_dashboard.py
+          python -m py_compile src/chat_engine.py
+          python -m py_compile src/chat_dashboard.py
           python -m py_compile src/decision_fia.py
           python -m py_compile src/start_score.py
           python -m py_compile src/trade_value.py
@@ -58,20 +64,26 @@ jobs:
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_player_detail -v
 
-      - name: Probe live player detail source
+      - name: Test Chat engine parser
+        working-directory: porca-madovbyk-ai
+        run: python -m unittest tests.test_chat_engine -v
+
+      - name: Probe live player detail source and role
         working-directory: porca-madovbyk-ai
         run: |
           python - <<'PY'
           from src.player_detail import fetch_player_detail
 
-          detail = fetch_player_detail("Hojlund")
+          detail = fetch_player_detail("Cristante")
           assert detail.get("profile_url"), detail
           assert detail.get("current_value") is not None, detail
           assert detail.get("games_with_vote") is not None, detail
           assert detail.get("usage") is not None, detail
+          assert detail.get("role") == "C", detail
           print(
               "Player detail live: OK",
               detail.get("name"),
+              detail.get("role"),
               detail.get("current_value"),
               detail.get("games_with_vote"),
           )
