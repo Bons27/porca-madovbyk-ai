@@ -61,7 +61,8 @@ def render_tipster_bons():
             st.rerun()
     with right:
         st.caption(
-            "Fonte dati: Football-Data.co.uk · risultati stagione corrente + fixture/consenso mercato disponibile."
+            "Calendari/risultati: FixtureDownload · consenso mercato: Football-Data quando disponibile. "
+            "Un guasto del feed quote non blocca più l'analisi."
         )
 
     if not selected:
@@ -80,6 +81,17 @@ def render_tipster_bons():
         return
 
     top = analysis[0]
+
+    source_left, source_right = st.columns(2)
+    source_left.caption(
+        f"📅 Calendario: {top.get('fixture_source') or 'fonte disponibile'}"
+    )
+    if top.get("market_source"):
+        source_right.caption("🌐 Consenso mercato: disponibile")
+    else:
+        source_right.caption(
+            "🌐 Consenso mercato: temporaneamente non disponibile; il modello resta operativo"
+        )
 
     st.subheader("🔎 Scenario principale da monitorare")
     with st.container(border=True):
@@ -145,6 +157,7 @@ def render_tipster_bons():
                 "Probabilità": _pct(item["scenario_probability"]),
                 "Confidenza": f"{item['confidence']:.0f}/100",
                 "Gol attesi": f"{item['expected_home_goals']:.2f}-{item['expected_away_goals']:.2f}",
+                "Fonte": item.get("fixture_source") or "n/d",
             }
         )
 
@@ -155,5 +168,6 @@ def render_tipster_bons():
             "Tipster Bons usa un modello Poisson semplice alimentato dalle partite della stagione corrente, "
             "con particolare peso alla produzione casa/trasferta e alla forma recente. "
             "Calcola probabilità 1X2, 3+ gol, 0-2 gol ed entrambe a segno, poi sceglie lo scenario con il segnale più netto. "
-            "Il consenso di mercato, quando presente, viene mostrato solo come confronto diagnostico."
+            "FixtureDownload è la fonte primaria per calendario e risultati; Football-Data viene usato solo come "
+            "arricchimento del consenso di mercato quando il suo feed è raggiungibile."
         )
