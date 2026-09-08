@@ -6,6 +6,10 @@ _app_runtime_v5.py
 __pycache__/
 *.pyc
 
+# Legacy local secret safety
+.streamlit/gemini_api_key.txt
+.streamlit/secrets.toml
+
 # Local logs and temporary files
 *.log
 *.tmp
