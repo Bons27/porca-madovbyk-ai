@@ -58,8 +58,8 @@ if exist "__pycache__" rmdir /s /q "__pycache__"
 if exist "_app_runtime_v5.py" del /q "_app_runtime_v5.py"
 
 echo.
-echo Preparo Dashboard V5.1 stabile...
-".venv\Scripts\python.exe" -m src.build_dashboard_v5
+echo Preparo Dashboard V5.1 stabile + Tipster Bons...
+".venv\Scripts\python.exe" -m src.build_dashboard_v5_tipster
 if errorlevel 1 goto :error
 
 echo Verifico Dashboard V5.1...
@@ -75,7 +75,15 @@ if errorlevel 1 goto :error
 if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m py_compile src\trade_value.py
 if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\tipster_bons.py
+if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\tipster_bons_dashboard.py
+if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\build_dashboard_v5_tipster.py
+if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -c "from src.decision_fia import player_fia, fia_decision_score; print('FIA V5.1 core check: OK')"
+if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -c "from src.tipster_bons import model_probabilities; p=model_probabilities(1.4,1.1); assert abs(p['home_win']+p['draw']+p['away_win']-1)<0.001; print('Tipster Bons core check: OK')"
 if errorlevel 1 goto :error
 
 echo.
