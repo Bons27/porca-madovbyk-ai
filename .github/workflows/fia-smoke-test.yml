@@ -5,15 +5,11 @@ on:
     paths:
       - "porca-madovbyk-ai/app_v4.py"
       - "porca-madovbyk-ai/src/build_dashboard_v5.py"
-      - "porca-madovbyk-ai/src/build_dashboard_v5_tipster.py"
       - "porca-madovbyk-ai/src/player_context_v3.py"
       - "porca-madovbyk-ai/src/fia_coach_dashboard.py"
       - "porca-madovbyk-ai/src/player_detail.py"
       - "porca-madovbyk-ai/src/player_detail_dashboard.py"
-      - "porca-madovbyk-ai/src/tipster_bons.py"
-      - "porca-madovbyk-ai/src/tipster_bons_dashboard.py"
       - "porca-madovbyk-ai/tests/test_player_detail.py"
-      - "porca-madovbyk-ai/tests/test_tipster_bons.py"
       - "porca-madovbyk-ai/.gitignore"
       - "porca-madovbyk-ai/src/decision_fia.py"
       - "porca-madovbyk-ai/src/start_score.py"
@@ -41,21 +37,18 @@ jobs:
         working-directory: porca-madovbyk-ai
         run: pip install -r requirements.txt
 
-      - name: Build stable Dashboard V5.1 with Tipster Bons
+      - name: Build stable Dashboard V5.1
         working-directory: porca-madovbyk-ai
-        run: python -m src.build_dashboard_v5_tipster
+        run: python -m src.build_dashboard_v5
 
       - name: Compile stable modules
         working-directory: porca-madovbyk-ai
         run: |
           python -m py_compile _app_runtime_v5.py
-          python -m py_compile src/build_dashboard_v5_tipster.py
           python -m py_compile src/player_context_v3.py
           python -m py_compile src/fia_coach_dashboard.py
           python -m py_compile src/player_detail.py
           python -m py_compile src/player_detail_dashboard.py
-          python -m py_compile src/tipster_bons.py
-          python -m py_compile src/tipster_bons_dashboard.py
           python -m py_compile src/decision_fia.py
           python -m py_compile src/start_score.py
           python -m py_compile src/trade_value.py
@@ -65,34 +58,6 @@ jobs:
       - name: Test player detail parser
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_player_detail -v
-
-      - name: Test Tipster Bons engine
-        working-directory: porca-madovbyk-ai
-        run: python -m unittest tests.test_tipster_bons -v
-
-      - name: Probe live Tipster Bons fixture source
-        working-directory: porca-madovbyk-ai
-        run: |
-          python - <<'PY'
-          from datetime import date
-          from src.tipster_bons import fetch_upcoming_fixtures
-
-          fixtures = fetch_upcoming_fixtures(
-              divisions=["E0"],
-              start_date=date.today(),
-              horizon_days=14,
-          )
-          assert fixtures, "No upcoming Premier League fixtures found"
-          assert any(item.get("fixture_source") == "FixtureDownload" for item in fixtures), fixtures[:3]
-          print(
-              "Tipster live fixtures: OK",
-              len(fixtures),
-              fixtures[0]["date"],
-              fixtures[0]["home"],
-              fixtures[0]["away"],
-              fixtures[0].get("fixture_source"),
-          )
-          PY
 
       - name: Probe live player detail source and role
         working-directory: porca-madovbyk-ai
@@ -113,17 +78,6 @@ jobs:
               detail.get("current_value"),
               detail.get("games_with_vote"),
           )
-          PY
-
-      - name: Verify Tipster Bons runtime wiring
-        working-directory: porca-madovbyk-ai
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          text = Path("_app_runtime_v5.py").read_text(encoding="utf-8")
-          assert '"Tipster Bons"' in text
-          assert "render_tipster_bons" in text
-          print("Tipster Bons runtime wiring: OK")
           PY
 
       - name: Verify stable FIA core imports
