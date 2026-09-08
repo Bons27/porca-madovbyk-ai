@@ -58,6 +58,25 @@ jobs:
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_player_detail -v
 
+      - name: Probe live player detail source
+        working-directory: porca-madovbyk-ai
+        run: |
+          python - <<'PY'
+          from src.player_detail import fetch_player_detail
+
+          detail = fetch_player_detail("Hojlund")
+          assert detail.get("profile_url"), detail
+          assert detail.get("current_value") is not None, detail
+          assert detail.get("games_with_vote") is not None, detail
+          assert detail.get("usage") is not None, detail
+          print(
+              "Player detail live: OK",
+              detail.get("name"),
+              detail.get("current_value"),
+              detail.get("games_with_vote"),
+          )
+          PY
+
       - name: Verify stable FIA core imports
         working-directory: porca-madovbyk-ai
         run: |
