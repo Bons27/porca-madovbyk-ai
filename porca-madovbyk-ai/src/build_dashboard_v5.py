@@ -31,6 +31,16 @@ def build():
 
     text = replace_once(
         text,
+        "\n\nPROJECT_ROOT = Path(__file__).resolve().parent",
+        (
+            "\n\nfrom src.player_detail_dashboard import render_player_detail\n\n"
+            "PROJECT_ROOT = Path(__file__).resolve().parent"
+        ),
+        "import scheda giocatore",
+    )
+
+    text = replace_once(
+        text,
         '    "Talent Scout",\n    "Asta Febbraio",',
         '    "Talent Scout",\n    "FIA Allenatori",\n    "Asta Febbraio",',
         "navigazione FIA Allenatori",
@@ -52,6 +62,105 @@ def build():
 
     text = replace_once(
         text,
+        'def go_to(page):\n    st.session_state["page"] = page\n',
+        (
+            'def go_to(page):\n'
+            '    st.session_state["page"] = page\n\n\n'
+            'def open_player_detail(name):\n'
+            '    st.session_state["selected_player"] = name\n'
+            '    st.session_state["player_return_page"] = st.session_state.get("page", "Home")\n\n\n'
+            'def report_player_names(report):\n'
+            '    plain = report_plain(report)\n'
+            '    lowered = plain.casefold()\n'
+            '    found = []\n'
+            '    seen = set()\n\n'
+            '    for item in get_player_context().values():\n'
+            '        name = str(item.get("name", "")).strip()\n'
+            '        if not name or name in seen:\n'
+            '            continue\n'
+            '        position = lowered.find(name.casefold())\n'
+            '        if position >= 0:\n'
+            '            found.append((position, name))\n'
+            '            seen.add(name)\n\n'
+            '    found.sort(key=lambda value: value[0])\n'
+            '    return [name for _, name in found]\n\n\n'
+            'def render_report_player_links(report, key_prefix):\n'
+            '    names = report_player_names(report)\n'
+            '    if not names:\n'
+            '        return\n\n'
+            '    st.subheader("👤 Schede giocatori")\n'
+            '    st.caption("Apri il dettaglio completo della stagione corrente.")\n'
+            '    columns = st.columns(4)\n'
+            '    for index, name in enumerate(names[:28]):\n'
+            '        with columns[index % 4]:\n'
+            '            st.button(\n'
+            '                name,\n'
+            '                key=f"{key_prefix}_player_{index}",\n'
+            '                use_container_width=True,\n'
+            '                on_click=open_player_detail,\n'
+            '                args=(name,),\n'
+            '            )\n'
+        ),
+        "navigazione scheda giocatore",
+    )
+
+    text = replace_once(
+        text,
+        '        renderer(report)\n',
+        (
+            '        renderer(report)\n'
+            '        if session_key in {"repair_report_v4", "auction_simulation_report_v4"}:\n'
+            '            render_report_player_links(report, session_key)\n'
+        ),
+        "schede giocatori report asta",
+    )
+
+    text = replace_once(
+        text,
+        '                    st.caption(\n                        f"FVM {player.get(\'fvmp\', 0)} · Q {player.get(\'current_value\', 0)}"\n                    )',
+        (
+            '                    st.caption(\n'
+            '                        f"FVM {player.get(\'fvmp\', 0)} · Q {player.get(\'current_value\', 0)}"\n'
+            '                    )\n'
+            '                    st.button(\n'
+            '                        "👤 Dettagli stagione",\n'
+            '                        key=f"scout_detail_{index}",\n'
+            '                        use_container_width=True,\n'
+            '                        on_click=open_player_detail,\n'
+            '                        args=(name,),\n'
+            '                    )'
+        ),
+        "scheda giocatore card Talent Scout",
+    )
+
+    text = replace_once(
+        text,
+        '        st.dataframe(\n            rows,\n            use_container_width=True,\n            hide_index=True,\n        )',
+        (
+            '        st.dataframe(\n'
+            '            rows,\n'
+            '            use_container_width=True,\n'
+            '            hide_index=True,\n'
+            '        )\n\n'
+            '        if filtered:\n'
+            '            scout_detail_name = st.selectbox(\n'
+            '                "👤 Apri la scheda di uno svincolato",\n'
+            '                [player.get("name", "N/D") for player in filtered],\n'
+            '                key="scout_detail_picker",\n'
+            '            )\n'
+            '            st.button(\n'
+            '                "Apri dettaglio stagione",\n'
+            '                key="scout_detail_picker_button",\n'
+            '                use_container_width=True,\n'
+            '                on_click=open_player_detail,\n'
+            '                args=(scout_detail_name,),\n'
+            '            )'
+        ),
+        "picker scheda giocatore Talent Scout",
+    )
+
+    text = replace_once(
+        text,
         'elif page == "Asta Febbraio":',
         'elif page == "FIA Allenatori":\n    from src.fia_coach_dashboard import render_fia_coaches\n\n    render_fia_coaches(\n        PROJECT_ROOT,\n        get_player_context(),\n    )\n\n\nelif page == "Asta Febbraio":',
         "pagina FIA Allenatori",
@@ -62,6 +171,12 @@ def build():
         'page = st.session_state["page"]\n\n\n# ============================================================\n# PAGINE',
         (
             'page = st.session_state["page"]\n\n\n'
+            'if st.session_state.get("selected_player"):\n'
+            '    render_player_detail(\n'
+            '        st.session_state["selected_player"],\n'
+            '        st.session_state.get("player_return_page", page),\n'
+            '    )\n'
+            '    st.stop()\n\n\n'
             'if page != "Home":\n'
             '    nav_home_col, nav_space_col = st.columns([1, 5])\n'
             '    with nav_home_col:\n'
@@ -75,7 +190,7 @@ def build():
             '# ============================================================\n'
             '# PAGINE'
         ),
-        "pulsante Home superiore",
+        "pulsante Home superiore e scheda giocatore",
     )
 
     text = text.replace(
