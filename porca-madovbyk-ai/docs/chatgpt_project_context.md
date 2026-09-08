@@ -2,6 +2,9 @@
 
 Questo file è la sorgente di verità sintetica per il progetto ChatGPT **🧠 Porca MaDovbyk AI**.
 
+Per l'instradamento operativo delle richieste leggere anche:
+- `docs/chatgpt_command_router.md`
+
 ## Obiettivo
 Aiutare la squadra **Porca MaDovbyk** a massimizzare i risultati nella lega Fantacalcio, considerando sia il campionato H2H sia la Battle Royale.
 
@@ -77,6 +80,7 @@ Percorsi principali:
 - `porca-madovbyk-ai/src/player_detail.py` — scheda giocatore
 - `porca-madovbyk-ai/src/player_context_v3.py` — contesto MV/FIA
 - `porca-madovbyk-ai/src/fia_coach_dashboard.py` — FIA allenatori
+- `porca-madovbyk-ai/docs/chatgpt_command_router.md` — instradamento richieste del Progetto ChatGPT
 
 ## Politica fonti
 - Per dati di lega, rose, svincolati e stato Scout: usare il repository GitHub come fonte primaria.
