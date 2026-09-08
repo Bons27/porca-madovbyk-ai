@@ -44,9 +44,19 @@ def close_player_detail(return_page=None):
 
 
 def render_player_detail(player_name, return_page="Home"):
-    top_left, top_space, top_home = st.columns([1.2, 4, 1.1])
+    # La scheda viene renderizzata prima del normale contenuto pagina.
+    # Questo spazio evita che la barra di navigazione finisca sotto l'header
+    # Streamlit, soprattutto con browser/zoom e risoluzioni diverse.
+    st.markdown(
+        "<div style='height: 1.6rem;'></div>",
+        unsafe_allow_html=True,
+    )
 
-    with top_left:
+    # Entrambi i pulsanti restano vicini sul lato sinistro e dentro il flusso
+    # normale della pagina, così non vengono tagliati ai bordi superiori.
+    top_back, top_home, top_space = st.columns([1.55, 1.15, 4.3])
+
+    with top_back:
         st.button(
             f"← {return_page}",
             key="player_detail_back",
@@ -63,6 +73,11 @@ def render_player_detail(player_name, return_page="Home"):
             on_click=close_player_detail,
             args=("Home",),
         )
+
+    st.markdown(
+        "<div style='height: 0.45rem;'></div>",
+        unsafe_allow_html=True,
+    )
 
     with st.spinner(f"Carico la stagione di {player_name}..."):
         detail = get_player_detail(player_name)
