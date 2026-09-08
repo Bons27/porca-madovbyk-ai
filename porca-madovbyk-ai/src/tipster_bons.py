@@ -1,13 +1,25 @@
 import csv
 import io
 import math
+import time
+import unicodedata
 from datetime import date, datetime, timedelta
 
 import requests
 
 
-FIXTURES_URL = "https://www.football-data.co.uk/matches/resources/fixtures.csv"
-HISTORY_URL = "https://www.football-data.co.uk/mmz4281/2627/{division}.csv"
+FOOTBALL_DATA_FIXTURES_URL = "https://www.football-data.co.uk/matches/resources/fixtures.csv"
+FOOTBALL_DATA_HISTORY_URL = "https://www.football-data.co.uk/mmz4281/2627/{division}.csv"
+
+# FixtureDownload is the primary schedule/results source. Football-Data is kept
+# as a secondary source and, when available, enriches fixtures with market odds.
+FIXTUREDOWNLOAD_URLS = {
+    "I1": "https://fixturedownload.com/feed/json/serie-a-2026",
+    "E0": "https://fixturedownload.com/feed/json/epl-2026",
+    "SP1": "https://fixturedownload.com/feed/json/la-liga-2026",
+    "D1": "https://fixturedownload.com/feed/json/bundesliga-2026",
+    "F1": "https://fixturedownload.com/feed/json/ligue-1-2026",
+}
 
 LEAGUES = {
     "I1": "Serie A",
@@ -19,6 +31,24 @@ LEAGUES = {
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 PorcaMaDovbykAI/1.0",
+}
+
+TRANSIENT_HTTP = {429, 500, 502, 503, 504}
+
+TEAM_ALIASES = {
+    "internazionale": "inter",
+    "inter milan": "inter",
+    "ac milan": "milan",
+    "fc barcelona": "barcelona",
+    "atletico de madrid": "atletico madrid",
+    "atletico madrid": "atletico madrid",
+    "fc bayern munchen": "bayern munich",
+    "bayern munchen": "bayern munich",
+    "paris saint germain": "paris sg",
+    "paris saint-germain": "paris sg",
+    "olympique de marseille": "marseille",
+    "olympique lyonnais": "lyon",
+    "nottingham forest": "nott'm forest",
 }
 
 
@@ -46,19 +76,144 @@ def _parse_date(value):
     return None
 
 
+def _parse_fixturedownload_datetime(value):
+    text = str(value or "").strip()
+    for pattern in ("%Y-%m-%d %H:%M:%SZ", "%Y-%m-%d %H:%M:%S"):
+        try:
+            return datetime.strptime(text, pattern)
+        except ValueError:
+            continue
+    return None
+
+
+def _request(url, timeout=25, attempts=3):
+    last_error = None
+
+    for attempt in range(max(int(attempts), 1)):
+        try:
+            response = requests.get(url, headers=HEADERS, timeout=timeout)
+            if response.status_code in TRANSIENT_HTTP and attempt + 1 < attempts:
+                time.sleep(0.35 * (attempt + 1))
+                continue
+            response.raise_for_status()
+            return response
+        except requests.RequestException as exc:
+            last_error = exc
+            if attempt + 1 < attempts:
+                time.sleep(0.35 * (attempt + 1))
+
+    raise RuntimeError(f"Fonte dati temporaneamente non disponibile: {url} ({last_error})")
+
+
 def _download_csv(url):
-    response = requests.get(url, headers=HEADERS, timeout=30)
-    response.raise_for_status()
+    response = _request(url)
     text = response.content.decode("utf-8-sig", errors="replace")
     return list(csv.DictReader(io.StringIO(text)))
 
 
-def fetch_upcoming_fixtures(divisions=None, start_date=None, horizon_days=7):
-    divisions = set(divisions or LEAGUES)
-    start_date = start_date or date.today()
-    end_date = start_date + timedelta(days=max(int(horizon_days), 1))
+def _download_json(url):
+    response = _request(url)
+    payload = response.json()
+    if not isinstance(payload, list):
+        raise RuntimeError(f"Formato dati inatteso dalla fonte: {url}")
+    return payload
 
-    rows = _download_csv(FIXTURES_URL)
+
+def _normalize_team(name):
+    text = unicodedata.normalize("NFKD", str(name or ""))
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    text = text.casefold().replace(".", " ").replace("-", " ")
+    text = " ".join(text.split())
+    return TEAM_ALIASES.get(text, text)
+
+
+def _football_data_market_index(rows):
+    index = {}
+    for row in rows:
+        division = str(row.get("Div", "")).strip()
+        match_date = _parse_date(row.get("Date"))
+        home = str(row.get("HomeTeam", "")).strip()
+        away = str(row.get("AwayTeam", "")).strip()
+        if not division or not match_date or not home or not away:
+            continue
+        key = (
+            division,
+            match_date,
+            _normalize_team(home),
+            _normalize_team(away),
+        )
+        index[key] = row
+    return index
+
+
+def _market_row_for(index, division, match_date, home, away):
+    return index.get(
+        (
+            division,
+            match_date,
+            _normalize_team(home),
+            _normalize_team(away),
+        )
+    )
+
+
+def _fixturedownload_matches(division):
+    url = FIXTUREDOWNLOAD_URLS.get(division)
+    if not url:
+        raise RuntimeError(f"Feed FixtureDownload non configurato per {division}.")
+    return _download_json(url)
+
+
+def _fixturedownload_upcoming(division, start_date, end_date, market_index=None):
+    fixtures = []
+
+    for row in _fixturedownload_matches(division):
+        dt = _parse_fixturedownload_datetime(row.get("DateUtc"))
+        if not dt:
+            continue
+
+        match_date = dt.date()
+        if match_date < start_date or match_date > end_date:
+            continue
+
+        # A match with a score is already completed; exclude it even if the
+        # source has a stale date around the current day.
+        if row.get("HomeTeamScore") is not None or row.get("AwayTeamScore") is not None:
+            continue
+
+        home = str(row.get("HomeTeam", "")).strip()
+        away = str(row.get("AwayTeam", "")).strip()
+        if not home or not away:
+            continue
+
+        market_row = None
+        if market_index:
+            market_row = _market_row_for(
+                market_index,
+                division,
+                match_date,
+                home,
+                away,
+            )
+
+        fixtures.append(
+            {
+                "division": division,
+                "league": LEAGUES.get(division, division),
+                "date": match_date,
+                "time": dt.strftime("%H:%M UTC"),
+                "home": home,
+                "away": away,
+                "raw": market_row or {},
+                "fixture_source": "FixtureDownload",
+                "market_source": "Football-Data" if market_row else None,
+            }
+        )
+
+    return fixtures
+
+
+def _football_data_upcoming(rows, divisions, start_date, end_date):
     fixtures = []
 
     for row in rows:
@@ -84,15 +239,103 @@ def fetch_upcoming_fixtures(divisions=None, start_date=None, horizon_days=7):
                 "home": home,
                 "away": away,
                 "raw": row,
+                "fixture_source": "Football-Data",
+                "market_source": "Football-Data",
             }
         )
 
-    fixtures.sort(key=lambda item: (item["date"], item.get("time", ""), item["league"]))
     return fixtures
 
 
-def fetch_history(division):
-    rows = _download_csv(HISTORY_URL.format(division=division))
+def fetch_upcoming_fixtures(divisions=None, start_date=None, horizon_days=7):
+    divisions = list(dict.fromkeys(divisions or LEAGUES.keys()))
+    start_date = start_date or date.today()
+    end_date = start_date + timedelta(days=max(int(horizon_days), 1))
+
+    # Market enrichment is optional. A Football-Data outage must never make
+    # the whole Tipster Bons page unusable.
+    market_rows = []
+    market_index = {}
+    try:
+        market_rows = _download_csv(FOOTBALL_DATA_FIXTURES_URL)
+        market_index = _football_data_market_index(market_rows)
+    except Exception:
+        market_rows = []
+        market_index = {}
+
+    fixtures = []
+    failed_divisions = []
+
+    for division in divisions:
+        try:
+            fixtures.extend(
+                _fixturedownload_upcoming(
+                    division,
+                    start_date,
+                    end_date,
+                    market_index=market_index,
+                )
+            )
+        except Exception:
+            failed_divisions.append(division)
+
+    # If FixtureDownload fails for one or more leagues, use Football-Data as a
+    # fallback for those leagues when its weekly fixture feed is reachable.
+    if failed_divisions and market_rows:
+        fixtures.extend(
+            _football_data_upcoming(
+                market_rows,
+                set(failed_divisions),
+                start_date,
+                end_date,
+            )
+        )
+        failed_divisions = [
+            division
+            for division in failed_divisions
+            if not any(item["division"] == division for item in fixtures)
+        ]
+
+    fixtures.sort(key=lambda item: (item["date"], item.get("time", ""), item["league"]))
+
+    if not fixtures and failed_divisions:
+        leagues = ", ".join(LEAGUES.get(code, code) for code in failed_divisions)
+        raise RuntimeError(
+            "Le fonti calendario sono temporaneamente indisponibili per: " + leagues
+        )
+
+    return fixtures
+
+
+def _fixturedownload_history(division):
+    matches = []
+
+    for row in _fixturedownload_matches(division):
+        home_goals = _to_int(row.get("HomeTeamScore"))
+        away_goals = _to_int(row.get("AwayTeamScore"))
+        home = str(row.get("HomeTeam", "")).strip()
+        away = str(row.get("AwayTeam", "")).strip()
+        dt = _parse_fixturedownload_datetime(row.get("DateUtc"))
+
+        if home_goals is None or away_goals is None or not home or not away:
+            continue
+
+        matches.append(
+            {
+                "date": dt.date() if dt else None,
+                "home": home,
+                "away": away,
+                "home_goals": home_goals,
+                "away_goals": away_goals,
+            }
+        )
+
+    matches.sort(key=lambda item: item.get("date") or date.min)
+    return matches
+
+
+def _football_data_history(division):
+    rows = _download_csv(FOOTBALL_DATA_HISTORY_URL.format(division=division))
     matches = []
 
     for row in rows:
@@ -117,6 +360,20 @@ def fetch_history(division):
 
     matches.sort(key=lambda item: item.get("date") or date.min)
     return matches
+
+
+def fetch_history(division):
+    try:
+        history = _fixturedownload_history(division)
+        if history:
+            return history
+    except Exception:
+        pass
+
+    try:
+        return _football_data_history(division)
+    except Exception:
+        return []
 
 
 def _mean(values, default=0.0):
@@ -397,10 +654,7 @@ def build_tipster_analysis(divisions=None, start_date=None, horizon_days=7):
     for fixture in fixtures:
         division = fixture["division"]
         if division not in histories:
-            try:
-                histories[division] = fetch_history(division)
-            except Exception:
-                histories[division] = []
+            histories[division] = fetch_history(division)
 
         analysed.append(analyse_fixture(fixture, histories[division]))
 
