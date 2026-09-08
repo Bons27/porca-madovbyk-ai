@@ -1,5 +1,5 @@
 @echo off
-setlocal EnableExtensions
+setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 title Porca MaDovbyk AI
 
@@ -31,7 +31,7 @@ if not defined PYTHON_CMD (
 if not exist ".venv\Scripts\python.exe" (
     if not defined PYTHON_CMD goto :python_missing
     echo Primo avvio: preparo l'ambiente Python...
-    %PYTHON_CMD% -m venv .venv
+    !PYTHON_CMD! -m venv .venv
     if errorlevel 1 goto :error
 )
 
@@ -44,17 +44,17 @@ set "NEED_DEPS=0"
 if not exist ".venv\requirements.sha256" set "NEED_DEPS=1"
 if defined REQ_HASH if exist ".venv\requirements.sha256" (
     set /p OLD_REQ_HASH=<".venv\requirements.sha256"
-    if /I not "%REQ_HASH%"=="%OLD_REQ_HASH%" set "NEED_DEPS=1"
+    if /I not "!REQ_HASH!"=="!OLD_REQ_HASH!" set "NEED_DEPS=1"
 )
 
 ".venv\Scripts\python.exe" -c "import requests, bs4, streamlit" >nul 2>&1
 if errorlevel 1 set "NEED_DEPS=1"
 
-if "%NEED_DEPS%"=="1" (
+if "!NEED_DEPS!"=="1" (
     echo Verifico/aggiorno le dipendenze...
     ".venv\Scripts\python.exe" -m pip install -r requirements.txt --disable-pip-version-check -q
     if errorlevel 1 goto :error
-    if defined REQ_HASH >".venv\requirements.sha256" echo %REQ_HASH%
+    if defined REQ_HASH >".venv\requirements.sha256" echo !REQ_HASH!
 ) else (
     echo Dipendenze OK.
 )
