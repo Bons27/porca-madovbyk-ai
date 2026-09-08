@@ -70,6 +70,30 @@ jobs:
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_tipster_bons -v
 
+      - name: Probe live Tipster Bons fixture source
+        working-directory: porca-madovbyk-ai
+        run: |
+          python - <<'PY'
+          from datetime import date
+          from src.tipster_bons import fetch_upcoming_fixtures
+
+          fixtures = fetch_upcoming_fixtures(
+              divisions=["E0"],
+              start_date=date.today(),
+              horizon_days=14,
+          )
+          assert fixtures, "No upcoming Premier League fixtures found"
+          assert any(item.get("fixture_source") == "FixtureDownload" for item in fixtures), fixtures[:3]
+          print(
+              "Tipster live fixtures: OK",
+              len(fixtures),
+              fixtures[0]["date"],
+              fixtures[0]["home"],
+              fixtures[0]["away"],
+              fixtures[0].get("fixture_source"),
+          )
+          PY
+
       - name: Probe live player detail source and role
         working-directory: porca-madovbyk-ai
         run: |
