@@ -1,4 +1,6 @@
+import csv
 import re
+from pathlib import Path
 from urllib.parse import urljoin
 
 from .fantacalcio_catalog import QUOTATIONS_URL, fetch_player_catalog
@@ -7,6 +9,8 @@ from .fantacalcio_source import get_soup, normalize_name
 
 BASE_URL = "https://www.fantacalcio.it"
 CURRENT_SEASON = "2026/27"
+ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = ROOT / "data"
 
 
 STATUS_KEYS = (
@@ -140,6 +144,54 @@ def find_profile_url(player_name, club=None):
             pass
 
     return None
+
+
+def _local_role(player_name):
+    """Resolve P/D/C/A from the local league/free-agent datasets.
+
+    Fantacalcio profile pages expose the player name more reliably than the
+    Classic role. The local datasets already cover rostered players and free
+    agents, so they are the safest fallback for the role shown in the detail
+    page.
+    """
+
+    wanted = normalize_name(player_name)
+    if not wanted:
+        return ""
+
+    sources = (
+        (DATA_DIR / "free_agents.csv", "Nome", "Ruolo"),
+        (DATA_DIR / "league_rosters.csv", "Nome", "Ruolo"),
+    )
+
+    candidates = []
+
+    for path, name_column, role_column in sources:
+        if not path.exists():
+            continue
+
+        try:
+            with open(path, "r", encoding="utf-8-sig", newline="") as file:
+                for row in csv.DictReader(file, delimiter=";"):
+                    name = str(row.get(name_column, "")).strip()
+                    role = str(row.get(role_column, "")).strip().upper()
+                    if role not in {"P", "D", "C", "A"}:
+                        continue
+
+                    source_key = normalize_name(name)
+                    if source_key == wanted:
+                        return role
+
+                    if wanted in source_key or source_key in wanted:
+                        candidates.append((source_key, role))
+        except Exception:
+            continue
+
+    unique_roles = {role for _, role in candidates}
+    if len(candidates) == 1 or len(unique_roles) == 1:
+        return candidates[0][1] if candidates else ""
+
+    return ""
 
 
 def _row_metadata(row):
@@ -402,12 +454,14 @@ def fetch_player_detail(player_name):
             catalog_player = candidates[0]
 
     club = catalog_player.get("club", "") if catalog_player else ""
+    local_role = _local_role(player_name)
+    catalog_role = catalog_player.get("role", "") if catalog_player else ""
     profile_url = find_profile_url(player_name, club=club)
 
     detail = {
         "name": player_name,
         "club": club,
-        "role": catalog_player.get("role", "") if catalog_player else "",
+        "role": catalog_role or local_role,
         "average_vote": None,
         "fantasy_average": None,
         "games_with_vote": 0,
@@ -443,6 +497,14 @@ def fetch_player_detail(player_name):
             continue
         detail[field] = value
 
-    detail["role"] = detail.get("role") or (catalog_player.get("role", "") if catalog_player else "")
+    # The profile title can be a full name (e.g. Bryan Cristante) while the
+    # Fantacalcio list/local files use a shorter display name. Try both before
+    # giving up on the role.
+    detail["role"] = (
+        detail.get("role")
+        or catalog_role
+        or local_role
+        or _local_role(detail.get("name", ""))
+    )
     detail["profile_url"] = profile_url
     return detail
