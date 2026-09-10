@@ -10,7 +10,10 @@ on:
       - "porca-madovbyk-ai/src/fia_coach_dashboard.py"
       - "porca-madovbyk-ai/src/player_detail.py"
       - "porca-madovbyk-ai/src/player_detail_dashboard.py"
+      - "porca-madovbyk-ai/src/calendar_source.py"
+      - "porca-madovbyk-ai/src/deadline_source.py"
       - "porca-madovbyk-ai/tests/test_player_detail.py"
+      - "porca-madovbyk-ai/tests/test_calendar_source.py"
       - "porca-madovbyk-ai/.gitignore"
       - "porca-madovbyk-ai/src/decision_fia.py"
       - "porca-madovbyk-ai/src/start_score.py"
@@ -51,6 +54,8 @@ jobs:
           python -m py_compile src/fia_coach_dashboard.py
           python -m py_compile src/player_detail.py
           python -m py_compile src/player_detail_dashboard.py
+          python -m py_compile src/calendar_source.py
+          python -m py_compile src/deadline_source.py
           python -m py_compile src/decision_fia.py
           python -m py_compile src/start_score.py
           python -m py_compile src/trade_value.py
@@ -60,6 +65,31 @@ jobs:
       - name: Test player detail parser
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_player_detail -v
+
+      - name: Test Serie A matchday resolver
+        working-directory: porca-madovbyk-ai
+        run: python -m unittest tests.test_calendar_source -v
+
+      - name: Regression guard - 10 September 2026 is Serie A G4
+        working-directory: porca-madovbyk-ai
+        run: |
+          python - <<'PY'
+          from datetime import datetime
+          from src.calendar_source import ROME_TZ, detect_next_matchday, fetch_matchday_context
+
+          reference = datetime(2026, 9, 10, 12, 53, tzinfo=ROME_TZ)
+          matchday = detect_next_matchday(now=reference)
+          assert matchday == 4, f"Expected Serie A G4, got G{matchday}"
+
+          context = fetch_matchday_context(matchday=4)
+          matches = set(context["matches"])
+          assert len(matches) == 10, context
+          assert ("Venezia", "Fiorentina") in matches, matches
+          assert ("Torino", "Roma") in matches, matches
+          assert ("Inter", "Udinese") in matches, matches
+
+          print("Serie A calendar regression guard: OK - G4")
+          PY
 
       - name: Probe live player detail source and role
         working-directory: porca-madovbyk-ai
