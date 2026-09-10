@@ -1,5 +1,5 @@
 {
-  "last_round": 4,
+  "last_round": 3,
   "method": "FIA V2 = contesto corrente + storico allenatore/ruolo da intervalli incrementali con decadimento temporale",
   "profiles": {
     "Alberto Aquilani": {
@@ -7,17 +7,17 @@
         "clubs": [
           "Sassuolo"
         ],
-        "confidence": 0.20803,
+        "confidence": 0.21053,
         "current_season_confidence": 0.4,
-        "current_season_fia": 0.1002,
+        "current_season_fia": 0.10291,
         "current_season_games": 8,
-        "current_season_raw_delta": 0.2505,
-        "effective_games": 7.88,
-        "fia": 0.05211,
+        "current_season_raw_delta": 0.25728,
+        "effective_games": 8.0,
+        "fia": 0.05416,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.2505,
+        "raw_delta": 0.25728,
         "sample_games": 8,
         "seasons": [
           "2026-27"
@@ -27,17 +27,17 @@
         "clubs": [
           "Sassuolo"
         ],
-        "confidence": 0.37146,
+        "confidence": 0.375,
         "current_season_confidence": 0.6,
-        "current_season_fia": 0.12035,
+        "current_season_fia": 0.1163,
         "current_season_games": 18,
-        "current_season_raw_delta": 0.20059,
-        "effective_games": 17.73,
-        "fia": 0.07451,
+        "current_season_raw_delta": 0.19384,
+        "effective_games": 18.0,
+        "fia": 0.07269,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.20059,
+        "raw_delta": 0.19384,
         "sample_games": 18,
         "seasons": [
           "2026-27"
@@ -47,17 +47,17 @@
         "clubs": [
           "Sassuolo"
         ],
-        "confidence": 0.29915,
+        "confidence": 0.30233,
         "current_season_confidence": 0.52,
-        "current_season_fia": 0.09135,
+        "current_season_fia": 0.09367,
         "current_season_games": 13,
-        "current_season_raw_delta": 0.17568,
-        "effective_games": 12.8,
-        "fia": 0.05255,
+        "current_season_raw_delta": 0.18014,
+        "effective_games": 13.0,
+        "fia": 0.05446,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.17568,
+        "raw_delta": 0.18014,
         "sample_games": 13,
         "seasons": [
           "2026-27"
@@ -67,17 +67,17 @@
         "clubs": [
           "Sassuolo"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.02857,
+        "current_season_fia": 0.02563,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.14286,
-        "effective_games": 2.96,
-        "fia": 0.01281,
+        "current_season_raw_delta": 0.12817,
+        "effective_games": 3.0,
+        "fia": 0.01165,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.14286,
+        "raw_delta": 0.12817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -89,17 +89,17 @@
         "clubs": [
           "Parma"
         ],
-        "confidence": 0.2281,
+        "confidence": 0.23077,
         "current_season_confidence": 0.42857,
-        "current_season_fia": -0.09794,
+        "current_season_fia": -0.09504,
         "current_season_games": 9,
-        "current_season_raw_delta": -0.22853,
-        "effective_games": 8.87,
-        "fia": -0.05213,
+        "current_season_raw_delta": -0.22175,
+        "effective_games": 9.0,
+        "fia": -0.05117,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.22853,
+        "raw_delta": -0.22175,
         "sample_games": 9,
         "seasons": [
           "2026-27"
@@ -109,17 +109,17 @@
         "clubs": [
           "Parma"
         ],
-        "confidence": 0.29915,
+        "confidence": 0.30233,
         "current_season_confidence": 0.52,
-        "current_season_fia": -0.16236,
+        "current_season_fia": -0.16587,
         "current_season_games": 13,
-        "current_season_raw_delta": -0.31223,
-        "effective_games": 12.8,
-        "fia": -0.0934,
+        "current_season_raw_delta": -0.31898,
+        "effective_games": 13.0,
+        "fia": -0.09644,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.31223,
+        "raw_delta": -0.31898,
         "sample_games": 13,
         "seasons": [
           "2026-27"
@@ -129,17 +129,17 @@
         "clubs": [
           "Parma"
         ],
-        "confidence": 0.32998,
+        "confidence": 0.33333,
         "current_season_confidence": 0.55556,
-        "current_season_fia": -0.05995,
+        "current_season_fia": -0.05747,
         "current_season_games": 15,
-        "current_season_raw_delta": -0.10791,
-        "effective_games": 14.78,
-        "fia": -0.03561,
+        "current_season_raw_delta": -0.10345,
+        "effective_games": 15.0,
+        "fia": -0.03448,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.10791,
+        "raw_delta": -0.10345,
         "sample_games": 15,
         "seasons": [
           "2026-27"
@@ -149,17 +149,17 @@
         "clubs": [
           "Parma"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.09457,
+        "current_season_fia": 0.09163,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.47286,
-        "effective_games": 2.96,
-        "fia": 0.0424,
+        "current_season_raw_delta": 0.45817,
+        "effective_games": 3.0,
+        "fia": 0.04165,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.47286,
+        "raw_delta": 0.45817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -171,17 +171,17 @@
         "clubs": [
           "Como"
         ],
-        "confidence": 0.20803,
+        "confidence": 0.21053,
         "current_season_confidence": 0.4,
-        "current_season_fia": 0.1507,
+        "current_season_fia": 0.15341,
         "current_season_games": 8,
-        "current_season_raw_delta": 0.37675,
-        "effective_games": 7.88,
-        "fia": 0.07837,
+        "current_season_raw_delta": 0.38353,
+        "effective_games": 8.0,
+        "fia": 0.08074,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.37675,
+        "raw_delta": 0.38353,
         "sample_games": 8,
         "seasons": [
           "2026-27"
@@ -191,17 +191,17 @@
         "clubs": [
           "Como"
         ],
-        "confidence": 0.38417,
+        "confidence": 0.38776,
         "current_season_confidence": 0.6129,
-        "current_season_fia": 0.18208,
+        "current_season_fia": 0.17794,
         "current_season_games": 19,
-        "current_season_raw_delta": 0.29708,
-        "effective_games": 18.71,
-        "fia": 0.11413,
+        "current_season_raw_delta": 0.29033,
+        "effective_games": 19.0,
+        "fia": 0.11258,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.29708,
+        "raw_delta": 0.29033,
         "sample_games": 19,
         "seasons": [
           "2026-27"
@@ -211,17 +211,17 @@
         "clubs": [
           "Como"
         ],
-        "confidence": 0.31491,
+        "confidence": 0.31818,
         "current_season_confidence": 0.53846,
-        "current_season_fia": 0.10779,
+        "current_season_fia": 0.11019,
         "current_season_games": 14,
-        "current_season_raw_delta": 0.20018,
-        "effective_games": 13.79,
-        "fia": 0.06304,
+        "current_season_raw_delta": 0.20464,
+        "effective_games": 14.0,
+        "fia": 0.06511,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.20018,
+        "raw_delta": 0.20464,
         "sample_games": 14,
         "seasons": [
           "2026-27"
@@ -231,17 +231,17 @@
         "clubs": [
           "Como"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.02857,
+        "current_season_fia": 0.02563,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.14286,
-        "effective_games": 2.96,
-        "fia": 0.01281,
+        "current_season_raw_delta": 0.12817,
+        "effective_games": 3.0,
+        "fia": 0.01165,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.14286,
+        "raw_delta": 0.12817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -253,17 +253,17 @@
         "clubs": [
           "Inter"
         ],
-        "confidence": 0.24718,
+        "confidence": 0.25,
         "current_season_confidence": 0.45455,
-        "current_season_fia": 0.10784,
+        "current_season_fia": 0.11092,
         "current_season_games": 10,
-        "current_season_raw_delta": 0.23725,
-        "effective_games": 9.85,
-        "fia": 0.05864,
+        "current_season_raw_delta": 0.24403,
+        "effective_games": 10.0,
+        "fia": 0.06101,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.23725,
+        "raw_delta": 0.24403,
         "sample_games": 10,
         "seasons": [
           "2026-27"
@@ -273,17 +273,17 @@
         "clubs": [
           "Inter"
         ],
-        "confidence": 0.37146,
+        "confidence": 0.375,
         "current_season_confidence": 0.6,
-        "current_season_fia": 0.17035,
+        "current_season_fia": 0.1663,
         "current_season_games": 18,
-        "current_season_raw_delta": 0.28392,
-        "effective_games": 17.73,
-        "fia": 0.10547,
+        "current_season_raw_delta": 0.27717,
+        "effective_games": 18.0,
+        "fia": 0.10394,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.28392,
+        "raw_delta": 0.27717,
         "sample_games": 18,
         "seasons": [
           "2026-27"
@@ -293,17 +293,17 @@
         "clubs": [
           "Inter"
         ],
-        "confidence": 0.34441,
+        "confidence": 0.34783,
         "current_season_confidence": 0.57143,
-        "current_season_fia": 0.1575,
+        "current_season_fia": 0.16005,
         "current_season_games": 16,
-        "current_season_raw_delta": 0.27563,
-        "effective_games": 15.76,
-        "fia": 0.09493,
+        "current_season_raw_delta": 0.28009,
+        "effective_games": 16.0,
+        "fia": 0.09742,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.27563,
+        "raw_delta": 0.28009,
         "sample_games": 16,
         "seasons": [
           "2026-27"
@@ -313,17 +313,17 @@
         "clubs": [
           "Inter"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.02857,
+        "current_season_fia": 0.02563,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.14286,
-        "effective_games": 2.96,
-        "fia": 0.01281,
+        "current_season_raw_delta": 0.12817,
+        "effective_games": 3.0,
+        "fia": 0.01165,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.14286,
+        "raw_delta": 0.12817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -335,17 +335,17 @@
         "clubs": [
           "Genoa"
         ],
-        "confidence": 0.20803,
+        "confidence": 0.21053,
         "current_season_confidence": 0.4,
-        "current_season_fia": -0.1488,
+        "current_season_fia": -0.14609,
         "current_season_games": 8,
-        "current_season_raw_delta": -0.372,
-        "effective_games": 7.88,
-        "fia": -0.07739,
+        "current_season_raw_delta": -0.36522,
+        "effective_games": 8.0,
+        "fia": -0.07689,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.372,
+        "raw_delta": -0.36522,
         "sample_games": 8,
         "seasons": [
           "2026-27"
@@ -355,17 +355,17 @@
         "clubs": [
           "Genoa"
         ],
-        "confidence": 0.39638,
+        "confidence": 0.4,
         "current_season_confidence": 0.625,
-        "current_season_fia": -0.13505,
+        "current_season_fia": -0.13927,
         "current_season_games": 20,
-        "current_season_raw_delta": -0.21608,
-        "effective_games": 19.7,
-        "fia": -0.08565,
+        "current_season_raw_delta": -0.22283,
+        "effective_games": 20.0,
+        "fia": -0.08913,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.21608,
+        "raw_delta": -0.22283,
         "sample_games": 20,
         "seasons": [
           "2026-27"
@@ -375,17 +375,17 @@
         "clubs": [
           "Genoa"
         ],
-        "confidence": 0.31491,
+        "confidence": 0.31818,
         "current_season_confidence": 0.53846,
-        "current_season_fia": -0.27567,
+        "current_season_fia": -0.27327,
         "current_season_games": 14,
-        "current_season_raw_delta": -0.51196,
-        "effective_games": 13.79,
-        "fia": -0.16122,
+        "current_season_raw_delta": -0.5075,
+        "effective_games": 14.0,
+        "fia": -0.16148,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.51196,
+        "raw_delta": -0.5075,
         "sample_games": 14,
         "seasons": [
           "2026-27"
@@ -395,17 +395,17 @@
         "clubs": [
           "Genoa"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": -0.13943,
+        "current_season_fia": -0.14237,
         "current_season_games": 3,
-        "current_season_raw_delta": -0.69714,
-        "effective_games": 2.96,
-        "fia": -0.06251,
+        "current_season_raw_delta": -0.71183,
+        "effective_games": 3.0,
+        "fia": -0.06471,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.69714,
+        "raw_delta": -0.71183,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -417,17 +417,17 @@
         "clubs": [
           "Bologna"
         ],
-        "confidence": 0.16458,
+        "confidence": 0.16667,
         "current_season_confidence": 0.33333,
-        "current_season_fia": -0.07692,
+        "current_season_fia": -0.07466,
         "current_season_games": 6,
-        "current_season_raw_delta": -0.23075,
-        "effective_games": 5.91,
-        "fia": -0.03798,
+        "current_season_raw_delta": -0.22397,
+        "effective_games": 6.0,
+        "fia": -0.03733,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.23075,
+        "raw_delta": -0.22397,
         "sample_games": 6,
         "seasons": [
           "2026-27"
@@ -437,17 +437,17 @@
         "clubs": [
           "Bologna"
         ],
-        "confidence": 0.38417,
+        "confidence": 0.38776,
         "current_season_confidence": 0.6129,
-        "current_season_fia": -0.05953,
+        "current_season_fia": -0.06367,
         "current_season_games": 19,
-        "current_season_raw_delta": -0.09713,
-        "effective_games": 18.71,
-        "fia": -0.03732,
+        "current_season_raw_delta": -0.10388,
+        "effective_games": 19.0,
+        "fia": -0.04028,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.09713,
+        "raw_delta": -0.10388,
         "sample_games": 19,
         "seasons": [
           "2026-27"
@@ -457,17 +457,17 @@
         "clubs": [
           "Bologna"
         ],
-        "confidence": 0.32998,
+        "confidence": 0.33333,
         "current_season_confidence": 0.55556,
-        "current_season_fia": -0.06032,
+        "current_season_fia": -0.05784,
         "current_season_games": 15,
-        "current_season_raw_delta": -0.10858,
-        "effective_games": 14.78,
-        "fia": -0.03583,
+        "current_season_raw_delta": -0.10412,
+        "effective_games": 15.0,
+        "fia": -0.03471,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.10858,
+        "raw_delta": -0.10412,
         "sample_games": 15,
         "seasons": [
           "2026-27"
@@ -477,17 +477,17 @@
         "clubs": [
           "Bologna"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": -0.10543,
+        "current_season_fia": -0.10837,
         "current_season_games": 3,
-        "current_season_raw_delta": -0.52714,
-        "effective_games": 2.96,
-        "fia": -0.04727,
+        "current_season_raw_delta": -0.54183,
+        "effective_games": 3.0,
+        "fia": -0.04926,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.52714,
+        "raw_delta": -0.54183,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -499,17 +499,17 @@
         "clubs": [
           "Lecce"
         ],
-        "confidence": 0.24803,
+        "confidence": 0.25,
         "current_season_confidence": 0.45455,
-        "current_season_fia": -0.21706,
+        "current_season_fia": -0.22999,
         "current_season_games": 10,
-        "current_season_raw_delta": -0.47752,
-        "effective_games": 9.89,
-        "fia": -0.11822,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": -0.50597,
+        "effective_games": 10.0,
+        "fia": -0.12649,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.47664,
+        "raw_delta": -0.50597,
         "sample_games": 10,
         "seasons": [
           "2026-27"
@@ -519,17 +519,17 @@
         "clubs": [
           "Lecce"
         ],
-        "confidence": 0.35945,
+        "confidence": 0.3617,
         "current_season_confidence": 0.58621,
-        "current_season_fia": -0.20546,
+        "current_season_fia": -0.19062,
         "current_season_games": 17,
-        "current_season_raw_delta": -0.3505,
-        "effective_games": 16.84,
-        "fia": -0.12654,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": -0.32518,
+        "effective_games": 17.0,
+        "fia": -0.11762,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.35204,
+        "raw_delta": -0.32518,
         "sample_games": 17,
         "seasons": [
           "2026-27"
@@ -539,17 +539,17 @@
         "clubs": [
           "Lecce"
         ],
-        "confidence": 0.34548,
+        "confidence": 0.34783,
         "current_season_confidence": 0.57143,
-        "current_season_fia": -0.22102,
+        "current_season_fia": -0.23138,
         "current_season_games": 16,
-        "current_season_raw_delta": -0.38678,
-        "effective_games": 15.83,
-        "fia": -0.13392,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": -0.40491,
+        "effective_games": 16.0,
+        "fia": -0.14084,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.38763,
+        "raw_delta": -0.40491,
         "sample_games": 16,
         "seasons": [
           "2026-27"
@@ -559,17 +559,17 @@
         "clubs": [
           "Lecce"
         ],
-        "confidence": 0.09008,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.04588,
+        "current_season_fia": 0.05763,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.2294,
-        "effective_games": 2.97,
-        "fia": 0.02067,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": 0.28817,
+        "effective_games": 3.0,
+        "fia": 0.0262,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.22947,
+        "raw_delta": 0.28817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -581,17 +581,17 @@
         "clubs": [
           "Fiorentina"
         ],
-        "confidence": 0.14102,
+        "confidence": 0.14286,
         "current_season_confidence": 0.29412,
-        "current_season_fia": -0.19493,
+        "current_season_fia": -0.19293,
         "current_season_games": 5,
-        "current_season_raw_delta": -0.66275,
-        "effective_games": 4.92,
-        "fia": -0.09346,
+        "current_season_raw_delta": -0.65597,
+        "effective_games": 5.0,
+        "fia": -0.09371,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.66275,
+        "raw_delta": -0.65597,
         "sample_games": 5,
         "seasons": [
           "2026-27"
@@ -601,17 +601,17 @@
         "clubs": [
           "Fiorentina"
         ],
-        "confidence": 0.39638,
+        "confidence": 0.4,
         "current_season_confidence": 0.625,
-        "current_season_fia": -0.33818,
+        "current_season_fia": -0.34239,
         "current_season_games": 20,
-        "current_season_raw_delta": -0.54108,
-        "effective_games": 19.7,
-        "fia": -0.21447,
+        "current_season_raw_delta": -0.54783,
+        "effective_games": 20.0,
+        "fia": -0.21913,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.54108,
+        "raw_delta": -0.54783,
         "sample_games": 20,
         "seasons": [
           "2026-27"
@@ -621,17 +621,17 @@
         "clubs": [
           "Fiorentina"
         ],
-        "confidence": 0.31491,
+        "confidence": 0.31818,
         "current_season_confidence": 0.53846,
         "current_season_fia": -0.5,
         "current_season_games": 14,
-        "current_season_raw_delta": -0.94125,
-        "effective_games": 13.79,
-        "fia": -0.29641,
+        "current_season_raw_delta": -0.93679,
+        "effective_games": 14.0,
+        "fia": -0.29807,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.94125,
+        "raw_delta": -0.93679,
         "sample_games": 14,
         "seasons": [
           "2026-27"
@@ -641,17 +641,17 @@
         "clubs": [
           "Fiorentina"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": -0.13943,
+        "current_season_fia": -0.14237,
         "current_season_games": 3,
-        "current_season_raw_delta": -0.69714,
-        "effective_games": 2.96,
-        "fia": -0.06251,
+        "current_season_raw_delta": -0.71183,
+        "effective_games": 3.0,
+        "fia": -0.06471,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.69714,
+        "raw_delta": -0.71183,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -663,17 +663,17 @@
         "clubs": [
           "Cagliari"
         ],
-        "confidence": 0.20865,
+        "confidence": 0.21053,
         "current_season_confidence": 0.4,
-        "current_season_fia": -0.01206,
+        "current_season_fia": -0.02109,
         "current_season_games": 8,
-        "current_season_raw_delta": -0.03014,
-        "effective_games": 7.91,
-        "fia": -0.00562,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": -0.05272,
+        "effective_games": 8.0,
+        "fia": -0.0111,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.02695,
+        "raw_delta": -0.05272,
         "sample_games": 8,
         "seasons": [
           "2026-27"
@@ -683,17 +683,17 @@
         "clubs": [
           "Cagliari"
         ],
-        "confidence": 0.3855,
+        "confidence": 0.38776,
         "current_season_confidence": 0.6129,
-        "current_season_fia": 0.09705,
+        "current_season_fia": 0.11343,
         "current_season_games": 19,
-        "current_season_raw_delta": 0.15835,
-        "effective_games": 18.82,
-        "fia": 0.0615,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": 0.18507,
+        "effective_games": 19.0,
+        "fia": 0.07176,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.15954,
+        "raw_delta": 0.18507,
         "sample_games": 19,
         "seasons": [
           "2026-27"
@@ -703,17 +703,17 @@
         "clubs": [
           "Cagliari"
         ],
-        "confidence": 0.28367,
+        "confidence": 0.28571,
         "current_season_confidence": 0.5,
-        "current_season_fia": 0.10393,
+        "current_season_fia": 0.09411,
         "current_season_games": 12,
-        "current_season_raw_delta": 0.20785,
-        "effective_games": 11.88,
-        "fia": 0.05939,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": 0.18821,
+        "effective_games": 12.0,
+        "fia": 0.05378,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.20936,
+        "raw_delta": 0.18821,
         "sample_games": 12,
         "seasons": [
           "2026-27"
@@ -723,17 +723,17 @@
         "clubs": [
           "Cagliari"
         ],
-        "confidence": 0.09008,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.04588,
+        "current_season_fia": 0.05763,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.2294,
-        "effective_games": 2.97,
-        "fia": 0.02044,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": 0.28817,
+        "effective_games": 3.0,
+        "fia": 0.0262,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.22695,
+        "raw_delta": 0.28817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -745,17 +745,17 @@
         "clubs": [
           "Lazio"
         ],
-        "confidence": 0.11687,
+        "confidence": 0.11765,
         "current_season_confidence": 0.25,
-        "current_season_fia": -0.06301,
+        "current_season_fia": -0.07599,
         "current_season_games": 4,
-        "current_season_raw_delta": -0.25204,
-        "effective_games": 3.97,
-        "fia": -0.02962,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": -0.30397,
+        "effective_games": 4.0,
+        "fia": -0.03576,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.25349,
+        "raw_delta": -0.30397,
         "sample_games": 4,
         "seasons": [
           "2026-27"
@@ -765,17 +765,17 @@
         "clubs": [
           "Lazio"
         ],
-        "confidence": 0.42057,
+        "confidence": 0.42308,
         "current_season_confidence": 0.64706,
-        "current_season_fia": 0.13472,
+        "current_season_fia": 0.14905,
         "current_season_games": 22,
-        "current_season_raw_delta": 0.2082,
-        "effective_games": 21.77,
-        "fia": 0.08803,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": 0.23035,
+        "effective_games": 22.0,
+        "fia": 0.09746,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.20931,
+        "raw_delta": 0.23035,
         "sample_games": 22,
         "seasons": [
           "2026-27"
@@ -785,17 +785,17 @@
         "clubs": [
           "Lazio"
         ],
-        "confidence": 0.31585,
+        "confidence": 0.31818,
         "current_season_confidence": 0.53846,
-        "current_season_fia": 0.15814,
+        "current_season_fia": 0.14942,
         "current_season_games": 14,
-        "current_season_raw_delta": 0.2937,
-        "effective_games": 13.85,
-        "fia": 0.09271,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": 0.2775,
+        "effective_games": 14.0,
+        "fia": 0.0883,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.29353,
+        "raw_delta": 0.2775,
         "sample_games": 14,
         "seasons": [
           "2026-27"
@@ -805,17 +805,17 @@
         "clubs": [
           "Lazio"
         ],
-        "confidence": 0.09008,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.07988,
+        "current_season_fia": 0.09163,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.3994,
-        "effective_games": 2.97,
-        "fia": 0.03591,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": 0.45817,
+        "effective_games": 3.0,
+        "fia": 0.04165,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.39866,
+        "raw_delta": 0.45817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -827,17 +827,17 @@
         "clubs": [
           "Roma"
         ],
-        "confidence": 0.28264,
+        "confidence": 0.28571,
         "current_season_confidence": 0.5,
-        "current_season_fia": 0.44838,
+        "current_season_fia": 0.45176,
         "current_season_games": 12,
-        "current_season_raw_delta": 0.89675,
-        "effective_games": 11.82,
-        "fia": 0.25346,
+        "current_season_raw_delta": 0.90353,
+        "effective_games": 12.0,
+        "fia": 0.25815,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.89675,
+        "raw_delta": 0.90353,
         "sample_games": 12,
         "seasons": [
           "2026-27"
@@ -847,17 +847,17 @@
         "clubs": [
           "Roma"
         ],
-        "confidence": 0.26534,
+        "confidence": 0.26829,
         "current_season_confidence": 0.47826,
-        "current_season_fia": 0.21144,
+        "current_season_fia": 0.20821,
         "current_season_games": 11,
-        "current_season_raw_delta": 0.4421,
-        "effective_games": 10.83,
-        "fia": 0.11731,
+        "current_season_raw_delta": 0.43535,
+        "effective_games": 11.0,
+        "fia": 0.1168,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.4421,
+        "raw_delta": 0.43535,
         "sample_games": 11,
         "seasons": [
           "2026-27"
@@ -867,17 +867,17 @@
         "clubs": [
           "Roma"
         ],
-        "confidence": 0.39638,
+        "confidence": 0.4,
         "current_season_confidence": 0.625,
-        "current_season_fia": 0.25578,
+        "current_season_fia": 0.25857,
         "current_season_games": 20,
-        "current_season_raw_delta": 0.40925,
-        "effective_games": 19.7,
-        "fia": 0.16222,
+        "current_season_raw_delta": 0.41371,
+        "effective_games": 20.0,
+        "fia": 0.16549,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.40925,
+        "raw_delta": 0.41371,
         "sample_games": 20,
         "seasons": [
           "2026-27"
@@ -887,17 +887,17 @@
         "clubs": [
           "Roma"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.02857,
+        "current_season_fia": 0.02563,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.14286,
-        "effective_games": 2.96,
-        "fia": 0.01281,
+        "current_season_raw_delta": 0.12817,
+        "effective_games": 3.0,
+        "fia": 0.01165,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.14286,
+        "raw_delta": 0.12817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -909,17 +909,17 @@
         "clubs": [
           "Venezia"
         ],
-        "confidence": 0.20803,
+        "confidence": 0.21053,
         "current_season_confidence": 0.4,
-        "current_season_fia": -0.0998,
+        "current_season_fia": -0.09709,
         "current_season_games": 8,
-        "current_season_raw_delta": -0.2495,
-        "effective_games": 7.88,
-        "fia": -0.0519,
+        "current_season_raw_delta": -0.24272,
+        "effective_games": 8.0,
+        "fia": -0.0511,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.2495,
+        "raw_delta": -0.24272,
         "sample_games": 8,
         "seasons": [
           "2026-27"
@@ -929,17 +929,17 @@
         "clubs": [
           "Venezia"
         ],
-        "confidence": 0.28264,
+        "confidence": 0.28571,
         "current_season_confidence": 0.5,
-        "current_season_fia": -0.10804,
+        "current_season_fia": -0.11141,
         "current_season_games": 12,
-        "current_season_raw_delta": -0.21608,
-        "effective_games": 11.82,
-        "fia": -0.06107,
+        "current_season_raw_delta": -0.22283,
+        "effective_games": 12.0,
+        "fia": -0.06367,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.21608,
+        "raw_delta": -0.22283,
         "sample_games": 12,
         "seasons": [
           "2026-27"
@@ -949,17 +949,17 @@
         "clubs": [
           "Venezia"
         ],
-        "confidence": 0.39638,
+        "confidence": 0.4,
         "current_season_confidence": 0.625,
-        "current_season_fia": -0.18265,
+        "current_season_fia": -0.17987,
         "current_season_games": 20,
-        "current_season_raw_delta": -0.29225,
-        "effective_games": 19.7,
-        "fia": -0.11584,
+        "current_season_raw_delta": -0.28779,
+        "effective_games": 20.0,
+        "fia": -0.11511,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.29225,
+        "raw_delta": -0.28779,
         "sample_games": 20,
         "seasons": [
           "2026-27"
@@ -969,17 +969,17 @@
         "clubs": [
           "Venezia"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": -0.00543,
+        "current_season_fia": -0.00837,
         "current_season_games": 3,
-        "current_season_raw_delta": -0.02714,
-        "effective_games": 2.96,
-        "fia": -0.00243,
+        "current_season_raw_delta": -0.04183,
+        "effective_games": 3.0,
+        "fia": -0.0038,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.02714,
+        "raw_delta": -0.04183,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -991,17 +991,17 @@
         "clubs": [
           "Torino"
         ],
-        "confidence": 0.18688,
+        "confidence": 0.18919,
         "current_season_confidence": 0.36842,
-        "current_season_fia": 0.03025,
+        "current_season_fia": 0.03275,
         "current_season_games": 7,
-        "current_season_raw_delta": 0.08211,
-        "effective_games": 6.89,
-        "fia": 0.01534,
+        "current_season_raw_delta": 0.08888,
+        "effective_games": 7.0,
+        "fia": 0.01682,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.08211,
+        "raw_delta": 0.08888,
         "sample_games": 7,
         "seasons": [
           "2026-27"
@@ -1011,17 +1011,17 @@
         "clubs": [
           "Torino"
         ],
-        "confidence": 0.39638,
+        "confidence": 0.4,
         "current_season_confidence": 0.625,
-        "current_season_fia": -0.1188,
+        "current_season_fia": -0.12302,
         "current_season_games": 20,
-        "current_season_raw_delta": -0.19008,
-        "effective_games": 19.7,
-        "fia": -0.07534,
+        "current_season_raw_delta": -0.19683,
+        "effective_games": 20.0,
+        "fia": -0.07873,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.19008,
+        "raw_delta": -0.19683,
         "sample_games": 20,
         "seasons": [
           "2026-27"
@@ -1031,17 +1031,17 @@
         "clubs": [
           "Torino"
         ],
-        "confidence": 0.35822,
+        "confidence": 0.3617,
         "current_season_confidence": 0.58621,
-        "current_season_fia": 0.0703,
+        "current_season_fia": 0.07292,
         "current_season_games": 17,
-        "current_season_raw_delta": 0.11993,
-        "effective_games": 16.75,
-        "fia": 0.04296,
+        "current_season_raw_delta": 0.12439,
+        "effective_games": 17.0,
+        "fia": 0.04499,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.11993,
+        "raw_delta": 0.12439,
         "sample_games": 17,
         "seasons": [
           "2026-27"
@@ -1051,17 +1051,17 @@
         "clubs": [
           "Torino"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": -0.0721,
+        "current_season_fia": -0.07503,
         "current_season_games": 3,
-        "current_season_raw_delta": -0.36048,
-        "effective_games": 2.96,
-        "fia": -0.03232,
+        "current_season_raw_delta": -0.37517,
+        "effective_games": 3.0,
+        "fia": -0.03411,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.36048,
+        "raw_delta": -0.37517,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -1073,17 +1073,17 @@
         "clubs": [
           "Monza"
         ],
-        "confidence": 0.16458,
+        "confidence": 0.16667,
         "current_season_confidence": 0.33333,
-        "current_season_fia": 0.14642,
+        "current_season_fia": 0.14868,
         "current_season_games": 6,
-        "current_season_raw_delta": 0.43925,
-        "effective_games": 5.91,
-        "fia": 0.07229,
+        "current_season_raw_delta": 0.44603,
+        "effective_games": 6.0,
+        "fia": 0.07434,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.43925,
+        "raw_delta": 0.44603,
         "sample_games": 6,
         "seasons": [
           "2026-27"
@@ -1093,17 +1093,17 @@
         "clubs": [
           "Monza"
         ],
-        "confidence": 0.28264,
+        "confidence": 0.28571,
         "current_season_confidence": 0.5,
-        "current_season_fia": -0.10846,
+        "current_season_fia": -0.11183,
         "current_season_games": 12,
-        "current_season_raw_delta": -0.21691,
-        "effective_games": 11.82,
-        "fia": -0.06131,
+        "current_season_raw_delta": -0.22366,
+        "effective_games": 12.0,
+        "fia": -0.0639,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.21691,
+        "raw_delta": -0.22366,
         "sample_games": 12,
         "seasons": [
           "2026-27"
@@ -1113,17 +1113,17 @@
         "clubs": [
           "Monza"
         ],
-        "confidence": 0.35822,
+        "confidence": 0.3617,
         "current_season_confidence": 0.58621,
-        "current_season_fia": -0.1028,
+        "current_season_fia": -0.10018,
         "current_season_games": 17,
-        "current_season_raw_delta": -0.17536,
-        "effective_games": 16.75,
-        "fia": -0.06282,
+        "current_season_raw_delta": -0.1709,
+        "effective_games": 17.0,
+        "fia": -0.06182,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.17536,
+        "raw_delta": -0.1709,
         "sample_games": 17,
         "seasons": [
           "2026-27"
@@ -1133,17 +1133,17 @@
         "clubs": [
           "Monza"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": -0.20543,
+        "current_season_fia": -0.20837,
         "current_season_games": 3,
-        "current_season_raw_delta": -1.02714,
-        "effective_games": 2.96,
-        "fia": -0.0921,
+        "current_season_raw_delta": -1.04183,
+        "effective_games": 3.0,
+        "fia": -0.09471,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -1.02714,
+        "raw_delta": -1.04183,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -1155,17 +1155,17 @@
         "clubs": [
           "Udinese"
         ],
-        "confidence": 0.16528,
+        "confidence": 0.16667,
         "current_season_confidence": 0.33333,
-        "current_season_fia": -0.11831,
+        "current_season_fia": -0.1291,
         "current_season_games": 6,
-        "current_season_raw_delta": -0.35494,
-        "effective_games": 5.94,
-        "fia": -0.05832,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": -0.38731,
+        "effective_games": 6.0,
+        "fia": -0.06455,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.35286,
+        "raw_delta": -0.38731,
         "sample_games": 6,
         "seasons": [
           "2026-27"
@@ -1175,17 +1175,17 @@
         "clubs": [
           "Udinese"
         ],
-        "confidence": 0.35945,
+        "confidence": 0.3617,
         "current_season_confidence": 0.58621,
-        "current_season_fia": 0.01833,
+        "current_season_fia": 0.03317,
         "current_season_games": 17,
-        "current_season_raw_delta": 0.03127,
-        "effective_games": 16.84,
-        "fia": 0.01059,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": 0.05658,
+        "effective_games": 17.0,
+        "fia": 0.02047,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.02946,
+        "raw_delta": 0.05658,
         "sample_games": 17,
         "seasons": [
           "2026-27"
@@ -1195,17 +1195,17 @@
         "clubs": [
           "Udinese"
         ],
-        "confidence": 0.37265,
+        "confidence": 0.375,
         "current_season_confidence": 0.6,
-        "current_season_fia": 0.14971,
+        "current_season_fia": 0.13793,
         "current_season_games": 18,
-        "current_season_raw_delta": 0.24952,
-        "effective_games": 17.82,
-        "fia": 0.09245,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": 0.22988,
+        "effective_games": 18.0,
+        "fia": 0.08621,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.24808,
+        "raw_delta": 0.22988,
         "sample_games": 18,
         "seasons": [
           "2026-27"
@@ -1215,17 +1215,17 @@
         "clubs": [
           "Udinese"
         ],
-        "confidence": 0.09008,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.01388,
+        "current_season_fia": 0.02563,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.0694,
-        "effective_games": 2.97,
-        "fia": 0.00611,
-        "intervals": 2,
-        "last_round": 4,
+        "current_season_raw_delta": 0.12817,
+        "effective_games": 3.0,
+        "fia": 0.01165,
+        "intervals": 1,
+        "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.06785,
+        "raw_delta": 0.12817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -1237,17 +1237,17 @@
         "clubs": [
           "Juventus"
         ],
-        "confidence": 0.2281,
+        "confidence": 0.23077,
         "current_season_confidence": 0.42857,
-        "current_season_fia": -0.24032,
+        "current_season_fia": -0.23742,
         "current_season_games": 9,
-        "current_season_raw_delta": -0.56075,
-        "effective_games": 8.87,
-        "fia": -0.12791,
+        "current_season_raw_delta": -0.55397,
+        "effective_games": 9.0,
+        "fia": -0.12784,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.56075,
+        "raw_delta": -0.55397,
         "sample_games": 9,
         "seasons": [
           "2026-27"
@@ -1257,17 +1257,17 @@
         "clubs": [
           "Juventus"
         ],
-        "confidence": 0.35822,
+        "confidence": 0.3617,
         "current_season_confidence": 0.58621,
-        "current_season_fia": 0.15713,
+        "current_season_fia": 0.15317,
         "current_season_games": 17,
-        "current_season_raw_delta": 0.26804,
-        "effective_games": 16.75,
-        "fia": 0.09602,
+        "current_season_raw_delta": 0.26129,
+        "effective_games": 17.0,
+        "fia": 0.09451,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.26804,
+        "raw_delta": 0.26129,
         "sample_games": 17,
         "seasons": [
           "2026-27"
@@ -1277,17 +1277,17 @@
         "clubs": [
           "Juventus"
         ],
-        "confidence": 0.32998,
+        "confidence": 0.33333,
         "current_season_confidence": 0.55556,
-        "current_season_fia": 0.12486,
+        "current_season_fia": 0.12734,
         "current_season_games": 15,
-        "current_season_raw_delta": 0.22475,
-        "effective_games": 14.78,
-        "fia": 0.07417,
+        "current_season_raw_delta": 0.22921,
+        "effective_games": 15.0,
+        "fia": 0.0764,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.22475,
+        "raw_delta": 0.22921,
         "sample_games": 15,
         "seasons": [
           "2026-27"
@@ -1297,17 +1297,17 @@
         "clubs": [
           "Juventus"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.06057,
+        "current_season_fia": 0.05763,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.30286,
-        "effective_games": 2.96,
-        "fia": 0.02716,
+        "current_season_raw_delta": 0.28817,
+        "effective_games": 3.0,
+        "fia": 0.0262,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.30286,
+        "raw_delta": 0.28817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -1319,17 +1319,17 @@
         "clubs": [
           "Napoli"
         ],
-        "confidence": 0.26534,
+        "confidence": 0.26829,
         "current_season_confidence": 0.47826,
-        "current_season_fia": -0.02905,
+        "current_season_fia": -0.02581,
         "current_season_games": 11,
-        "current_season_raw_delta": -0.06075,
-        "effective_games": 10.83,
-        "fia": -0.01612,
+        "current_season_raw_delta": -0.05397,
+        "effective_games": 11.0,
+        "fia": -0.01448,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.06075,
+        "raw_delta": -0.05397,
         "sample_games": 11,
         "seasons": [
           "2026-27"
@@ -1339,17 +1339,17 @@
         "clubs": [
           "Napoli"
         ],
-        "confidence": 0.35822,
+        "confidence": 0.3617,
         "current_season_confidence": 0.58621,
-        "current_season_fia": 0.0023,
+        "current_season_fia": -0.00166,
         "current_season_games": 17,
-        "current_season_raw_delta": 0.00392,
-        "effective_games": 16.75,
-        "fia": 0.0014,
+        "current_season_raw_delta": -0.00283,
+        "effective_games": 17.0,
+        "fia": -0.00102,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.00392,
+        "raw_delta": -0.00283,
         "sample_games": 17,
         "seasons": [
           "2026-27"
@@ -1359,17 +1359,17 @@
         "clubs": [
           "Napoli"
         ],
-        "confidence": 0.31491,
+        "confidence": 0.31818,
         "current_season_confidence": 0.53846,
-        "current_season_fia": -0.19952,
+        "current_season_fia": -0.19712,
         "current_season_games": 14,
-        "current_season_raw_delta": -0.37053,
-        "effective_games": 13.79,
-        "fia": -0.11668,
+        "current_season_raw_delta": -0.36607,
+        "effective_games": 14.0,
+        "fia": -0.11648,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.37053,
+        "raw_delta": -0.36607,
         "sample_games": 14,
         "seasons": [
           "2026-27"
@@ -1379,17 +1379,17 @@
         "clubs": [
           "Napoli"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.06057,
+        "current_season_fia": 0.05763,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.30286,
-        "effective_games": 2.96,
-        "fia": 0.02716,
+        "current_season_raw_delta": 0.28817,
+        "effective_games": 3.0,
+        "fia": 0.0262,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.30286,
+        "raw_delta": 0.28817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -1401,17 +1401,17 @@
         "clubs": [
           "Frosinone"
         ],
-        "confidence": 0.18688,
+        "confidence": 0.18919,
         "current_season_confidence": 0.36842,
-        "current_season_fia": 0.26657,
+        "current_season_fia": 0.26906,
         "current_season_games": 7,
-        "current_season_raw_delta": 0.72354,
-        "effective_games": 6.89,
-        "fia": 0.13522,
+        "current_season_raw_delta": 0.73031,
+        "effective_games": 7.0,
+        "fia": 0.13817,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.72354,
+        "raw_delta": 0.73031,
         "sample_games": 7,
         "seasons": [
           "2026-27"
@@ -1421,17 +1421,17 @@
         "clubs": [
           "Frosinone"
         ],
-        "confidence": 0.35822,
+        "confidence": 0.3617,
         "current_season_confidence": 0.58621,
-        "current_season_fia": 0.05333,
+        "current_season_fia": 0.04938,
         "current_season_games": 17,
-        "current_season_raw_delta": 0.09098,
-        "effective_games": 16.75,
-        "fia": 0.03259,
+        "current_season_raw_delta": 0.08423,
+        "effective_games": 17.0,
+        "fia": 0.03047,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.09098,
+        "raw_delta": 0.08423,
         "sample_games": 17,
         "seasons": [
           "2026-27"
@@ -1441,17 +1441,17 @@
         "clubs": [
           "Frosinone"
         ],
-        "confidence": 0.34441,
+        "confidence": 0.34783,
         "current_season_confidence": 0.57143,
-        "current_season_fia": 0.19465,
+        "current_season_fia": 0.19719,
         "current_season_games": 16,
-        "current_season_raw_delta": 0.34063,
-        "effective_games": 15.76,
-        "fia": 0.11731,
+        "current_season_raw_delta": 0.34509,
+        "effective_games": 16.0,
+        "fia": 0.12003,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.34063,
+        "raw_delta": 0.34509,
         "sample_games": 16,
         "seasons": [
           "2026-27"
@@ -1461,17 +1461,17 @@
         "clubs": [
           "Frosinone"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.02857,
+        "current_season_fia": 0.02563,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.14286,
-        "effective_games": 2.96,
-        "fia": 0.01281,
+        "current_season_raw_delta": 0.12817,
+        "effective_games": 3.0,
+        "fia": 0.01165,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.14286,
+        "raw_delta": 0.12817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -1483,17 +1483,17 @@
         "clubs": [
           "Atalanta"
         ],
-        "confidence": 0.26534,
+        "confidence": 0.26829,
         "current_season_confidence": 0.47826,
-        "current_season_fia": -0.05036,
+        "current_season_fia": -0.04712,
         "current_season_games": 11,
-        "current_season_raw_delta": -0.10529,
-        "effective_games": 10.83,
-        "fia": -0.02794,
+        "current_season_raw_delta": -0.09852,
+        "effective_games": 11.0,
+        "fia": -0.02643,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.10529,
+        "raw_delta": -0.09852,
         "sample_games": 11,
         "seasons": [
           "2026-27"
@@ -1503,17 +1503,17 @@
         "clubs": [
           "Atalanta"
         ],
-        "confidence": 0.37146,
+        "confidence": 0.375,
         "current_season_confidence": 0.6,
-        "current_season_fia": -0.06265,
+        "current_season_fia": -0.0667,
         "current_season_games": 18,
-        "current_season_raw_delta": -0.10441,
-        "effective_games": 17.73,
-        "fia": -0.03879,
+        "current_season_raw_delta": -0.11116,
+        "effective_games": 18.0,
+        "fia": -0.04169,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.10441,
+        "raw_delta": -0.11116,
         "sample_games": 18,
         "seasons": [
           "2026-27"
@@ -1523,17 +1523,17 @@
         "clubs": [
           "Atalanta"
         ],
-        "confidence": 0.31491,
+        "confidence": 0.31818,
         "current_season_confidence": 0.53846,
-        "current_season_fia": -0.02567,
+        "current_season_fia": -0.02327,
         "current_season_games": 14,
-        "current_season_raw_delta": -0.04767,
-        "effective_games": 13.79,
-        "fia": -0.01501,
+        "current_season_raw_delta": -0.04321,
+        "effective_games": 14.0,
+        "fia": -0.01375,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.04767,
+        "raw_delta": -0.04321,
         "sample_games": 14,
         "seasons": [
           "2026-27"
@@ -1543,17 +1543,17 @@
         "clubs": [
           "Atalanta"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.12857,
+        "current_season_fia": 0.12563,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.64286,
-        "effective_games": 2.96,
-        "fia": 0.05764,
+        "current_season_raw_delta": 0.62817,
+        "effective_games": 3.0,
+        "fia": 0.05711,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.64286,
+        "raw_delta": 0.62817,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -1565,17 +1565,17 @@
         "clubs": [
           "Milan"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": 0.02185,
+        "current_season_fia": 0.02321,
         "current_season_games": 3,
-        "current_season_raw_delta": 0.10925,
-        "effective_games": 2.96,
-        "fia": 0.0098,
+        "current_season_raw_delta": 0.11603,
+        "effective_games": 3.0,
+        "fia": 0.01055,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.10925,
+        "raw_delta": 0.11603,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -1585,17 +1585,17 @@
         "clubs": [
           "Milan"
         ],
-        "confidence": 0.44072,
+        "confidence": 0.44444,
         "current_season_confidence": 0.66667,
-        "current_season_fia": 0.12122,
+        "current_season_fia": 0.11673,
         "current_season_games": 24,
-        "current_season_raw_delta": 0.18184,
-        "effective_games": 23.64,
-        "fia": 0.08014,
+        "current_season_raw_delta": 0.17509,
+        "effective_games": 24.0,
+        "fia": 0.07782,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.18184,
+        "raw_delta": 0.17509,
         "sample_games": 24,
         "seasons": [
           "2026-27"
@@ -1605,17 +1605,17 @@
         "clubs": [
           "Milan"
         ],
-        "confidence": 0.31491,
+        "confidence": 0.31818,
         "current_season_confidence": 0.53846,
-        "current_season_fia": 0.18548,
+        "current_season_fia": 0.18788,
         "current_season_games": 14,
-        "current_season_raw_delta": 0.34447,
-        "effective_games": 13.79,
-        "fia": 0.10848,
+        "current_season_raw_delta": 0.34893,
+        "effective_games": 14.0,
+        "fia": 0.11102,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": 0.34447,
+        "raw_delta": 0.34893,
         "sample_games": 14,
         "seasons": [
           "2026-27"
@@ -1625,17 +1625,17 @@
         "clubs": [
           "Milan"
         ],
-        "confidence": 0.08967,
+        "confidence": 0.09091,
         "current_season_confidence": 0.2,
-        "current_season_fia": -0.00543,
+        "current_season_fia": -0.00837,
         "current_season_games": 3,
-        "current_season_raw_delta": -0.02714,
-        "effective_games": 2.96,
-        "fia": -0.00243,
+        "current_season_raw_delta": -0.04183,
+        "effective_games": 3.0,
+        "fia": -0.0038,
         "intervals": 1,
         "last_round": 3,
         "last_season": "2026-27",
-        "raw_delta": -0.02714,
+        "raw_delta": -0.04183,
         "sample_games": 3,
         "seasons": [
           "2026-27"
@@ -1644,5 +1644,5 @@
     }
   },
   "season": "2026-27",
-  "updated_at": "2026-09-08T12:07:30.884137+00:00"
+  "updated_at": "2026-09-10T12:13:00.252240+00:00"
 }
