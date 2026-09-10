@@ -12,10 +12,13 @@ SEASON = "2026-27"
 ROME_TZ = ZoneInfo("Europe/Rome")
 
 # Una normale giornata di Serie A si sviluppa in pochi giorni. Questo limite
-# evita che un singolo recupero/posticipo eccezionale tenga bloccato il numero
-# della giornata per settimane.
+# evita che un singolo recupero eccezionale tenga bloccato il numero della
+# giornata per settimane.
 MAX_ROUND_SPAN = timedelta(days=6)
 ROUND_END_GRACE = timedelta(hours=3)
+DATE_TIME_RE = re.compile(
+    r"\b(\d{2})/(\d{2})\s+(\d{2}):(\d{2})\b"
+)
 
 
 TEAM_SLUGS = {
@@ -69,32 +72,68 @@ def _normalize_now(now=None):
     return now.astimezone(ROME_TZ)
 
 
-def _extract_kickoffs(soup):
-    text = soup.get_text(" ", strip=True)
-    matches = re.findall(
-        r"\b(\d{2})/(\d{2})\s+(\d{2}):(\d{2})\b",
-        text,
+def _to_kickoff(day, month, hour, minute):
+    month_number = int(month)
+    return datetime(
+        _season_year_for_month(month_number),
+        month_number,
+        int(day),
+        int(hour),
+        int(minute),
+        tzinfo=ROME_TZ,
     )
 
-    kickoffs = []
-    seen = set()
 
-    for day, month, hour, minute in matches:
-        month_number = int(month)
-        kickoff = datetime(
-            _season_year_for_month(month_number),
-            month_number,
-            int(day),
-            int(hour),
-            int(minute),
-            tzinfo=ROME_TZ,
-        )
+def _match_link_pattern(matchday):
+    return re.compile(
+        rf"/serie-a/calendario/{int(matchday)}/"
+        rf"{re.escape(SEASON)}/([^/]+)/(\d+)"
+    )
 
-        if kickoff not in seen:
-            seen.add(kickoff)
-            kickoffs.append(kickoff)
 
-    return sorted(kickoffs)
+def _extract_fixture_kickoffs(soup, matchday):
+    """
+    Estrae gli orari solo dai contenitori delle 10 partite della giornata.
+
+    Non scandisce tutto il testo della pagina: le news laterali contengono
+    timestamp (es. 10/09 12:20) che in passato potevano essere scambiati per
+    date della giornata e falsare il resolver.
+    """
+    pattern = _match_link_pattern(matchday)
+    kickoffs_by_match = {}
+
+    for link in soup.find_all("a", href=True):
+        path = urlparse(link.get("href", "")).path
+        match = pattern.search(path)
+        if not match:
+            continue
+
+        match_id = match.group(2)
+        if match_id in kickoffs_by_match:
+            continue
+
+        node = link
+        kickoff = None
+
+        # Risaliamo solo nel contenitore locale della partita. Il primo antenato
+        # che contiene un timestamp e, normalmente, la card del singolo match.
+        for _ in range(7):
+            node = getattr(node, "parent", None)
+            if node is None:
+                break
+
+            local_text = node.get_text(" ", strip=True)
+            local_matches = DATE_TIME_RE.findall(local_text)
+
+            if local_matches:
+                day, month, hour, minute = local_matches[0]
+                kickoff = _to_kickoff(day, month, hour, minute)
+                break
+
+        if kickoff is not None:
+            kickoffs_by_match[match_id] = kickoff
+
+    return list(kickoffs_by_match.values())
 
 
 def fetch_matchday_window(matchday):
@@ -104,11 +143,12 @@ def fetch_matchday_window(matchday):
 
     url = CALENDAR_URL.format(matchday=matchday)
     soup = get_soup(url)
-    kickoffs = _extract_kickoffs(soup)
+    kickoffs = _extract_fixture_kickoffs(soup, matchday)
 
-    if not kickoffs:
+    if len(kickoffs) != 10:
         raise RuntimeError(
-            f"Nessuna data/orario trovata per la giornata {matchday}."
+            f"Date giornata {matchday} non validate: "
+            f"trovati {len(kickoffs)} kickoff su 10."
         )
 
     first_kickoff = min(kickoffs)
@@ -123,7 +163,7 @@ def fetch_matchday_window(matchday):
         "first_kickoff": first_kickoff,
         "last_kickoff": last_kickoff,
         "effective_last_kickoff": effective_last,
-        "kickoffs": kickoffs,
+        "kickoffs": sorted(kickoffs),
         "source_url": url,
     }
 
@@ -132,6 +172,9 @@ def _homepage_matchday_hint(soup):
     """Indizio soltanto: non viene mai accettato senza controllo delle date."""
     text = soup.get_text(" ", strip=True)
     patterns = [
+        # Il blocco Probabili Formazioni descrive il turno operativo attuale ed
+        # e piu affidabile della generica etichetta "Prossima giornata".
+        r"Probabili formazioni\s+Giornata\s+(\d+)",
         r"Prossima giornata\s+(\d+)\s+di\s+38",
         r"Prossimo turno\s+(\d+)",
     ]
@@ -218,7 +261,6 @@ def _select_matchday_from_windows(now, windows):
             upcoming.append(window)
 
     if active:
-        # Se finestre anomale si sovrappongono, vince quella iniziata piu di recente.
         selected = max(active, key=lambda item: item["first_kickoff"])
         return int(selected["matchday"])
 
@@ -231,12 +273,14 @@ def _select_matchday_from_windows(now, windows):
 
 def detect_next_matchday(now=None):
     """
-    Determina la giornata Serie A corrente/prossima.
+    Determina la giornata Serie A corrente/prossima con doppio controllo.
 
-    La scritta "Prossima giornata" della home Fantacalcio e solo un indizio.
-    La decisione finale viene sempre validata sulle date/orari delle pagine
-    calendario delle giornate vicine. Se non riusciamo a validarla, falliamo
-    esplicitamente invece di mostrare una giornata potenzialmente sbagliata.
+    1. La home fornisce uno o piu indizi sul numero di giornata.
+    2. Il numero viene validato sulle date/orari delle 10 fixture reali delle
+       pagine calendario delle giornate vicine.
+
+    Se il calendario non e validabile, il sistema si ferma: non usa piu un
+    numero di giornata non verificato.
     """
     now = _normalize_now(now)
     home_soup = get_soup(HOME_URL)
@@ -245,8 +289,6 @@ def detect_next_matchday(now=None):
 
     candidates = _candidate_matchdays(homepage_hint, standings_hint)
 
-    # Se gli indizi della home non sono leggibili, la scansione completa e un
-    # fallback di sicurezza: piu lenta, ma preferibile a una giornata inventata.
     if not candidates:
         candidates = list(range(1, 39))
 
@@ -259,8 +301,6 @@ def detect_next_matchday(now=None):
 
     selected = _select_matchday_from_windows(now, windows)
 
-    # Se gli indizi erano troppo lontani dal calendario reale, allarghiamo una
-    # volta la verifica all'intera stagione prima di arrenderci.
     if selected is None and len(candidates) < 38:
         attempted = set(candidates)
         all_windows = list(windows)
@@ -277,8 +317,9 @@ def detect_next_matchday(now=None):
 
     if selected is None:
         raise RuntimeError(
-            "Impossibile validare la giornata Serie A tramite le date del calendario. "
-            "Per sicurezza il sistema non usera un numero di giornata non verificato."
+            "Impossibile validare la giornata Serie A tramite le date delle "
+            "10 partite. Per sicurezza il sistema non usera un numero di "
+            "giornata non verificato."
         )
 
     return selected
@@ -307,17 +348,11 @@ def fetch_matchday_context(matchday=None, now=None):
     url = CALENDAR_URL.format(matchday=matchday)
     soup = get_soup(url)
     fixtures = {}
-
-    pattern = re.compile(
-        rf"/serie-a/calendario/{matchday}/"
-        rf"{re.escape(SEASON)}/([^/]+)/(\d+)"
-    )
-
+    pattern = _match_link_pattern(matchday)
     matches_found = {}
 
     for link in soup.find_all("a", href=True):
-        href = link.get("href", "")
-        path = urlparse(href).path
+        path = urlparse(link.get("href", "")).path
         match = pattern.search(path)
 
         if not match:
