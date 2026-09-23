@@ -83,6 +83,40 @@ class MarketTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             find_market_proposals(teams, values)
 
+    def test_positive_multiplayer_deal_is_possible_with_real_buy_low_signal(self):
+        teams, values = make_fixture()
+        # Surplus user defense -> shortage opponent defense; surplus
+        # opponent attack -> shortage user attack. 2-for-2 by role.
+        for j in range(8):
+            values[normalize_name(f"F0_D_{j}")]["score"] += 12
+        for j in range(6):
+            values[normalize_name(f"F1_A_{j}")]["score"] += 12
+        from src.market_proposals import team_needs
+        diag = team_needs(teams, values)
+        self.assertIn("D", diag[USER_TEAM]["strong_roles"])
+        self.assertIn("A", diag["Team 1"]["strong_roles"])
+        advanced = {
+            normalize_name("F1_A_3"): {
+                "name": "F1_A_3", "club": "Club 1",
+                "xg": 1.9, "xa": 0.2, "minutes": 400,
+                "recent_bonus": 0, "competition": "bassa", "cups": "no",
+                "updated": "2026-09-23", "source": "https://www.fotmob.com/test",
+            }
+        }
+        with patch("src.market_proposals.evaluate_acceptance", return_value={
+            "score": 83, "market_ratio": 1.1,
+        }):
+            result = find_market_proposals(
+                teams, values, advanced_metrics=advanced,
+                team_filter="Team 1",
+            )
+        self.assertTrue(result["offers"], "Synthetic mutually beneficial 2x2 buy-low must be discoverable")
+        for deal in result["offers"]:
+            self.assertEqual(len(deal["give"]), 2)
+            self.assertEqual(len(deal["receive"]), 2)
+            self.assertTrue(deal["buy_low"])
+            self.assertEqual(sorted(p.role for p in deal["give"]), sorted(p.role for p in deal["receive"]))
+
     def test_no_advanced_metrics_means_no_unverified_buy_low(self):
         teams, values = make_fixture()
         result = find_market_proposals(teams, values)
