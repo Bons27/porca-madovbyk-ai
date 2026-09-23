@@ -79,25 +79,22 @@ jobs:
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_calendar_source -v
 
-      - name: Regression guard - 10 September 2026 is Serie A G4
+      - name: Historical round regression (fixed offline fixture)
+        working-directory: porca-madovbyk-ai
+        run: python -m unittest tests.test_calendar_source.CalendarSourceTest.test_september_10_2026_resolves_matchday_4_not_5 -v
+
+      # An old matchday cannot be asserted against a changing live homepage.
+      # Fresh fixture source health is monitored separately without blocking unrelated features.
+      - name: Current Serie A source health (non-blocking)
+        continue-on-error: true
         working-directory: porca-madovbyk-ai
         run: |
           python - <<'PY'
-          from datetime import datetime
-          from src.calendar_source import ROME_TZ, detect_next_matchday, fetch_matchday_context
-
-          reference = datetime(2026, 9, 10, 12, 53, tzinfo=ROME_TZ)
-          matchday = detect_next_matchday(now=reference)
-          assert matchday == 4, f"Expected Serie A G4, got G{matchday}"
-
-          context = fetch_matchday_context(matchday=4)
-          matches = set(context["matches"])
-          assert len(matches) == 10, context
-          assert ("Venezia", "Fiorentina") in matches, matches
-          assert ("Torino", "Roma") in matches, matches
-          assert ("Inter", "Udinese") in matches, matches
-
-          print("Serie A calendar regression guard: OK - G4")
+          from src.calendar_source import detect_next_matchday, fetch_matchday_context
+          matchday = detect_next_matchday()
+          context = fetch_matchday_context(matchday=matchday)
+          assert len(context["matches"]) == 10
+          print("Current Serie A source: OK", matchday)
           PY
 
       - name: Probe live player detail source and role
