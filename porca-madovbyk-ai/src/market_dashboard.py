@@ -142,7 +142,7 @@ def render_market(root, open_player_detail, player_suffix=None):
         return
     meta = st.session_state["market_metadata"]
     st.caption(f"Dati elaborati: {meta['data_time']} (ora italiana) · {meta['without_stats']} giocatori senza statistiche complete.")
-    st.caption(f"Giocatori con metriche avanzate documentate: {result[\"advanced_count\"]}/200.")
+    st.caption("Giocatori con metriche avanzate documentate: " + str(result["advanced_count"]) + "/200.")
     if not meta["availability_verified"]:
         st.warning("Indisponibilità live non recuperate: ricontrolla i giocatori prima di contattare il proprietario.")
     st.subheader("📊 Dove le altre rose risultano meno coperte")
