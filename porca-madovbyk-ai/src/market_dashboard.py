@@ -202,7 +202,7 @@ def render_market(root, open_player_detail, player_suffix=None):
                 sig = offer.get("target_signal")
                 if sig:
                     st.write(
-                        f"Fonte: {sig['source']} · dati {sig['updated']} · "
+                        f"Fonte xG: {sig['source']} · fonte xA: {sig.get('source_xa', sig['source'])} · consultato/inserito {sig['updated']} · "
                         f"xG {sig['xg']:.2f} · xA {sig['xa']:.2f} · "
                         f"Gol+assist effettivi {sig['production']:.0f} · "
                         f"Differenza atteso-effettivo {sig['underperformance']:+.2f}"
@@ -212,6 +212,8 @@ def render_market(root, open_player_detail, player_suffix=None):
                         " · Coppe europee: " + sig["cups"] +
                         " (n/d = non verificato; le informazioni extra richiedono una fonte)."
                     )
+                    if sig.get("identity"):
+                        st.caption("Identificazione fonte: " + sig["identity"] + ". Verifica il club prima di negoziare.")
             if offer["hype"]:
                 st.write("**🔥 Bonus recenti + sovraperformance riportati nel CSV:** " + ", ".join(p.name for p in offer["hype"]))
             if not offer["buy_low"]:
