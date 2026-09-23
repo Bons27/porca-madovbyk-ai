@@ -144,7 +144,7 @@ def find_market_proposals(
                                     (role_utility(new_other, role, values) - role_utility(other, role, values))
                                     * ROLE_IMPORTANCE[role] for role in (ra, rb)
                                 )
-                                required_gain = 0.70 if attitude == "Poco propenso" else 0.35
+                                required_gain = 0.70 if attitude == "Poco propenso" else 0.20
                                 if opp_gain < required_gain:
                                     continue
                                 acceptance = evaluate_acceptance(receive, give, opp_gain, values)
