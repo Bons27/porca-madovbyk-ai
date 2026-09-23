@@ -113,42 +113,58 @@ def find_market_proposals(
                             for ob in opp_pools[rb]:
                                 receive = (oa, ob)
                                 receive_owner = owner_value(oa, values) + owner_value(ob, values)
-                                # Evita pacchetti sproporzionati e scambi di valore fittizi.
-                                if not (0.84 <= receive_owner / max(give_owner, 1) <= 1.10):
+
+                                # Hype negoziale: bonus recenti verificati possono far
+                                # percepire meglio ciò che cediamo, ma NON cambiano il
+                                # valore tecnico usato per calcolare i miglioramenti.
+                                hype = [p for p in give if is_hype(p, advanced_metrics)]
+                                hype_premium = min(0.12, 0.06 * len(hype))
+                                perceived_give_owner = give_owner * (1.0 + hype_premium)
+
+                                # Pacchetto complessivo plausibile: niente offerte in cui
+                                # chiediamo molto più valore di quanto mettiamo sul tavolo.
+                                package_ratio = receive_owner / max(perceived_give_owner, 1)
+                                if not (0.84 <= package_ratio <= 1.10):
                                     continue
-                                # Il portiere non può essere usato per far passare un
-                                # attaccante nettamente più valutato: ogni ruolo
-                                # coinvolto deve avere contropartite confrontabili.
-                                if any(
-                                    not (0.60 <= owner_value(out, values) /
-                                         max(owner_value(inc, values), 1) <= 1.65)
-                                    for out, inc in ((ua, oa), (ub, ob))
-                                ):
+
+                                # Anche dentro il 2×2 ogni singolo cambio di ruolo deve
+                                # restare credibile: niente "riempitivo" per mascherare
+                                # uno scambio chiaramente sbilanciato.
+                                role_pairs = ((ua, oa), (ub, ob))
+                                role_parity_ok = True
+                                for out, inc in role_pairs:
+                                    ratio = owner_value(out, values) / max(owner_value(inc, values), 1)
+                                    out_hype = is_hype(out, advanced_metrics)
+                                    low, high = ((0.68, 1.48) if out_hype else (0.78, 1.30))
+                                    if not (low <= ratio <= high):
+                                        role_parity_ok = False
+                                        break
+                                if not role_parity_ok:
                                     continue
-                                # Nella modalità buy-low occorrono xG/xA verificati
-                                # per almeno uno dei giocatori che chiediamo.
+
+                                # Nella modalità buy-low occorrono xG/xA verificati per
+                                # almeno uno dei giocatori che chiediamo.
                                 buy_low = [p for p in receive if is_buy_low(p, advanced_metrics)]
                                 if require_buy_low and not buy_low:
                                     continue
-                                hype = [p for p in give if is_hype(p, advanced_metrics)]
                                 new_me = _swapped(mine, give, receive)
                                 # Calcolo solo i due reparti cambiati (più veloce del ricalcolo dell'intera rosa).
                                 my_gain = sum(
                                     (role_utility(new_me, role, values) - role_utility(mine, role, values))
                                     * ROLE_IMPORTANCE[role] for role in (ra, rb)
                                 )
-                                if my_gain < 0.20:
+                                if my_gain < 0.30:
                                     continue
                                 new_other = _swapped(other, receive, give)
                                 opp_gain = sum(
                                     (role_utility(new_other, role, values) - role_utility(other, role, values))
                                     * ROLE_IMPORTANCE[role] for role in (ra, rb)
                                 )
-                                required_gain = 0.70 if attitude == "Poco propenso" else 0.20
+                                required_gain = 0.85 if attitude == "Poco propenso" else 0.30
                                 if opp_gain < required_gain:
                                     continue
                                 acceptance = evaluate_acceptance(receive, give, opp_gain, values)
-                                if acceptance is None or acceptance["score"] < 72:
+                                if acceptance is None or acceptance["score"] < 75:
                                     continue
                                 if attitude == "Poco propenso" and (
                                     acceptance["market_ratio"] < 1.08
@@ -176,6 +192,18 @@ def find_market_proposals(
                                     continue
                                 if my_help not in needs[opponent]["strong_roles"]:
                                     continue
+
+                                # Il buy-low che chiediamo deve essere proprio in un
+                                # reparto dove l'avversario ha abbondanza: non basta
+                                # trovare xG/xA interessanti se quel giocatore è vitale
+                                # per la struttura della sua rosa.
+                                buy_low_from_surplus = [
+                                    p for p in buy_low
+                                    if p.role in needs[opponent]["strong_roles"]
+                                ]
+                                if require_buy_low and not buy_low_from_surplus:
+                                    continue
+
                                 if attitude == "Poco propenso" and not hype:
                                     # Senza hype documentato, la controparte
                                     # deve comunque ricevere un vantaggio netto
@@ -194,9 +222,26 @@ def find_market_proposals(
                                     "my_need_supported":my_help in needs[USER_TEAM]["weak_roles"],
                                     "market_delta":round(receive_owner - give_owner, 1),
                                     "roles":(ra, rb),
-                                    "buy_low":tuple(buy_low),
+                                    "buy_low":tuple(buy_low_from_surplus or buy_low),
                                     "hype":tuple(hype),
-                                    "target_signal":player_signal(buy_low[0], advanced_metrics) if buy_low else None,
+                                    "hype_premium":round(hype_premium, 3),
+                                    "package_ratio":round(package_ratio, 3),
+                                    "target_signal":(
+                                        max(
+                                            (
+                                                (player_signal(p, advanced_metrics), p)
+                                                for p in (buy_low_from_surplus or buy_low)
+                                                if player_signal(p, advanced_metrics)
+                                            ),
+                                            key=lambda item: (
+                                                item[0]["competition"] == "bassa",
+                                                item[0]["cups"] == "no",
+                                                item[0]["underperformance"],
+                                                item[0]["expected"],
+                                            ),
+                                            default=(None, None),
+                                        )[0]
+                                    ),
                                 })
         # L'hype recente certificato conta solo come lieve incentivo
         # negoziale; non modifica il valore tecnico o inventa preferenze.
