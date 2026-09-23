@@ -9,6 +9,8 @@ on:
       - "porca-madovbyk-ai/src/market_proposals.py"
       - "porca-madovbyk-ai/src/market_advanced_metrics.py"
       - "porca-madovbyk-ai/src/market_fotmob.py"
+      - "porca-madovbyk-ai/src/market_auto_signals.py"
+      - "porca-madovbyk-ai/tests/test_market_auto_signals.py"
       - "porca-madovbyk-ai/tests/test_market_fotmob.py"
       - "porca-madovbyk-ai/src/market_dashboard.py"
       - "porca-madovbyk-ai/tests/test_market_proposals.py"
@@ -63,6 +65,7 @@ jobs:
           python -m py_compile src/market_proposals.py
           python -m py_compile src/market_advanced_metrics.py
           python -m py_compile src/market_fotmob.py
+          python -m py_compile src/market_auto_signals.py
           python -m py_compile src/market_dashboard.py
           python -m py_compile src/calendar_source.py
           python -m py_compile src/deadline_source.py
@@ -93,6 +96,10 @@ jobs:
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_market_fotmob -v
 
+      - name: Test Mercato automatic signals
+        working-directory: porca-madovbyk-ai
+        run: python -m unittest tests.test_market_auto_signals -v
+
       - name: Test Mercato conservative proposals
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_market_proposals -v
@@ -111,6 +118,7 @@ jobs:
           from src.trade_value import build_trade_values
           from src.market_proposals import find_market_proposals
           from src.market_fotmob import fetch_fotmob_metrics
+          from src.market_auto_signals import enrich_market_metrics
           from src.trade_engine import owner_value
           root = Path("data")
           roster = load_league_rosters(root / "league_rosters.csv")
@@ -122,7 +130,8 @@ jobs:
               teams[p.fantasy_team].append(p)
           values = build_trade_values(dataset["players"], {}, {})
           advanced = fetch_fotmob_metrics(dataset["players"])
-          print("FotMob joined advanced:",len(advanced))
+          advanced = enrich_market_metrics(dataset["players"], advanced)
+          print("Mercato advanced enriched:",len(advanced))
           assert len(advanced) >= 40, len(advanced)
           result = find_market_proposals(dict(teams), values, advanced_metrics=advanced)
           print("Mercato live buy-low offers:",len(result["offers"]))
