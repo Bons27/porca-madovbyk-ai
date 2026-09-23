@@ -41,10 +41,11 @@ def _load_market_data(root_str):
     }
 
 
-def render_market(root, open_player_detail):
+def render_market(root, open_player_detail, player_suffix=None):
     st.title("🔁 Mercato")
     st.write("Proposte concrete da sottoporre alle altre sette squadre: scambi 2×2 con ruoli invariati e un vantaggio strutturale per entrambe le rose.")
     st.info("Il modello misura compatibilità tecnica, NON la probabilità che una persona accetti. Una rosa debole in un reparto non dimostra che il suo fantallenatore voglia trattare.")
+    st.caption("Le rose di data/league_rosters.csv devono riflettere eventuali scambi e cambi già avvenuti nella tua lega.")
     teams_names = sorted([
         name for name in _read_team_names(root) if name != USER_TEAM
     ])
@@ -75,6 +76,8 @@ def render_market(root, open_player_detail):
                 st.session_state["market_attitudes_snapshot"] = dict(attitudes)
                 st.session_state["market_filter_snapshot"] = selected
         except Exception as exc:
+            st.session_state.pop("market_result", None)
+            st.session_state.pop("market_metadata", None)
             st.error(f"Non riesco a generare proposte affidabili: {exc}")
 
     result = st.session_state.get("market_result")
@@ -108,8 +111,11 @@ def render_market(root, open_player_detail):
     for index, offer in enumerate(offers, 1):
         with st.container(border=True):
             st.markdown(f"### {index}. {offer['opponent']}")
-            st.write("**Cedi:** " + " + ".join(p.name for p in offer["give"]))
-            st.write("**Chiedi:** " + " + ".join(p.name for p in offer["receive"]))
+            def describe(player):
+                extra = player_suffix(player.name) if player_suffix else f"[MV {player.average_vote:.2f} · FIA n/d]"
+                return f"{player.name} {extra}"
+            st.write("**Cedi:** " + " + ".join(describe(p) for p in offer["give"]))
+            st.write("**Chiedi:** " + " + ".join(describe(p) for p in offer["receive"]))
             st.caption("Ruoli conservati: " + " / ".join(offer["roles"]) + " · Disponibilità: " + offer["attitude"])
             c1, c2, c3 = st.columns(3)
             c1.metric("Vantaggio tua rosa", f"{offer['my_gain']:+.2f}")
