@@ -52,6 +52,7 @@ def render_market(root, open_player_detail, player_suffix=None):
     )
     st.info("Il modello misura compatibilità tecnica, NON la probabilità che una persona accetti. Una rosa debole in un reparto non dimostra che il suo fantallenatore voglia trattare.")
     st.caption("Le rose di data/league_rosters.csv devono riflettere eventuali scambi e cambi già avvenuti nella tua lega.")
+    st.caption("xG, xA e bonus recenti non vengono estratti automaticamente dal listone: il CSV deve essere compilato con dati della stagione corrente e collegamenti alle fonti consultate.")
     teams_names = sorted([
         name for name in _read_team_names(root) if name != USER_TEAM
     ])
@@ -100,7 +101,12 @@ def render_market(root, open_player_detail, player_suffix=None):
         "Quando selezionato, senza xG/xA attendibili non compaiono offerte. "
         "Deselezionalo solo per vedere scambi strutturali privi di una tesi buy-low."
     )
-    metrics_key = hashlib.sha256(uploaded.getvalue()).hexdigest() if uploaded else "file_locale"
+    local_advanced_path = Path(root) / "data" / "market_advanced_metrics.csv"
+    metrics_bytes = (
+        uploaded.getvalue() if uploaded is not None else
+        local_advanced_path.read_bytes() if local_advanced_path.exists() else b""
+    )
+    metrics_key = hashlib.sha256(metrics_bytes).hexdigest()
 
     if st.button("🔄 Genera proposte aggiornate", type="primary", use_container_width=True):
         try:
@@ -190,10 +196,10 @@ def render_market(root, open_player_detail, player_suffix=None):
                     st.caption(
                         "Concorrenza ruolo: " + sig["competition"] +
                         " · Coppe europee: " + sig["cups"] +
-                        " (solo dati dichiarati nella fonte, altrimenti n/d)."
+                        " (dati inseriti nel CSV; verifica le fonti prima di trattare)."
                     )
             if offer["hype"]:
-                st.write("**🔥 Bonus recenti + sovraperformance documentati:** " + ", ".join(p.name for p in offer["hype"]))
+                st.write("**🔥 Bonus recenti + sovraperformance riportati nel CSV:** " + ", ".join(p.name for p in offer["hype"]))
             if not offer["buy_low"]:
                 st.warning("Scambio strutturale: nessun buy-low verificato. Non dedurre alto potenziale da FM o quotazione.")
             c1, c2, c3 = st.columns(3)
