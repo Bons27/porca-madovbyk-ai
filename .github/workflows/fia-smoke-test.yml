@@ -7,6 +7,7 @@ on:
       - "porca-madovbyk-ai/streamlit_app.py"
       - "porca-madovbyk-ai/src/build_dashboard_v5.py"
       - "porca-madovbyk-ai/src/market_proposals.py"
+      - "porca-madovbyk-ai/src/market_advanced_metrics.py"
       - "porca-madovbyk-ai/src/market_dashboard.py"
       - "porca-madovbyk-ai/tests/test_market_proposals.py"
       - "porca-madovbyk-ai/src/player_context_v3.py"
@@ -58,6 +59,7 @@ jobs:
           python -m py_compile src/player_detail.py
           python -m py_compile src/player_detail_dashboard.py
           python -m py_compile src/market_proposals.py
+          python -m py_compile src/market_advanced_metrics.py
           python -m py_compile src/market_dashboard.py
           python -m py_compile src/calendar_source.py
           python -m py_compile src/deadline_source.py
