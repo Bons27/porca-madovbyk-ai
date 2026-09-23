@@ -97,6 +97,11 @@ def render_market(root, open_player_detail, player_suffix=None):
         mime="text/csv",
         key="market_download_metrics",
     )
+    st.caption(
+        "Nel CSV, BonusUltime3 indica il NUMERO di gol + assist nelle ultime 3 "
+        "giornate, non i fantapunti. Concorrenza: bassa/media/alta/n/d; "
+        "CoppeEuropee: si/no/n/d. Inserisci solo osservazioni confermate."
+    )
     uploaded = st.file_uploader(
         "Facoltativo: integra xG/xA e bonus recenti con un CSV documentato",
         type=["csv"], key="market_upload_metrics",
