@@ -215,7 +215,7 @@ def build():
         (
             'elif page == "Mercato":\n'
             '    from src.market_dashboard import render_market\n\n'
-            '    render_market(PROJECT_ROOT, open_player_detail)\n\n\n'
+            '    render_market(PROJECT_ROOT, open_player_detail, suffix)\n\n\n'
             'elif page == "Trade Analyzer":'
         ),
         "pagina Mercato",
