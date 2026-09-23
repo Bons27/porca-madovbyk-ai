@@ -180,6 +180,36 @@ def render_market(root, open_player_detail, player_suffix=None):
             f"**{team}** — Carenze relative: {weakest}. "
             f"Reparti coperti: {abundant}. Disponibilità: {attitudes[team]}."
         )
+    st.subheader("🎯 Radar buy-low (non sono offerte)")
+    st.caption(
+        "Giocatori di altre squadre con xG+xA sopra i bonus effettivi. "
+        "L'eventuale abbondanza del proprietario favorisce una trattativa, "
+        "ma solo i pacchetti 2×2 qui sotto sono vere proposte."
+    )
+    radar = result.get("radar", [])
+    if not radar:
+        st.caption("Nessun profilo buy-low verificabile con i dati attualmente disponibili.")
+    for index, entry in enumerate(radar[:8], 1):
+        p, sig = entry["player"], entry["signal"]
+        with st.container(border=True):
+            st.write(
+                f"**{index}. {p.name}** ({p.role} · {p.club}) — "
+                f"{entry['opponent']} · {player_suffix(p.name) if player_suffix else f'MV {p.average_vote:.2f}'}"
+            )
+            st.caption(
+                f"xG {sig['xg']:.2f} · xA {sig['xa']:.2f} · "
+                f"gol+assist {sig['production']:.0f} · "
+                f"margine atteso−effettivo {sig['underperformance']:+.2f} · "
+                f"abbondanza nel reparto del proprietario: {'sì' if entry['surplus'] else 'non rilevata'}."
+            )
+            st.caption(
+                f"Concorrenza: {sig['competition']} · coppe europee: {sig['cups']} · "
+                "n/d significa che questi fattori non sono verificati."
+            )
+            if st.button("👤 Scheda " + p.name, key=f"market_radar_player_{index}"):
+                open_player_detail(p.name)
+                st.rerun()
+
     st.subheader("📨 Scambi multipli da valutare")
     offers = result["offers"]
     if not offers:
