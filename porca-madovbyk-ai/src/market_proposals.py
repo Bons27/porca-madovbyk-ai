@@ -5,7 +5,7 @@ from statistics import median
 from .fantacalcio_source import normalize_name
 from .trade_engine import (
     ROLE_IMPORTANCE, evaluate_acceptance, owner_value,
-    player_value, role_utility, squad_utility, diagnose_squad,
+    player_value, role_utility,
 )
 
 ROLES = ("P", "D", "C", "A")
@@ -30,7 +30,7 @@ def _pool(squad, role, values, user=False):
     ]
     # Include profili intermedi e riserve utili, non solo i top del reparto.
     ordered = sorted(players, key=lambda p: player_value(p, values), reverse=True)
-    return (ordered[:4] + ordered[-2:])[:6] if len(ordered) > 4 else ordered
+    return ordered[:3] + ordered[-1:] if len(ordered) > 4 else ordered
 
 
 def team_needs(teams, values):
@@ -73,7 +73,6 @@ def find_market_proposals(teams, values, attitudes=None, team_filter="Tutte", ma
         raise ValueError("Trade Value incompleti: aggiorna il listone prima di proporre scambi.")
     needs = team_needs(teams, values)
     mine = teams[USER_TEAM]
-    my_base = squad_utility(mine, values)
     user_pools = {role: _pool(mine, role, values, user=True) for role in ROLES}
     results = []
     for opponent, other in teams.items():
@@ -82,7 +81,6 @@ def find_market_proposals(teams, values, attitudes=None, team_filter="Tutte", ma
         attitude = attitudes.get(opponent, "Da verificare")
         if attitude == "Non tratta":
             continue
-        other_base = squad_utility(other, values)
         opp_pools = {role: _pool(other, role, values) for role in ROLES}
         candidates = []
         for i, ra in enumerate(ROLES):
