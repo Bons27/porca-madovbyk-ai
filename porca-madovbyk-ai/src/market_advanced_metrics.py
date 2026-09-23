@@ -101,7 +101,7 @@ def player_signal(player, metrics):
     result["underperformance"] = round(expected - production, 2)
     result["overperformance"] = round(production - expected, 2)
     # Controllo contro scarti artefatti da pochi minuti / dati incoerenti.
-    if expected > item["minutes"] / 90.0 * 3.5:
+    if item["minutes"] is not None and expected > item["minutes"] / 90.0 * 3.5:
         return None
     return result
 
@@ -110,7 +110,9 @@ def is_buy_low(player, metrics):
     signal = player_signal(player, metrics)
     if not signal or player.role not in {"D", "C", "A"}:
         return False
-    if player.games_with_vote < 3 or signal["minutes"] < 270:
+    if player.games_with_vote < 3:
+        return False
+    if signal["minutes"] is not None and signal["minutes"] < 270:
         return False
     # Una base xG+xA apprezzabile e rendimento sotto la produzione attesa.
     return signal["expected"] >= 1.0 and signal["underperformance"] >= 0.8
