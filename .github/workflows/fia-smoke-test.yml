@@ -151,6 +151,14 @@ jobs:
           values = build_trade_values(dataset["players"], {}, {})
           advanced = fetch_fotmob_metrics(dataset["players"])
           print("FotMob joined advanced:",len(advanced))
+          from src.market_advanced_metrics import is_buy_low
+          from src.market_proposals import team_needs
+          qualified=[p for p in dataset["players"] if is_buy_low(p, advanced)]
+          print("BUY LOW",len(qualified),[(p.fantasy_team,p.name,p.role,p.games_with_vote,p.goals,p.assists, advanced.get(__import__("src.fantacalcio_source",fromlist=["normalize_name"]).normalize_name(p.name),{}).get("xg")) for p in qualified[:20]])
+          needs=team_needs(dict(teams),values)
+          for tm,diagnosis in needs.items():
+              print("SQUAD",tm,diagnosis["weak_roles"],diagnosis["strong_roles"])
+
           assert len(advanced) >= 40, len(advanced)
           result = find_market_proposals(dict(teams), values, advanced_metrics=advanced)
           print("Mercato live buy-low offers:",len(result["offers"]))
