@@ -8,6 +8,8 @@ on:
       - "porca-madovbyk-ai/src/build_dashboard_v5.py"
       - "porca-madovbyk-ai/src/market_proposals.py"
       - "porca-madovbyk-ai/src/market_advanced_metrics.py"
+      - "porca-madovbyk-ai/src/market_fotmob.py"
+      - "porca-madovbyk-ai/tests/test_market_fotmob.py"
       - "porca-madovbyk-ai/src/market_dashboard.py"
       - "porca-madovbyk-ai/tests/test_market_proposals.py"
       - "porca-madovbyk-ai/src/player_context_v3.py"
@@ -60,6 +62,7 @@ jobs:
           python -m py_compile src/player_detail_dashboard.py
           python -m py_compile src/market_proposals.py
           python -m py_compile src/market_advanced_metrics.py
+          python -m py_compile src/market_fotmob.py
           python -m py_compile src/market_dashboard.py
           python -m py_compile src/calendar_source.py
           python -m py_compile src/deadline_source.py
@@ -85,6 +88,10 @@ jobs:
           assert callable(render_market) and callable(find_market_proposals)
           print("Mercato navigation and module imports: OK")
           PY
+
+      - name: Test FotMob player xG-xA join
+        working-directory: porca-madovbyk-ai
+        run: python -m unittest tests.test_market_fotmob -v
 
       - name: Test Mercato conservative proposals
         working-directory: porca-madovbyk-ai
@@ -131,6 +138,7 @@ jobs:
           from src.league_dataset import build_league_dataset
           from src.trade_value import build_trade_values
           from src.market_proposals import find_market_proposals
+          from src.market_fotmob import fetch_fotmob_metrics
           from src.trade_engine import owner_value
           root = Path("data")
           roster = load_league_rosters(root / "league_rosters.csv")
@@ -141,11 +149,11 @@ jobs:
           for p in dataset["players"]:
               teams[p.fantasy_team].append(p)
           values = build_trade_values(dataset["players"], {}, {})
-          result = find_market_proposals(dict(teams), values)
-          print("Mercato live offers:",len(result["offers"]))
-          print("Mercato live lateral:",len(result["lateral"]))
-          for sample in result["lateral"][:3]:
-              print("SONDAGGIO",sample["opponent"],sample["give"].name,"per",sample["receive"].name,"gap",sample["value_gap"])
+          advanced = fetch_fotmob_metrics(dataset["players"])
+          print("FotMob joined advanced:",len(advanced))
+          assert len(advanced) >= 40, len(advanced)
+          result = find_market_proposals(dict(teams), values, advanced_metrics=advanced)
+          print("Mercato live buy-low offers:",len(result["offers"]))
           for offer in result["offers"]:
               print("OFFER",offer["opponent"],
                     [(p.name, p.role, p.fvmp, p.games_with_vote, round(owner_value(p,values),1)) for p in offer["give"]],
