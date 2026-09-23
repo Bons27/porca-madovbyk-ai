@@ -93,9 +93,9 @@ class MarketTest(unittest.TestCase):
     def test_xg_xa_hype_and_club_validation(self):
         player = FakePlayer("Team 1", "A", "Attaccante Test", club="Club Test", goals=0)
         text = (
-            "Nome;Club;Stagione;Aggiornato;Fonte;xG;xA;Minuti;BonusUltime3;Concorrenza;CoppeEuropee\\n"
+            "Nome;Club;Stagione;Aggiornato;Fonte;xG;xA;Minuti;BonusUltime3;Concorrenza;CoppeEuropee\n"
             "Attaccante Test;Club Test;2026-27;2026-09-23;https://www.fotmob.com/test;"
-            "2.20;0.40;450;0;bassa;no\\n"
+            "2.20;0.40;450;0;bassa;no\n"
         )
         metrics = load_advanced_metrics(text, today=date(2026, 9, 23))
         self.assertTrue(is_buy_low(player, metrics))
@@ -110,8 +110,8 @@ class MarketTest(unittest.TestCase):
 
     def test_reject_stale_or_unsourced_advanced_metrics(self):
         text = (
-            "Nome;Club;Stagione;Aggiornato;Fonte;xG;xA;Minuti;BonusUltime3;Concorrenza;CoppeEuropee\\n"
-            "A;Club;2026-27;2026-08-01;https://example.org;2.0;0.4;500;2;n/d;n/d\\n"
+            "Nome;Club;Stagione;Aggiornato;Fonte;xG;xA;Minuti;BonusUltime3;Concorrenza;CoppeEuropee\n"
+            "A;Club;2026-27;2026-08-01;https://example.org;2.0;0.4;500;2;n/d;n/d\n"
         )
         with self.assertRaises(ValueError):
             load_advanced_metrics(text, today=date(2026, 9, 23))
