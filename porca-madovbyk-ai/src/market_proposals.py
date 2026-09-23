@@ -51,8 +51,15 @@ def team_needs(teams, values):
             and sum(p.games_with_vote >= 2 for p in squad if p.role == role)
             >= {"P": 1, "D": 3, "C": 3, "A": 2}[role]
         ]
+        weak = [
+            role for role in role_gaps
+            if utilities[name][role] <= medians[role] - 1.0
+            or sum(p.games_with_vote >= 2 for p in squad if p.role == role)
+            < {"P": 1, "D": 3, "C": 3, "A": 2}[role]
+        ][:2]
+        strong = [role for role in strong if role not in weak]
         needs[name] = {
-            "weak_roles": role_gaps[:2],
+            "weak_roles": weak,
             "strong_roles": strong,
             "roles": {
                 role: {
