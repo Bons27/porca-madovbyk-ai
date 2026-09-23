@@ -177,7 +177,11 @@ def find_market_proposals(
                                 if my_help not in needs[opponent]["strong_roles"]:
                                     continue
                                 if attitude == "Poco propenso" and not hype:
-                                    continue
+                                    # Senza hype documentato, la controparte
+                                    # deve comunque ricevere un vantaggio netto
+                                    # e un pacchetto chiaramente generoso.
+                                    if opp_gain < 1.1 or acceptance["market_ratio"] < 1.13:
+                                        continue
                                 candidates.append({
                                     "opponent":opponent, "give":give, "receive":receive,
                                     "my_gain":round(my_gain, 2),
@@ -219,9 +223,33 @@ def find_market_proposals(
     results.sort(key=lambda t: (
         t["opponent_need_supported"], t["my_gain"] + t["opponent_gain"],
     ), reverse=True)
+    radar = []
+    for team, squad in teams.items():
+        if team == USER_TEAM or (team_filter != "Tutte" and team != team_filter):
+            continue
+        if attitudes.get(team) == "Non tratta":
+            continue
+        for player in squad:
+            if not is_buy_low(player, advanced_metrics):
+                continue
+            signal = player_signal(player, advanced_metrics)
+            if not signal:
+                continue
+            radar.append({
+                "player":player, "opponent":team, "signal":signal,
+                "surplus":player.role in needs[team]["strong_roles"],
+                "attitude":attitudes.get(team, "Da verificare"),
+            })
+    radar.sort(key=lambda entry: (
+        entry["surplus"],
+        entry["signal"]["competition"] == "bassa",
+        entry["signal"]["cups"] == "no",
+        entry["signal"]["underperformance"],
+    ), reverse=True)
     return {
         "needs": needs,
         "offers": results[:max_results],
+        "radar": radar[:15],
         "user_team": USER_TEAM,
         "advanced_count": len(advanced_metrics),
         "require_buy_low": require_buy_low,
