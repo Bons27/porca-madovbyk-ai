@@ -113,6 +113,9 @@ jobs:
           values = build_trade_values(dataset["players"], {}, {})
           result = find_market_proposals(dict(teams), values)
           print("Mercato live offers:",len(result["offers"]))
+          print("Mercato live lateral:",len(result["lateral"]))
+          for sample in result["lateral"][:3]:
+              print("SONDAGGIO",sample["opponent"],sample["give"].name,"per",sample["receive"].name,"gap",sample["value_gap"])
           for offer in result["offers"]:
               print("OFFER",offer["opponent"],
                     [(p.name, p.role, p.fvmp, p.games_with_vote, round(owner_value(p,values),1)) for p in offer["give"]],
