@@ -6,6 +6,9 @@ on:
       - "porca-madovbyk-ai/app_v4.py"
       - "porca-madovbyk-ai/streamlit_app.py"
       - "porca-madovbyk-ai/src/build_dashboard_v5.py"
+      - "porca-madovbyk-ai/src/market_proposals.py"
+      - "porca-madovbyk-ai/src/market_dashboard.py"
+      - "porca-madovbyk-ai/tests/test_market_proposals.py"
       - "porca-madovbyk-ai/src/player_context_v3.py"
       - "porca-madovbyk-ai/src/fia_coach_dashboard.py"
       - "porca-madovbyk-ai/src/player_detail.py"
@@ -54,6 +57,8 @@ jobs:
           python -m py_compile src/fia_coach_dashboard.py
           python -m py_compile src/player_detail.py
           python -m py_compile src/player_detail_dashboard.py
+          python -m py_compile src/market_proposals.py
+          python -m py_compile src/market_dashboard.py
           python -m py_compile src/calendar_source.py
           python -m py_compile src/deadline_source.py
           python -m py_compile src/decision_fia.py
@@ -61,6 +66,10 @@ jobs:
           python -m py_compile src/trade_value.py
           python -m py_compile src/talent_scout_fia.py
           python -m py_compile src/talent_scout_report_fia.py
+
+      - name: Test Mercato conservative proposals
+        working-directory: porca-madovbyk-ai
+        run: python -m unittest tests.test_market_proposals -v
 
       - name: Test player detail parser
         working-directory: porca-madovbyk-ai
