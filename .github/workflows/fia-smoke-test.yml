@@ -101,6 +101,7 @@ jobs:
           from src.league_dataset import build_league_dataset
           from src.trade_value import build_trade_values
           from src.market_proposals import find_market_proposals
+          from src.trade_engine import owner_value
           root = Path("data")
           roster = load_league_rosters(root / "league_rosters.csv")
           dataset = build_league_dataset(roster, fetch_player_catalog(), fetch_statistics_catalog())
