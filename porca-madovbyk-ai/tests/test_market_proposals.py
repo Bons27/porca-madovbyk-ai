@@ -105,18 +105,6 @@ class MarketTest(unittest.TestCase):
                 "updated": "2026-09-23", "source": "https://www.fotmob.com/test",
             }
         }
-        from src.market_proposals import _swapped
-        from src.trade_engine import role_utility, ROLE_IMPORTANCE, owner_value
-        mine, other = teams[USER_TEAM], teams["Team 1"]
-        give = (mine[6], mine[22])
-        receive = (other[6], other[22])
-        new_me, new_other = _swapped(mine, give, receive), _swapped(other, receive, give)
-        benefit_me = sum((role_utility(new_me,r,values)-role_utility(mine,r,values))*ROLE_IMPORTANCE[r] for r in ("D","A"))
-        benefit_other = sum((role_utility(new_other,r,values)-role_utility(other,r,values))*ROLE_IMPORTANCE[r] for r in ("D","A"))
-        print("DEBUG DEAL",[(p.name,p.role,owner_value(p,values)) for p in give],
-              [(p.name,p.role,owner_value(p,values)) for p in receive],
-              "gains",benefit_me,benefit_other,
-              "needs",diag["Team 1"],"buy_low",is_buy_low(receive[1],advanced))
         with patch("src.market_proposals.evaluate_acceptance", return_value={
             "score": 83, "market_ratio": 1.1,
         }):
