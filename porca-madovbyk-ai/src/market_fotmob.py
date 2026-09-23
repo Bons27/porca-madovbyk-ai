@@ -28,15 +28,15 @@ def parse_league_stat_html(html_text, stat):
     if SEASON_LABEL not in soup.get_text(" ", strip=True) and SEASON_LABEL not in html_text:
         raise ValueError("Stagione FotMob non confermata: nessun dato importato.")
     regex = re.compile(
-        r"^#\\d+\\s+(.+?)\\s+-\\s+" +
-        re.escape(LABEL[stat]) + r":\\s*(\\d+(?:\\.\\d+)?)$"
+        r"^#\d+\s+(.+?)\s+-\s+" +
+        re.escape(LABEL[stat]) + r":\s*(\d+(?:\.\d+)?)$"
     )
     result = {}
     for a in soup.select("a[aria-label][href]"):
         match = regex.fullmatch(a.get("aria-label", ""))
         if not match:
             continue
-        player_id = re.match(r"^/players/(\\d+)/", a.get("href", ""))
+        player_id = re.match(r"^/players/(\d+)/", a.get("href", ""))
         if not player_id:
             continue
         pid = player_id.group(1)
