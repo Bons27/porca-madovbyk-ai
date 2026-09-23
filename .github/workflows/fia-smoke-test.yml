@@ -97,34 +97,6 @@ jobs:
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_market_proposals -v
 
-      - name: Inspect public FotMob xG-xA rendering (diagnostic, non-blocking)
-        working-directory: porca-madovbyk-ai
-        continue-on-error: true
-        run: |
-          python - <<'PY'
-          import requests, re
-          from bs4 import BeautifulSoup
-          for stat in ("expected_goals","expected_assists"):
-              url = "https://www.fotmob.com/leagues/55/stats/season/36072/players/"+stat+"/serie-players"
-              response = requests.get(url,timeout=12,headers={"User-Agent":"Mozilla/5.0"})
-              txt = response.text
-              print("FOTMOB", stat,"status",response.status_code,
-                    "length",len(txt),"next_data",'"__NEXT_DATA__"' in txt,
-                    "malen", "Malen" in txt,"stats data",stat in txt)
-              for word in ("Malen", "Lautaro", "expected_goals"):
-                  i=txt.find(word)
-                  if i>=0: print(word, re.sub(r'\\s+',' ',txt[max(0,i-125):i+210])[:330])
-              soup=BeautifulSoup(txt,"html.parser")
-              anchors=soup.select('a[aria-label*="Expected goals"],a[aria-label*="Expected assists"]')
-              print("stat anchors",len(anchors))
-              for anchor in anchors[:2]:
-                  print("anchor sample",anchor.get("aria-label"),anchor.get("href"),
-                        anchor.get_text(" ",strip=True)[:200],
-                        [(img.get("alt"),img.get("title")) for img in anchor.find_all("img")][:4])
-              for scr in soup.find_all("script")[:2]:
-                  print("script",scr.get("id"),scr.get("type"),len(scr.get_text()))
-          PY
-
       - name: Probe Mercato with 200 real league players (non-blocking)
         working-directory: porca-madovbyk-ai
         continue-on-error: true
@@ -151,14 +123,6 @@ jobs:
           values = build_trade_values(dataset["players"], {}, {})
           advanced = fetch_fotmob_metrics(dataset["players"])
           print("FotMob joined advanced:",len(advanced))
-          from src.market_advanced_metrics import is_buy_low
-          from src.market_proposals import team_needs
-          qualified=[p for p in dataset["players"] if is_buy_low(p, advanced)]
-          print("BUY LOW",len(qualified),[(p.fantasy_team,p.name,p.role,p.games_with_vote,p.goals,p.assists, advanced.get(__import__("src.fantacalcio_source",fromlist=["normalize_name"]).normalize_name(p.name),{}).get("xg")) for p in qualified[:20]])
-          needs=team_needs(dict(teams),values)
-          for tm,diagnosis in needs.items():
-              print("SQUAD",tm,diagnosis["weak_roles"],diagnosis["strong_roles"])
-
           assert len(advanced) >= 40, len(advanced)
           result = find_market_proposals(dict(teams), values, advanced_metrics=advanced)
           print("Mercato live buy-low offers:",len(result["offers"]))
@@ -193,19 +157,6 @@ jobs:
           context = fetch_matchday_context(matchday=matchday)
           assert len(context["matches"]) == 10
           print("Current Serie A source: OK", matchday)
-          PY
-
-      - name: Probe recent verified bonus fields (diagnostic non-blocking)
-        working-directory: porca-madovbyk-ai
-        continue-on-error: true
-        run: |
-          python - <<'PY'
-          from src.player_detail import fetch_player_detail
-          for name in ("Zaniolo","McTominay","Volpato"):
-              detail=fetch_player_detail(name)
-              print("RECENT",name,
-                    [(r.get("matchday"),r.get("vote"),r.get("fantasy_vote"),r.get("bonus_malus"))
-                    for r in detail.get("matchdays",[])[-5:]])
           PY
 
       - name: Probe live player detail source and role
