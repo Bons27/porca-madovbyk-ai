@@ -90,6 +90,28 @@ jobs:
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_market_proposals -v
 
+      - name: Inspect public FotMob xG-xA rendering (diagnostic, non-blocking)
+        working-directory: porca-madovbyk-ai
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          import requests, re
+          from bs4 import BeautifulSoup
+          for stat in ("expected_goals","expected_assists"):
+              url = "https://www.fotmob.com/leagues/55/stats/season/36072/players/"+stat+"/serie-players"
+              response = requests.get(url,timeout=12,headers={"User-Agent":"Mozilla/5.0"})
+              txt = response.text
+              print("FOTMOB", stat,"status",response.status_code,
+                    "length",len(txt),"next_data",'"__NEXT_DATA__"' in txt,
+                    "malen", "Malen" in txt,"stats data",stat in txt)
+              for word in ("Malen", "Lautaro", "expected_goals"):
+                  i=txt.find(word)
+                  if i>=0: print(word, re.sub(r'\\s+',' ',txt[max(0,i-125):i+210])[:330])
+              soup=BeautifulSoup(txt,"html.parser")
+              for scr in soup.find_all("script")[:2]:
+                  print("script",scr.get("id"),scr.get("type"),len(scr.get_text()))
+          PY
+
       - name: Probe Mercato with 200 real league players (non-blocking)
         working-directory: porca-madovbyk-ai
         continue-on-error: true
