@@ -73,10 +73,12 @@ def find_lateral_trades(teams, values, attitudes, team_filter="Tutte"):
         candidates = []
         for role in ("D", "C", "A"):
             ours = [p for p in mine if p.role == role and p.name not in PROTECTED
-                    and p.games_with_vote >= 2 and p.fvmp >= 25
+                    and p.games_with_vote >= 2 and 25 <= p.fvmp < 120
+                    and p.purchase_cost < 100
                     and 50 <= player_value(p, values) <= 80]
             theirs = [p for p in other if p.role == role
-                      and p.games_with_vote >= 2 and p.fvmp >= 25
+                      and p.games_with_vote >= 2 and 25 <= p.fvmp < 120
+                      and p.purchase_cost < 100
                       and 50 <= player_value(p, values) <= 80]
             for give in ours:
                 for receive in theirs:
