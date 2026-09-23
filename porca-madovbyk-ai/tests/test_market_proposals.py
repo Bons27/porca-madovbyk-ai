@@ -1,8 +1,10 @@
 import unittest
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from datetime import date
 from unittest.mock import patch
 
 from src.fantacalcio_source import normalize_name
+from src.market_advanced_metrics import load_advanced_metrics, is_buy_low, is_hype, player_signal
 from src.market_proposals import (
     USER_TEAM, _pool, find_market_proposals, team_needs,
 )
@@ -19,6 +21,8 @@ class FakePlayer:
     purchase_cost: int = 2
     average_vote: float = 6.1
     club: str = "Test club"
+    goals: int = 0
+    assists: int = 0
 
 
 def make_fixture():
@@ -78,6 +82,44 @@ class MarketTest(unittest.TestCase):
         teams.pop("Team 7")
         with self.assertRaises(ValueError):
             find_market_proposals(teams, values)
+
+    def test_no_advanced_metrics_means_no_unverified_buy_low(self):
+        teams, values = make_fixture()
+        result = find_market_proposals(teams, values)
+        self.assertEqual(result["offers"], [])
+        self.assertTrue(result["require_buy_low"])
+        self.assertNotIn("lateral", result)
+
+    def test_xg_xa_hype_and_club_validation(self):
+        player = FakePlayer("Team 1", "A", "Attaccante Test", club="Club Test", goals=0)
+        text = (
+            "Nome;Club;Stagione;Aggiornato;Fonte;xG;xA;Minuti;BonusUltime3;Concorrenza;CoppeEuropee\\n"
+            "Attaccante Test;Club Test;2026-27;2026-09-23;https://www.fotmob.com/test;"
+            "2.20;0.40;450;0;bassa;no\\n"
+        )
+        metrics = load_advanced_metrics(text, today=date(2026, 9, 23))
+        self.assertTrue(is_buy_low(player, metrics))
+        self.assertFalse(is_hype(player, metrics))
+        self.assertEqual(player_signal(player, metrics)["underperformance"], 2.6)
+        self.assertIsNone(player_signal(replace(player, club="Different Club"), metrics))
+        hype_text = text.replace(";2.20;0.40;450;0;", ";0.60;0.30;450;2;")
+        hyped = replace(player, goals=2)
+        hype_metrics = load_advanced_metrics(hype_text, today=date(2026, 9, 23))
+        self.assertTrue(is_hype(hyped, hype_metrics))
+        self.assertFalse(is_buy_low(hyped, hype_metrics))
+
+    def test_reject_stale_or_unsourced_advanced_metrics(self):
+        text = (
+            "Nome;Club;Stagione;Aggiornato;Fonte;xG;xA;Minuti;BonusUltime3;Concorrenza;CoppeEuropee\\n"
+            "A;Club;2026-27;2026-08-01;https://example.org;2.0;0.4;500;2;n/d;n/d\\n"
+        )
+        with self.assertRaises(ValueError):
+            load_advanced_metrics(text, today=date(2026, 9, 23))
+        with self.assertRaises(ValueError):
+            load_advanced_metrics(
+                text.replace("2026-08-01", "2026-09-23").replace("https://example.org", "n/d"),
+                today=date(2026, 9, 23),
+            )
 
     def test_player_without_vote_is_not_proposed(self):
         teams, values = make_fixture()
