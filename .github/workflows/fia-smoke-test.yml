@@ -67,6 +67,22 @@ jobs:
           python -m py_compile src/talent_scout_fia.py
           python -m py_compile src/talent_scout_report_fia.py
 
+      - name: Verify Mercato UI imports and navigation
+        working-directory: porca-madovbyk-ai
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from src.market_dashboard import render_market
+          from src.market_proposals import find_market_proposals
+          dashboard = Path("_app_runtime_v5.py").read_text(encoding="utf-8")
+          assert '"Mercato"' in dashboard
+          assert 'elif page == "Mercato":' in dashboard
+          assert "render_market(PROJECT_ROOT, open_player_detail, suffix)" in dashboard
+          assert '("🔁 Mercato", "Mercato",' in dashboard
+          assert callable(render_market) and callable(find_market_proposals)
+          print("Mercato navigation and module imports: OK")
+          PY
+
       - name: Test Mercato conservative proposals
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_market_proposals -v
