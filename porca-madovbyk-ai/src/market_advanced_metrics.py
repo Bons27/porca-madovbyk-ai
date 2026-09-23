@@ -114,7 +114,13 @@ def is_buy_low(player, metrics):
         return False
     if signal["minutes"] is not None and signal["minutes"] < 270:
         return False
-    # Una base xG+xA apprezzabile e rendimento sotto la produzione attesa.
+    # Evita falsi buy-low: un calciatore con quattro assist in cinque gare
+    # non sta necessariamente rendendo male pur avendo xG+xA più elevati.
+    production = signal["production"]
+    if production > 1 and player.games_with_vote < 8:
+        return False
+    if player.fantasy_average > 7.0:
+        return False
     return signal["expected"] >= 1.0 and signal["underperformance"] >= 0.8
 
 
