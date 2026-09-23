@@ -1,5 +1,7 @@
 """Schermata Mercato. Nessun giudizio sulle intenzioni altrui è dedotto dai dati."""
 from collections import defaultdict
+from pathlib import Path
+import hashlib
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -12,6 +14,7 @@ from .league_rosters import load_league_rosters
 from .league_dataset import build_league_dataset
 from .trade_value import build_trade_values
 from .market_proposals import USER_TEAM, ROLE_NAME, find_market_proposals
+from .market_advanced_metrics import TEMPLATE, load_advanced_metrics, player_signal
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -43,7 +46,10 @@ def _load_market_data(root_str):
 
 def render_market(root, open_player_detail, player_suffix=None):
     st.title("🔁 Mercato")
-    st.write("Due percorsi: scambi 2×2 con beneficio tecnico bilaterale, oppure sondaggi 1×1 a valore simile per avversari poco inclini alle trattative.")
+    st.write(
+        "Solo scambi multipli 2×2: leggo carenze e abbondanze relative delle rose, "
+        "cerco occasioni buy-low supportate da xG/xA e posso valorizzare bonus recenti verificati."
+    )
     st.info("Il modello misura compatibilità tecnica, NON la probabilità che una persona accetti. Una rosa debole in un reparto non dimostra che il suo fantallenatore voglia trattare.")
     st.caption("Le rose di data/league_rosters.csv devono riflettere eventuali scambi e cambi già avvenuti nella tua lega.")
     teams_names = sorted([
@@ -65,16 +71,60 @@ def render_market(root, open_player_detail, player_suffix=None):
                     key="market_attitude_" + name,
                 )
     selected = st.selectbox("Squadra da analizzare", ["Tutte"] + teams_names, key="market_team_filter")
+    st.subheader("📈 xG, xA e bonus recenti: dati verificabili")
+    st.caption(
+        "La fonte Fantacalcio della rosa non contiene xG, xA, minuti o bonus delle ultime "
+        "tre giornate separati. Per le valutazioni buy-low servono dati della stagione "
+        "corrente con fonte e data. Se non disponibili, non invento potenziale o hype."
+    )
+    st.download_button(
+        "📥 Scarica modello CSV metriche",
+        data=TEMPLATE.encode("utf-8"),
+        file_name="mercato_metriche_modello.csv",
+        mime="text/csv",
+        key="market_download_metrics",
+    )
+    uploaded = st.file_uploader(
+        "Carica statistiche xG/xA e bonus recenti (CSV, separatore ;)",
+        type=["csv"], key="market_upload_metrics",
+        help=(
+            "Nome;Club;Stagione;Aggiornato;Fonte;xG;xA;Minuti;BonusUltime3;"
+            "Concorrenza;CoppeEuropee. Nomi identici al listone; valori aggiornati e documentati."
+        ),
+    )
+    strict = st.checkbox(
+        "Richiedi almeno un obiettivo buy-low documentato in ogni scambio",
+        value=True, key="market_require_buy_low",
+    )
+    st.caption(
+        "Quando selezionato, senza xG/xA attendibili non compaiono offerte. "
+        "Deselezionalo solo per vedere scambi strutturali privi di una tesi buy-low."
+    )
+    metrics_key = hashlib.sha256(uploaded.getvalue()).hexdigest() if uploaded else "file_locale"
+
     if st.button("🔄 Genera proposte aggiornate", type="primary", use_container_width=True):
         try:
             with st.spinner("Aggiorno listone, statistiche e confronti tra rose..."):
                 _load_market_data.clear()
                 teams, values, metadata = _load_market_data(str(root))
-                result = find_market_proposals(teams, values, attitudes, selected)
+                advanced_path = Path(root) / "data" / "market_advanced_metrics.csv"
+                if uploaded is not None:
+                    advanced_text = uploaded.getvalue()
+                elif advanced_path.exists():
+                    advanced_text = advanced_path.read_bytes()
+                else:
+                    advanced_text = None
+                advanced = load_advanced_metrics(advanced_text) if advanced_text else {}
+                result = find_market_proposals(
+                    teams, values, attitudes, selected,
+                    advanced_metrics=advanced, require_buy_low=strict,
+                )
                 st.session_state["market_result"] = result
                 st.session_state["market_metadata"] = metadata
                 st.session_state["market_attitudes_snapshot"] = dict(attitudes)
                 st.session_state["market_filter_snapshot"] = selected
+                st.session_state["market_metrics_snapshot"] = metrics_key
+                st.session_state["market_strict_snapshot"] = strict
         except Exception as exc:
             st.session_state.pop("market_result", None)
             st.session_state.pop("market_metadata", None)
@@ -85,11 +135,14 @@ def render_market(root, open_player_detail, player_suffix=None):
         st.caption("Premi «Genera proposte aggiornate» per elaborare tutte le rose. Non sono mostrate offerte costruite su dati vecchi.")
         return
     if (st.session_state.get("market_attitudes_snapshot") != attitudes or
-            st.session_state.get("market_filter_snapshot") != selected):
+            st.session_state.get("market_filter_snapshot") != selected or
+            st.session_state.get("market_metrics_snapshot") != metrics_key or
+            st.session_state.get("market_strict_snapshot") != strict):
         st.warning("Hai cambiato una condizione: rigenera le proposte prima di utilizzarle.")
         return
     meta = st.session_state["market_metadata"]
     st.caption(f"Dati elaborati: {meta['data_time']} (ora italiana) · {meta['without_stats']} giocatori senza statistiche complete.")
+    st.caption(f"Giocatori con metriche avanzate documentate: {result[\"advanced_count\"]}/200.")
     if not meta["availability_verified"]:
         st.warning("Indisponibilità live non recuperate: ricontrolla i giocatori prima di contattare il proprietario.")
     st.subheader("📊 Dove le altre rose risultano meno coperte")
@@ -102,11 +155,19 @@ def render_market(root, open_player_detail, player_suffix=None):
             f"{ROLE_NAME[r]} ({diag['roles'][r]['gap']:+.1f} vs mediana lega)"
             for r in diag["weak_roles"]
         )
-        st.write(f"**{team}** — {weakest} · Propensione dichiarata: {attitudes[team]}")
-    st.subheader("📨 Proposte da valutare")
+        abundant = ", ".join(ROLE_NAME[r] for r in diag["strong_roles"]) or "nessuna abbondanza netta"
+        st.write(
+            f"**{team}** — Carenze relative: {weakest}. "
+            f"Reparti coperti: {abundant}. Disponibilità: {attitudes[team]}."
+        )
+    st.subheader("📨 Scambi multipli da valutare")
     offers = result["offers"]
     if not offers:
-        st.warning("Nessuna proposta 2×2 supera i filtri bilaterali e le condizioni impostate. Non forzo scambi fantasiosi.")
+        st.warning(
+            "Nessun 2×2 supera simultaneamente i vincoli di valore, carenze/"
+            "abbondanze reali e disponibilità. Con filtro buy-low attivo servono "
+            "anche xG/xA recenti e completi. Non genererò pacchetti forzati."
+        )
     for index, offer in enumerate(offers, 1):
         with st.container(border=True):
             st.markdown(f"### {index}. {offer['opponent']}")
@@ -116,6 +177,25 @@ def render_market(root, open_player_detail, player_suffix=None):
             st.write("**Cedi:** " + " + ".join(describe(p) for p in offer["give"]))
             st.write("**Chiedi:** " + " + ".join(describe(p) for p in offer["receive"]))
             st.caption("Ruoli conservati: " + " / ".join(offer["roles"]) + " · Disponibilità: " + offer["attitude"])
+            if offer["buy_low"]:
+                st.write("**🎯 Buy-low con xG/xA verificati:** " + ", ".join(p.name for p in offer["buy_low"]))
+                sig = offer.get("target_signal")
+                if sig:
+                    st.write(
+                        f"Fonte: {sig['source']} · dati {sig['updated']} · "
+                        f"xG {sig['xg']:.2f} · xA {sig['xa']:.2f} · "
+                        f"Gol+assist effettivi {sig['production']:.0f} · "
+                        f"Differenza atteso-effettivo {sig['underperformance']:+.2f}"
+                    )
+                    st.caption(
+                        "Concorrenza ruolo: " + sig["competition"] +
+                        " · Coppe europee: " + sig["cups"] +
+                        " (solo dati dichiarati nella fonte, altrimenti n/d)."
+                    )
+            if offer["hype"]:
+                st.write("**🔥 Bonus recenti + sovraperformance documentati:** " + ", ".join(p.name for p in offer["hype"]))
+            if not offer["buy_low"]:
+                st.warning("Scambio strutturale: nessun buy-low verificato. Non dedurre alto potenziale da FM o quotazione.")
             c1, c2, c3 = st.columns(3)
             c1.metric("Vantaggio tua rosa", f"{offer['my_gain']:+.2f}")
             c2.metric("Vantaggio controparte", f"{offer['opponent_gain']:+.2f}")
@@ -146,46 +226,6 @@ def render_market(root, open_player_detail, player_suffix=None):
                 st.rerun()
 
 
-    st.subheader("💬 Sondaggi semplici 1×1")
-    st.caption(
-        "Un solo giocatore per parte, stesso ruolo e valore di mercato simile. "
-        "Sono spunti per una domanda informale, non scambi che il modello giudichi "
-        "vantaggiosi per entrambi o accettabili dalla persona."
-    )
-    lateral = result.get("lateral", [])
-    if not lateral:
-        st.caption("Nessun sondaggio a pari valore compatibile con i filtri attuali.")
-    for index, offer in enumerate(lateral, 1):
-        with st.container(border=True):
-            give, receive = offer["give"], offer["receive"]
-            st.markdown(f"### {offer['opponent']} · {ROLE_NAME[offer['role']]}")
-            st.write(
-                "**Cedi:** " + give.name + " " +
-                (player_suffix(give.name) if player_suffix else f"[MV {give.average_vote:.2f} · FIA n/d]")
-            )
-            st.write(
-                "**Chiedi:** " + receive.name + " " +
-                (player_suffix(receive.name) if player_suffix else f"[MV {receive.average_vote:.2f} · FIA n/d]")
-            )
-            st.caption(
-                f"Scostamento valore percepito: {offer['value_gap']:+.1f} · "
-                f"Disponibilità: {offer['attitude']} · "
-                "La preferenza personale tra i due giocatori è da chiedere, non dedurre."
-            )
-            c1, c2 = st.columns(2)
-            with c1:
-                if st.button("👤 " + give.name, key=f"market_lateral_mine_{index}"):
-                    open_player_detail(give.name)
-                    st.rerun()
-            with c2:
-                if st.button("👤 " + receive.name, key=f"market_lateral_theirs_{index}"):
-                    open_player_detail(receive.name)
-                    st.rerun()
-            if st.button("🤝 Verifica nel Trade Analyzer", key=f"market_lateral_trade_{index}"):
-                st.session_state["market_trade_give"] = give.name
-                st.session_state["market_trade_receive"] = receive.name
-                st.session_state["page"] = "Trade Analyzer"
-                st.rerun()
 
 
 def _read_team_names(root):
