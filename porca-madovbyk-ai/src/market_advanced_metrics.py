@@ -128,5 +128,10 @@ def is_hype(player, metrics):
     signal = player_signal(player, metrics)
     if not signal or signal["recent_bonus"] is None:
         return False
-    # Recenti bonus registrati + sovraperformance effettiva rispetto a xG+xA.
-    return signal["recent_bonus"] >= 2 and signal["overperformance"] >= 0.6
+    # Hype: almeno due bonus recenti bastano a creare una percezione positiva;
+    # con un solo bonus chiediamo anche sovraperformance rispetto a xG+xA.
+    # Il segnale serve solo alla leva negoziale, non aumenta il valore tecnico.
+    return (
+        signal["recent_bonus"] >= 2
+        or (signal["recent_bonus"] >= 1 and signal["overperformance"] >= 0.4)
+    )
