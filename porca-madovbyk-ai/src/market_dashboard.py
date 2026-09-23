@@ -60,7 +60,11 @@ def render_market(root, open_player_detail, player_suffix=None):
     )
     st.info("Il modello misura compatibilità tecnica, NON la probabilità che una persona accetti. Una rosa debole in un reparto non dimostra che il suo fantallenatore voglia trattare.")
     st.caption("Le rose di data/league_rosters.csv devono riflettere eventuali scambi e cambi già avvenuti nella tua lega.")
-    st.caption("xG, xA e bonus recenti non vengono estratti automaticamente dal listone: il CSV deve essere compilato con dati della stagione corrente e collegamenti alle fonti consultate.")
+    st.caption(
+        "xG e xA stagionali provengono automaticamente dalle graduatorie FotMob "
+        "quando disponibili. Bonus delle ultime tre giornate, concorrenza e "
+        "coppe richiedono dati aggiuntivi documentati nel CSV facoltativo."
+    )
     teams_names = sorted([
         name for name in _read_team_names(root) if name != USER_TEAM
     ])
@@ -82,9 +86,9 @@ def render_market(root, open_player_detail, player_suffix=None):
     selected = st.selectbox("Squadra da analizzare", ["Tutte"] + teams_names, key="market_team_filter")
     st.subheader("📈 xG, xA e bonus recenti: dati verificabili")
     st.caption(
-        "La fonte Fantacalcio della rosa non contiene xG, xA, minuti o bonus delle ultime "
-        "tre giornate separati. Per le valutazioni buy-low servono dati della stagione "
-        "corrente con fonte e data. Se non disponibili, non invento potenziale o hype."
+        "Il listone Fantacalcio non contiene xG/xA. Importo automaticamente "
+        "solo giocatori abbinati in modo univoco alle graduatorie FotMob 2026/27. "
+        "Le statistiche mancanti non vengono sostituite con stime arbitrarie."
     )
     st.download_button(
         "📥 Scarica modello CSV metriche",
@@ -94,7 +98,7 @@ def render_market(root, open_player_detail, player_suffix=None):
         key="market_download_metrics",
     )
     uploaded = st.file_uploader(
-        "Carica statistiche xG/xA e bonus recenti (CSV, separatore ;)",
+        "Facoltativo: integra xG/xA e bonus recenti con un CSV documentato",
         type=["csv"], key="market_upload_metrics",
         help=(
             "Nome;Club;Stagione;Aggiornato;Fonte;xG;xA;Minuti;BonusUltime3;"
@@ -106,8 +110,8 @@ def render_market(root, open_player_detail, player_suffix=None):
         value=True, key="market_require_buy_low",
     )
     st.caption(
-        "Quando selezionato, senza xG/xA attendibili non compaiono offerte. "
-        "Deselezionalo solo per vedere scambi strutturali privi di una tesi buy-low."
+        "Se il feed FotMob è indisponibile o il giocatore non viene abbinato, "
+        "il filtro può non produrre offerte. Deselezionalo solo per scambi strutturali."
     )
     local_advanced_path = Path(root) / "data" / "market_advanced_metrics.csv"
     metrics_bytes = (
@@ -158,7 +162,7 @@ def render_market(root, open_player_detail, player_suffix=None):
         return
     meta = st.session_state["market_metadata"]
     st.caption(f"Dati elaborati: {meta['data_time']} (ora italiana) · {meta['without_stats']} giocatori senza statistiche complete.")
-    st.caption("Giocatori con metriche avanzate documentate: " + str(result["advanced_count"]) + "/200.")
+    st.caption(meta["advanced_source_status"] + " · metriche disponibili: " + str(result["advanced_count"]) + "/200.")
     if not meta["availability_verified"]:
         st.warning("Indisponibilità live non recuperate: ricontrolla i giocatori prima di contattare il proprietario.")
     st.subheader("📊 Dove le altre rose risultano meno coperte")
@@ -206,7 +210,7 @@ def render_market(root, open_player_detail, player_suffix=None):
                     st.caption(
                         "Concorrenza ruolo: " + sig["competition"] +
                         " · Coppe europee: " + sig["cups"] +
-                        " (dati inseriti nel CSV; verifica le fonti prima di trattare)."
+                        " (n/d = non verificato; le informazioni extra richiedono una fonte)."
                     )
             if offer["hype"]:
                 st.write("**🔥 Bonus recenti + sovraperformance riportati nel CSV:** " + ", ".join(p.name for p in offer["hype"]))
