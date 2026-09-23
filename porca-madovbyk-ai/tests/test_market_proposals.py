@@ -88,9 +88,11 @@ class MarketTest(unittest.TestCase):
         # Surplus user defense -> shortage opponent defense; surplus
         # opponent attack -> shortage user attack. 2-for-2 by role.
         for j in range(8):
-            values[normalize_name(f"F0_D_{j}")]["score"] += 12
+            values[normalize_name(f"F0_D_{j}")]["score"] += 8
+            values[normalize_name(f"F1_D_{j}")]["score"] -= 3
         for j in range(6):
-            values[normalize_name(f"F1_A_{j}")]["score"] += 12
+            values[normalize_name(f"F1_A_{j}")]["score"] += 8
+            values[normalize_name(f"F0_A_{j}")]["score"] -= 3
         from src.market_proposals import team_needs
         diag = team_needs(teams, values)
         self.assertIn("D", diag[USER_TEAM]["strong_roles"])
