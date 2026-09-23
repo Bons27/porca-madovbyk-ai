@@ -113,6 +113,7 @@ class MarketTest(unittest.TestCase):
                 team_filter="Team 1",
             )
         self.assertTrue(result["offers"], "Synthetic mutually beneficial 2x2 buy-low must be discoverable")
+        self.assertTrue(any(e["player"].name == "F1_A_3" for e in result["radar"]))
         for deal in result["offers"]:
             self.assertEqual(len(deal["give"]), 2)
             self.assertEqual(len(deal["receive"]), 2)
