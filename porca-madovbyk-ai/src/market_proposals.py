@@ -61,6 +61,51 @@ def team_needs(teams, values):
     return needs
 
 
+def find_lateral_trades(teams, values, attitudes, team_filter="Tutte"):
+    """Sondaggi semplici 1×1: simili valori, NON presunti vantaggi per entrambi."""
+    mine = teams[USER_TEAM]
+    results = []
+    for opponent, other in teams.items():
+        if opponent == USER_TEAM or (team_filter != "Tutte" and opponent != team_filter):
+            continue
+        if attitudes.get(opponent) == "Non tratta":
+            continue
+        candidates = []
+        for role in ("D", "C", "A"):
+            ours = [p for p in mine if p.role == role and p.name not in PROTECTED
+                    and p.games_with_vote >= 2 and p.fvmp >= 25
+                    and 50 <= player_value(p, values) <= 80]
+            theirs = [p for p in other if p.role == role
+                      and p.games_with_vote >= 2 and p.fvmp >= 25
+                      and 50 <= player_value(p, values) <= 80]
+            for give in ours:
+                for receive in theirs:
+                    a, b = owner_value(give, values), owner_value(receive, values)
+                    if not (0.93 <= a / max(b, 1) <= 1.07):
+                        continue
+                    if abs(player_value(give, values) - player_value(receive, values)) > 5:
+                        continue
+                    if give.club == receive.club:
+                        continue
+                    # Utili per chi cerca un diverso profilo MV/bonus, senza
+                    # attribuire preferenze alla persona che possiede il giocatore.
+                    bonus_diff = abs(
+                        (give.fantasy_average - give.average_vote)
+                        - (receive.fantasy_average - receive.average_vote)
+                    )
+                    candidates.append((
+                        abs(a-b) - min(bonus_diff, 2.0),
+                        {"opponent":opponent,"give":give,"receive":receive,
+                         "role":role,"value_gap":round(b-a, 1),
+                         "bonus_diff":round(bonus_diff, 2),
+                         "attitude":attitudes.get(opponent, "Da verificare")}
+                    ))
+        if candidates:
+            candidates.sort(key=lambda item:item[0])
+            results.append(candidates[0][1])
+    return results
+
+
 def find_market_proposals(teams, values, attitudes=None, team_filter="Tutte", max_results=14):
     """Scambi 2×2 con un calciatore per ognuno di due ruoli, stessa rosa 3/8/8/6."""
     attitudes = attitudes or {}
@@ -97,6 +142,15 @@ def find_market_proposals(teams, values, attitudes=None, team_filter="Tutte", ma
                                 receive_owner = owner_value(oa, values) + owner_value(ob, values)
                                 # Evita pacchetti sproporzionati e scambi di valore fittizi.
                                 if not (0.84 <= receive_owner / max(give_owner, 1) <= 1.10):
+                                    continue
+                                # Il portiere non può essere usato per far passare un
+                                # attaccante nettamente più valutato: ogni ruolo
+                                # coinvolto deve avere contropartite confrontabili.
+                                if any(
+                                    not (0.74 <= owner_value(out, values) /
+                                         max(owner_value(inc, values), 1) <= 1.35)
+                                    for out, inc in ((ua, oa), (ub, ob))
+                                ):
                                     continue
                                 new_me = _swapped(mine, give, receive)
                                 # Calcolo solo i due reparti cambiati (più veloce del ricalcolo dell'intera rosa).
@@ -170,4 +224,10 @@ def find_market_proposals(teams, values, attitudes=None, team_filter="Tutte", ma
     results.sort(key=lambda t: (
         t["opponent_need_supported"], t["my_gain"] + t["opponent_gain"],
     ), reverse=True)
-    return {"needs":needs, "offers":results[:max_results], "user_team":USER_TEAM}
+    lateral = find_lateral_trades(teams, values, attitudes, team_filter)
+    return {
+        "needs": needs,
+        "offers": results[:max_results],
+        "lateral": lateral,
+        "user_team": USER_TEAM,
+    }
