@@ -15,6 +15,7 @@ from .league_dataset import build_league_dataset
 from .trade_value import build_trade_values
 from .market_proposals import USER_TEAM, ROLE_NAME, find_market_proposals
 from .market_advanced_metrics import TEMPLATE, load_advanced_metrics, player_signal
+from .market_fotmob import fetch_fotmob_metrics
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -37,10 +38,17 @@ def _load_market_data(root_str):
         unavailable = {}
     # Le probabili formazioni non sono necessarie per valutare la struttura degli scambi.
     values = build_trade_values(players, {}, unavailable)
-    return dict(teams), values, {
+    try:
+        auto_metrics = fetch_fotmob_metrics(players)
+        auto_status = f"FotMob: {len(auto_metrics)}/200 nomi univoci con xG e xA"
+    except Exception as exc:
+        auto_metrics = {}
+        auto_status = f"FotMob non disponibile: {exc}"
+    return dict(teams), values, auto_metrics, {
         "without_stats":len(result["stats_unmatched"]),
         "data_time":datetime.now(ZoneInfo("Europe/Rome")).strftime("%d/%m/%Y %H:%M"),
         "availability_verified": bool(unavailable),
+        "advanced_source_status": auto_status,
     }
 
 
@@ -112,7 +120,7 @@ def render_market(root, open_player_detail, player_suffix=None):
         try:
             with st.spinner("Aggiorno listone, statistiche e confronti tra rose..."):
                 _load_market_data.clear()
-                teams, values, metadata = _load_market_data(str(root))
+                teams, values, auto_advanced, metadata = _load_market_data(str(root))
                 advanced_path = Path(root) / "data" / "market_advanced_metrics.csv"
                 if uploaded is not None:
                     advanced_text = uploaded.getvalue()
@@ -120,7 +128,9 @@ def render_market(root, open_player_detail, player_suffix=None):
                     advanced_text = advanced_path.read_bytes()
                 else:
                     advanced_text = None
-                advanced = load_advanced_metrics(advanced_text) if advanced_text else {}
+                advanced = dict(auto_advanced)
+                if advanced_text:
+                    advanced.update(load_advanced_metrics(advanced_text))
                 result = find_market_proposals(
                     teams, values, attitudes, selected,
                     advanced_metrics=advanced, require_buy_low=strict,
