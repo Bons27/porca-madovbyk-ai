@@ -137,11 +137,11 @@ def find_market_proposals(
                                     (role_utility(new_other, role, values) - role_utility(other, role, values))
                                     * ROLE_IMPORTANCE[role] for role in (ra, rb)
                                 )
-                                required_gain = 0.55 if attitude == "Poco propenso" else 0.20
+                                required_gain = 0.70 if attitude == "Poco propenso" else 0.35
                                 if opp_gain < required_gain:
                                     continue
                                 acceptance = evaluate_acceptance(receive, give, opp_gain, values)
-                                if acceptance is None:
+                                if acceptance is None or acceptance["score"] < 72:
                                     continue
                                 if attitude == "Poco propenso" and (
                                     acceptance["market_ratio"] < 1.08
@@ -187,8 +187,15 @@ def find_market_proposals(
                                     "hype":tuple(hype),
                                     "target_signal":player_signal(buy_low[0], advanced_metrics) if buy_low else None,
                                 })
+        # L'hype recente certificato conta solo come lieve incentivo
+        # negoziale; non modifica il valore tecnico o inventa preferenze.
         candidates.sort(key=lambda t: (
-            t["opponent_need_supported"], t["my_need_supported"],
+            t["opponent_need_supported"],
+            bool(t["hype"]),
+            bool(t["buy_low"]),
+            bool(t["target_signal"] and t["target_signal"]["competition"] == "bassa"),
+            bool(t["target_signal"] and t["target_signal"]["cups"] == "no"),
+            t["my_need_supported"],
             t["my_gain"] * 0.7 + t["opponent_gain"] * 0.7 +
             t["acceptance_index"] * 0.012 - abs(t["market_delta"]) * 0.01
         ), reverse=True)
