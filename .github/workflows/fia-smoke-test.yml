@@ -108,6 +108,12 @@ jobs:
                   i=txt.find(word)
                   if i>=0: print(word, re.sub(r'\\s+',' ',txt[max(0,i-125):i+210])[:330])
               soup=BeautifulSoup(txt,"html.parser")
+              anchors=soup.select('a[aria-label*="Expected goals"],a[aria-label*="Expected assists"]')
+              print("stat anchors",len(anchors))
+              for anchor in anchors[:2]:
+                  print("anchor sample",anchor.get("aria-label"),anchor.get("href"),
+                        anchor.get_text(" ",strip=True)[:200],
+                        [(img.get("alt"),img.get("title")) for img in anchor.find_all("img")][:4])
               for scr in soup.find_all("script")[:2]:
                   print("script",scr.get("id"),scr.get("type"),len(scr.get_text()))
           PY
