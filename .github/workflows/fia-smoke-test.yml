@@ -74,6 +74,7 @@ jobs:
           from pathlib import Path
           from src.market_dashboard import render_market
           from src.market_proposals import find_market_proposals
+          from src.trade_engine import owner_value
           dashboard = Path("_app_runtime_v5.py").read_text(encoding="utf-8")
           assert '"Mercato"' in dashboard
           assert 'elif page == "Mercato":' in dashboard
@@ -111,9 +112,10 @@ jobs:
           values = build_trade_values(dataset["players"], {}, {})
           result = find_market_proposals(dict(teams), values)
           print("Mercato live offers:",len(result["offers"]))
-          for offer in result["offers"][:3]:
-              print(offer["opponent"],[p.name for p in offer["give"]],
-                    [p.name for p in offer["receive"]],
+          for offer in result["offers"]:
+              print("OFFER",offer["opponent"],
+                    [(p.name, p.role, p.fvmp, p.games_with_vote, round(owner_value(p,values),1)) for p in offer["give"]],
+                    [(p.name, p.role, p.fvmp, p.games_with_vote, round(owner_value(p,values),1)) for p in offer["receive"]],
                     offer["my_gain"],offer["opponent_gain"])
           PY
 
