@@ -56,10 +56,8 @@ class MarketTest(unittest.TestCase):
             "score": 75, "market_ratio": 1.09
         }):
             result = find_market_proposals(teams, values)
-        for offer in result["lateral"]:
-            self.assertIn(offer["give"], teams[USER_TEAM])
-            self.assertIn(offer["receive"], teams[offer["opponent"]])
-            self.assertEqual(offer["give"].role, offer["receive"].role)
+        self.assertNotIn("lateral", result)
+        self.assertTrue(all(len(o["give"]) > 1 for o in result["offers"]))
         for offer in result["offers"]:
             self.assertEqual(len(offer["give"]), 2)
             self.assertEqual(len(offer["receive"]), 2)
