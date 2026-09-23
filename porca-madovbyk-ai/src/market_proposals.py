@@ -3,6 +3,7 @@ from collections import defaultdict
 from statistics import median
 
 from .fantacalcio_source import normalize_name
+from .market_advanced_metrics import is_buy_low, is_hype, player_signal
 from .trade_engine import (
     ROLE_IMPORTANCE, evaluate_acceptance, owner_value,
     player_value, role_utility,
@@ -45,8 +46,14 @@ def team_needs(teams, values):
         role_gaps = sorted(
             ROLES, key=lambda role: utilities[name][role] - medians[role]
         )
+        strong = [
+            role for role in ROLES if utilities[name][role] >= medians[role] + 1.0
+            and sum(p.games_with_vote >= 2 for p in squad if p.role == role)
+            >= {"P": 1, "D": 3, "C": 3, "A": 2}[role]
+        ]
         needs[name] = {
             "weak_roles": role_gaps[:2],
+            "strong_roles": strong,
             "roles": {
                 role: {
                     "utility": round(utilities[name][role], 1),
@@ -61,56 +68,13 @@ def team_needs(teams, values):
     return needs
 
 
-def find_lateral_trades(teams, values, attitudes, team_filter="Tutte"):
-    """Sondaggi semplici 1×1: simili valori, NON presunti vantaggi per entrambi."""
-    mine = teams[USER_TEAM]
-    results = []
-    for opponent, other in teams.items():
-        if opponent == USER_TEAM or (team_filter != "Tutte" and opponent != team_filter):
-            continue
-        if attitudes.get(opponent) == "Non tratta":
-            continue
-        candidates = []
-        for role in ("D", "C", "A"):
-            ours = [p for p in mine if p.role == role and p.name not in PROTECTED
-                    and p.games_with_vote >= 2 and 25 <= p.fvmp < 120
-                    and p.purchase_cost < 100
-                    and 50 <= player_value(p, values) <= 80]
-            theirs = [p for p in other if p.role == role
-                      and p.games_with_vote >= 2 and 25 <= p.fvmp < 120
-                      and p.purchase_cost < 100
-                      and 50 <= player_value(p, values) <= 80]
-            for give in ours:
-                for receive in theirs:
-                    a, b = owner_value(give, values), owner_value(receive, values)
-                    if not (0.93 <= a / max(b, 1) <= 1.07):
-                        continue
-                    if abs(player_value(give, values) - player_value(receive, values)) > 5:
-                        continue
-                    if give.club == receive.club:
-                        continue
-                    # Utili per chi cerca un diverso profilo MV/bonus, senza
-                    # attribuire preferenze alla persona che possiede il giocatore.
-                    bonus_diff = abs(
-                        (give.fantasy_average - give.average_vote)
-                        - (receive.fantasy_average - receive.average_vote)
-                    )
-                    candidates.append((
-                        abs(a-b) - min(bonus_diff, 2.0),
-                        {"opponent":opponent,"give":give,"receive":receive,
-                         "role":role,"value_gap":round(b-a, 1),
-                         "bonus_diff":round(bonus_diff, 2),
-                         "attitude":attitudes.get(opponent, "Da verificare")}
-                    ))
-        if candidates:
-            candidates.sort(key=lambda item:item[0])
-            results.append(candidates[0][1])
-    return results
-
-
-def find_market_proposals(teams, values, attitudes=None, team_filter="Tutte", max_results=14):
-    """Scambi 2×2 con un calciatore per ognuno di due ruoli, stessa rosa 3/8/8/6."""
+def find_market_proposals(
+    teams, values, attitudes=None, team_filter="Tutte", max_results=14,
+    advanced_metrics=None, require_buy_low=True,
+):
+    """Solo 2×2 cross-reparto. xG/xA validati nella modalità buy-low."""
     attitudes = attitudes or {}
+    advanced_metrics = advanced_metrics or {}
     if USER_TEAM not in teams or len(teams) != 8:
         raise ValueError("Rose incomplete: occorrono tutte e 8 le squadre.")
     names = {normalize_name(p.name) for squad in teams.values() for p in squad}
@@ -130,8 +94,8 @@ def find_market_proposals(teams, values, attitudes=None, team_filter="Tutte", ma
             continue
         opp_pools = {role: _pool(other, role, values) for role in ROLES}
         candidates = []
-        for i, ra in enumerate(ROLES):
-            for rb in ROLES[i+1:]:
+        for i, ra in enumerate(("D", "C", "A")):
+            for rb in ("D", "C", "A")[i+1:]:
                 if not all((user_pools[ra], user_pools[rb], opp_pools[ra], opp_pools[rb])):
                     continue
                 for ua in user_pools[ra]:
@@ -154,6 +118,12 @@ def find_market_proposals(teams, values, attitudes=None, team_filter="Tutte", ma
                                     for out, inc in ((ua, oa), (ub, ob))
                                 ):
                                     continue
+                                # Nella modalità buy-low occorrono xG/xA verificati
+                                # per almeno uno dei giocatori che chiediamo.
+                                buy_low = [p for p in receive if is_buy_low(p, advanced_metrics)]
+                                if require_buy_low and not buy_low:
+                                    continue
+                                hype = [p for p in give if is_hype(p, advanced_metrics)]
                                 new_me = _swapped(mine, give, receive)
                                 # Calcolo solo i due reparti cambiati (più veloce del ricalcolo dell'intera rosa).
                                 my_gain = sum(
@@ -193,7 +163,13 @@ def find_market_proposals(teams, values, attitudes=None, team_filter="Tutte", ma
                                 my_help = max(my_role_gains, key=my_role_gains.get)
                                 if opp_help == my_help or opp_role_gains[opp_help] < 1.0 or my_role_gains[my_help] < 1.0:
                                     continue
-                                if attitude == "Poco propenso" and opp_help not in needs[opponent]["weak_roles"]:
+                                # Si riceve dal reparto di abbondanza avversaria
+                                # e si offre un rinforzo in un reparto carente.
+                                if opp_help not in needs[opponent]["weak_roles"]:
+                                    continue
+                                if my_help not in needs[opponent]["strong_roles"]:
+                                    continue
+                                if attitude == "Poco propenso" and not hype:
                                     continue
                                 candidates.append({
                                     "opponent":opponent, "give":give, "receive":receive,
@@ -207,6 +183,9 @@ def find_market_proposals(teams, values, attitudes=None, team_filter="Tutte", ma
                                     "my_need_supported":my_help in needs[USER_TEAM]["weak_roles"],
                                     "market_delta":round(receive_owner - give_owner, 1),
                                     "roles":(ra, rb),
+                                    "buy_low":tuple(buy_low),
+                                    "hype":tuple(hype),
+                                    "target_signal":player_signal(buy_low[0], advanced_metrics) if buy_low else None,
                                 })
         candidates.sort(key=lambda t: (
             t["opponent_need_supported"], t["my_need_supported"],
@@ -226,10 +205,10 @@ def find_market_proposals(teams, values, attitudes=None, team_filter="Tutte", ma
     results.sort(key=lambda t: (
         t["opponent_need_supported"], t["my_gain"] + t["opponent_gain"],
     ), reverse=True)
-    lateral = find_lateral_trades(teams, values, attitudes, team_filter)
     return {
         "needs": needs,
         "offers": results[:max_results],
-        "lateral": lateral,
         "user_team": USER_TEAM,
+        "advanced_count": len(advanced_metrics),
+        "require_buy_low": require_buy_low,
     }
