@@ -127,19 +127,19 @@ def find_market_proposals(
                                 if not (0.84 <= package_ratio <= 1.10):
                                     continue
 
-                                # Anche dentro il 2×2 ogni singolo cambio di ruolo deve
-                                # restare credibile: niente "riempitivo" per mascherare
-                                # uno scambio chiaramente sbilanciato.
+                                # In un vero 2×2 cross-reparto un singolo cambio può
+                                # essere sbilanciato: è il secondo ruolo a compensarlo.
+                                # Blocchiamo solo componenti palesemente "riempitive";
+                                # l'equità principale resta sul valore totale + beneficio
+                                # strutturale per entrambe le rose.
                                 role_pairs = ((ua, oa), (ub, ob))
-                                role_parity_ok = True
-                                for out, inc in role_pairs:
-                                    ratio = owner_value(out, values) / max(owner_value(inc, values), 1)
-                                    out_hype = is_hype(out, advanced_metrics)
-                                    low, high = ((0.68, 1.48) if out_hype else (0.78, 1.30))
-                                    if not (low <= ratio <= high):
-                                        role_parity_ok = False
-                                        break
-                                if not role_parity_ok:
+                                if any(
+                                    not (
+                                        0.60 <= owner_value(out, values) /
+                                        max(owner_value(inc, values), 1) <= 1.70
+                                    )
+                                    for out, inc in role_pairs
+                                ):
                                     continue
 
                                 # Nella modalità buy-low occorrono xG/xA verificati per
