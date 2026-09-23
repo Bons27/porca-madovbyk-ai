@@ -195,6 +195,19 @@ jobs:
           print("Current Serie A source: OK", matchday)
           PY
 
+      - name: Probe recent verified bonus fields (diagnostic non-blocking)
+        working-directory: porca-madovbyk-ai
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          from src.player_detail import fetch_player_detail
+          for name in ("Zaniolo","McTominay","Volpato"):
+              detail=fetch_player_detail(name)
+              print("RECENT",name,
+                    [(r.get("matchday"),r.get("vote"),r.get("fantasy_vote"),r.get("bonus_malus"))
+                    for r in detail.get("matchdays",[])[-5:]])
+          PY
+
       - name: Probe live player detail source and role
         working-directory: porca-madovbyk-ai
         run: |
