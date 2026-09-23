@@ -18,6 +18,7 @@ class FakePlayer:
     fvmp: int = 35
     purchase_cost: int = 2
     average_vote: float = 6.1
+    club: str = "Test club"
 
 
 def make_fixture():
@@ -29,7 +30,7 @@ def make_fixture():
         squad = []
         for role, count in counts.items():
             for j in range(count):
-                player = FakePlayer(team, role, f"F{i}_{role}_{j}")
+                player = FakePlayer(team, role, f"F{i}_{role}_{j}", club=f"Club {i}")
                 squad.append(player)
                 score = 55 + (j % 4) * 4 + (i % 3)
                 if i == 0 and role == "D":
@@ -55,6 +56,10 @@ class MarketTest(unittest.TestCase):
             "score": 75, "market_ratio": 1.09
         }):
             result = find_market_proposals(teams, values)
+        for offer in result["lateral"]:
+            self.assertIn(offer["give"], teams[USER_TEAM])
+            self.assertIn(offer["receive"], teams[offer["opponent"]])
+            self.assertEqual(offer["give"].role, offer["receive"].role)
         for offer in result["offers"]:
             self.assertEqual(len(offer["give"]), 2)
             self.assertEqual(len(offer["receive"]), 2)
