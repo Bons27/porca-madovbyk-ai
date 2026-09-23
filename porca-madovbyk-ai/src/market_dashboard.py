@@ -217,7 +217,7 @@ def render_market(root, open_player_detail, player_suffix=None):
             )
             st.caption(
                 f"Concorrenza: {sig['competition']} · coppe europee: {sig['cups']} · "
-                "n/d significa che questi fattori non sono verificati."
+                "la concorrenza è un proxy basato sulla probabilità di titolarità; n/d = non verificato."
             )
             st.caption(
                 "Fonte xG: " + sig["source"] +
@@ -258,14 +258,15 @@ def render_market(root, open_player_detail, player_suffix=None):
                         f"Differenza atteso-effettivo {sig['underperformance']:+.2f}"
                     )
                     st.caption(
-                        "Concorrenza ruolo: " + sig["competition"] +
+                        "Concorrenza (proxy titolarità): " + sig["competition"] +
                         " · Coppe europee: " + sig["cups"] +
-                        " (n/d = non verificato; le informazioni extra richiedono una fonte)."
+                        " (n/d = non verificato)."
                     )
                     if sig.get("identity"):
                         st.caption("Identificazione fonte: " + sig["identity"] + ". Verifica il club prima di negoziare.")
             if offer["hype"]:
-                st.write("**🔥 Bonus recenti + sovraperformance riportati nel CSV:** " + ", ".join(p.name for p in offer["hype"]))
+                st.write("**🔥 Hype da sfruttare:** " + ", ".join(p.name for p in offer["hype"]))
+                st.caption("Bonus recenti verificati su Fantacalcio o CSV documentato. L’hype migliora solo la leva negoziale, non il valore tecnico.")
             if not offer["buy_low"]:
                 st.warning("Scambio strutturale: nessun buy-low verificato. Non dedurre alto potenziale da FM o quotazione.")
             c1, c2, c3 = st.columns(3)
