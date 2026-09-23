@@ -196,15 +196,15 @@ def build():
     # Mercato è un modulo separato: il sorgente V4 e i motori V5.1 non cambiano.
     text = replace_once(
         text,
-        '    "Trade Analyzer",\\n    "Talent Scout",',
-        '    "Trade Analyzer",\\n    "Mercato",\\n    "Talent Scout",',
+        '    "Trade Analyzer",\n    "Talent Scout",',
+        '    "Trade Analyzer",\n    "Mercato",\n    "Talent Scout",',
         "navigazione Mercato",
     )
     text = replace_once(
         text,
         '        ("🤝 Trade Analyzer", "Trade Analyzer", "Valuta uno scambio in pochi secondi."),',
         (
-            '        ("🤝 Trade Analyzer", "Trade Analyzer", "Valuta uno scambio in pochi secondi."),\\n'
+            '        ("🤝 Trade Analyzer", "Trade Analyzer", "Valuta uno scambio in pochi secondi."),\n'
             '        ("🔁 Mercato", "Mercato", "Proposte bilaterali per le altre sette squadre."),'
         ),
         "card Home Mercato",
@@ -213,23 +213,23 @@ def build():
         text,
         'elif page == "Trade Analyzer":',
         (
-            'elif page == "Mercato":\\n'
-            '    from src.market_dashboard import render_market\\n\\n'
-            '    render_market(PROJECT_ROOT, open_player_detail)\\n\\n\\n'
+            'elif page == "Mercato":\n'
+            '    from src.market_dashboard import render_market\n\n'
+            '    render_market(PROJECT_ROOT, open_player_detail)\n\n\n'
             'elif page == "Trade Analyzer":'
         ),
         "pagina Mercato",
     )
     text = replace_once(
         text,
-        '        give = st.text_input(\\n            "📤 Cedo",\\n            placeholder="Es. Da Cunha + Castro S.",\\n        )',
-        '        give = st.text_input(\\n            "📤 Cedo",\\n            placeholder="Es. Da Cunha + Castro S.",\\n            value=st.session_state.get("market_trade_give", ""),\\n        )',
+        '        give = st.text_input(\n            "📤 Cedo",\n            placeholder="Es. Da Cunha + Castro S.",\n        )',
+        '        give = st.text_input(\n            "📤 Cedo",\n            placeholder="Es. Da Cunha + Castro S.",\n            value=st.session_state.get("market_trade_give", ""),\n        )',
         "precompila giocatori ceduti da Mercato",
     )
     text = replace_once(
         text,
-        '        receive = st.text_input(\\n            "📥 Ricevo",\\n            placeholder="Es. Rowe + Hojlund",\\n        )',
-        '        receive = st.text_input(\\n            "📥 Ricevo",\\n            placeholder="Es. Rowe + Hojlund",\\n            value=st.session_state.get("market_trade_receive", ""),\\n        )',
+        '        receive = st.text_input(\n            "📥 Ricevo",\n            placeholder="Es. Rowe + Hojlund",\n        )',
+        '        receive = st.text_input(\n            "📥 Ricevo",\n            placeholder="Es. Rowe + Hojlund",\n            value=st.session_state.get("market_trade_receive", ""),\n        )',
         "precompila giocatori richiesti da Mercato",
     )
 
