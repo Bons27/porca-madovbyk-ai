@@ -16,6 +16,7 @@ from .trade_value import build_trade_values
 from .market_proposals import USER_TEAM, ROLE_NAME, find_market_proposals
 from .market_advanced_metrics import TEMPLATE, load_advanced_metrics, player_signal
 from .market_fotmob import fetch_fotmob_metrics
+from .market_auto_signals import enrich_market_metrics
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -40,10 +41,15 @@ def _load_market_data(root_str):
     values = build_trade_values(players, {}, unavailable)
     try:
         auto_metrics = fetch_fotmob_metrics(players)
-        auto_status = f"FotMob: {len(auto_metrics)}/200 nomi univoci con xG e xA"
+        auto_metrics = enrich_market_metrics(players, auto_metrics, user_team=USER_TEAM)
+        auto_status = (
+            f"FotMob: {len(auto_metrics)}/200 profili con xG/xA · "
+            "hype recente Fantacalcio sui giocatori di Porca MaDovbyk · "
+            "titolarità Fantacalcio come proxy concorrenza · coppe UEFA 2026/27"
+        )
     except Exception as exc:
         auto_metrics = {}
-        auto_status = f"FotMob non disponibile: {exc}"
+        auto_status = f"Metriche avanzate automatiche non disponibili: {exc}"
     return dict(teams), values, auto_metrics, {
         "without_stats":len(result["stats_unmatched"]),
         "data_time":datetime.now(ZoneInfo("Europe/Rome")).strftime("%d/%m/%Y %H:%M"),
@@ -61,9 +67,11 @@ def render_market(root, open_player_detail, player_suffix=None):
     st.info("Il modello misura compatibilità tecnica, NON la probabilità che una persona accetti. Una rosa debole in un reparto non dimostra che il suo fantallenatore voglia trattare.")
     st.caption("Le rose di data/league_rosters.csv devono riflettere eventuali scambi e cambi già avvenuti nella tua lega.")
     st.caption(
-        "xG e xA stagionali provengono automaticamente dalle graduatorie FotMob "
-        "quando disponibili. Bonus delle ultime tre giornate, concorrenza e "
-        "coppe richiedono dati aggiuntivi documentati nel CSV facoltativo."
+        "xG/xA arrivano da FotMob. Per i nostri giocatori provo a leggere automaticamente "
+        "i bonus delle ultime 3 giornate da Fantacalcio; la probabilità di titolarità "
+        "Fantacalcio è usata come proxy della concorrenza. Le coppe europee 2026/27 "
+        "sono marcate sul club da fonti UEFA. Il CSV resta disponibile solo per correggere "
+        "o integrare dati documentati."
     )
     teams_names = sorted([
         name for name in _read_team_names(root) if name != USER_TEAM
