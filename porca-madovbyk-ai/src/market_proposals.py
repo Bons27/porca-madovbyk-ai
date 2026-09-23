@@ -120,8 +120,8 @@ def find_market_proposals(
                                 # attaccante nettamente più valutato: ogni ruolo
                                 # coinvolto deve avere contropartite confrontabili.
                                 if any(
-                                    not (0.74 <= owner_value(out, values) /
-                                         max(owner_value(inc, values), 1) <= 1.35)
+                                    not (0.60 <= owner_value(out, values) /
+                                         max(owner_value(inc, values), 1) <= 1.65)
                                     for out, inc in ((ua, oa), (ub, ob))
                                 ):
                                     continue
