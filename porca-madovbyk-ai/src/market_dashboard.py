@@ -206,6 +206,13 @@ def render_market(root, open_player_detail, player_suffix=None):
                 f"Concorrenza: {sig['competition']} · coppe europee: {sig['cups']} · "
                 "n/d significa che questi fattori non sono verificati."
             )
+            st.caption(
+                "Fonte xG: " + sig["source"] +
+                " · fonte xA: " + sig.get("source_xa", sig["source"]) +
+                " · consultato/inserito: " + sig["updated"]
+            )
+            if sig.get("identity"):
+                st.caption("Identità: " + sig["identity"] + ". Il club va ricontrollato.")
             if st.button("👤 Scheda " + p.name, key=f"market_radar_player_{index}"):
                 open_player_detail(p.name)
                 st.rerun()
