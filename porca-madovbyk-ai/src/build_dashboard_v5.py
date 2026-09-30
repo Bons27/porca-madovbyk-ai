@@ -37,7 +37,7 @@ def build():
             "from src.league_live_sync import maybe_sync_live_rosters, format_status\n"
             "from src.league_sync_dashboard import render_league_sync\n\n"
             "PROJECT_ROOT = Path(__file__).resolve().parent\n"
-            "league_sync_health = maybe_sync_live_rosters(PROJECT_ROOT, max_age_minutes=15)"
+            "league_sync_health = maybe_sync_live_rosters(PROJECT_ROOT, max_age_minutes=5)"
         ),
         "import scheda giocatore",
     )
@@ -217,7 +217,7 @@ def build():
         'elif page == "Formazione":',
         (
             'elif page == "Rose Lega":\n'
-            '    render_league_sync(PROJECT_ROOT)\n\n\n'
+            '    render_league_sync(PROJECT_ROOT, get_player_context.clear)\n\n\n'
             'elif page == "Formazione":'
         ),
         "pagina Rose Lega",
