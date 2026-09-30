@@ -1,4 +1,5 @@
 import csv
+from pathlib import Path
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 
@@ -34,7 +35,23 @@ def _parse_int(value):
     )
 
 
+def _active_roster_path(path):
+    """Use the validated live snapshot when the canonical league CSV is requested."""
+    path = Path(path)
+    if path.name != "league_rosters.csv":
+        return path
+    try:
+        root = path.parent.parent
+        live = root / ".streamlit" / "league_rosters_live.csv"
+        if live.exists() and live.stat().st_size > 0:
+            return live
+    except Exception:
+        pass
+    return path
+
+
 def load_league_rosters(path):
+    path = _active_roster_path(path)
     players = []
 
     with open(
