@@ -13,6 +13,12 @@ on:
       - "porca-madovbyk-ai/tests/test_market_auto_signals.py"
       - "porca-madovbyk-ai/tests/test_market_fotmob.py"
       - "porca-madovbyk-ai/src/market_dashboard.py"
+      - "porca-madovbyk-ai/src/league_live_sync.py"
+      - "porca-madovbyk-ai/src/league_sync_dashboard.py"
+      - "porca-madovbyk-ai/src/league_roster_sync_ci.py"
+      - "porca-madovbyk-ai/src/league_rosters.py"
+      - "porca-madovbyk-ai/tests/test_league_live_sync.py"
+      - ".github/workflows/league-roster-sync.yml"
       - "porca-madovbyk-ai/tests/test_market_proposals.py"
       - "porca-madovbyk-ai/src/player_context_v3.py"
       - "porca-madovbyk-ai/src/fia_coach_dashboard.py"
@@ -67,6 +73,10 @@ jobs:
           python -m py_compile src/market_fotmob.py
           python -m py_compile src/market_auto_signals.py
           python -m py_compile src/market_dashboard.py
+          python -m py_compile src/league_live_sync.py
+          python -m py_compile src/league_sync_dashboard.py
+          python -m py_compile src/league_roster_sync_ci.py
+          python -m py_compile src/league_rosters.py
           python -m py_compile src/calendar_source.py
           python -m py_compile src/deadline_source.py
           python -m py_compile src/decision_fia.py
@@ -95,6 +105,10 @@ jobs:
       - name: Test FotMob player xG-xA join
         working-directory: porca-madovbyk-ai
         run: python -m unittest tests.test_market_fotmob -v
+
+      - name: Test live league roster sync
+        working-directory: porca-madovbyk-ai
+        run: python -m unittest tests.test_league_live_sync -v
 
       - name: Test Mercato automatic signals
         working-directory: porca-madovbyk-ai
