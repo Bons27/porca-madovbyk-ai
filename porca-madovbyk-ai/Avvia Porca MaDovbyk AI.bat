@@ -69,6 +69,9 @@ if errorlevel 1 goto :error
 
 ".venv\Scripts\python.exe" -m py_compile _app_runtime_v5.py
 if errorlevel 1 goto :error
+".venv\Scripts\python.exe" -m py_compile src\league_live_sync.py src\league_sync_dashboard.py src\league_rosters.py
+if errorlevel 1 goto :error
+
 
 ".venv\Scripts\python.exe" -c "from src.decision_fia import player_fia, fia_decision_score; print('Motori V5.1: OK')"
 if errorlevel 1 goto :error
