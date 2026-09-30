@@ -33,8 +33,11 @@ def build():
         text,
         "\n\nPROJECT_ROOT = Path(__file__).resolve().parent",
         (
-            "\n\nfrom src.player_detail_dashboard import render_player_detail\n\n"
-            "PROJECT_ROOT = Path(__file__).resolve().parent"
+            "\n\nfrom src.player_detail_dashboard import render_player_detail\n"
+            "from src.league_live_sync import maybe_sync_live_rosters, format_status\n"
+            "from src.league_sync_dashboard import render_league_sync\n\n"
+            "PROJECT_ROOT = Path(__file__).resolve().parent\n"
+            "league_sync_health = maybe_sync_live_rosters(PROJECT_ROOT, max_age_minutes=15)"
         ),
         "import scheda giocatore",
     )
@@ -191,6 +194,64 @@ def build():
             '# PAGINE'
         ),
         "pulsante Home superiore e scheda giocatore",
+    )
+
+    # Rose Lega: connessione una tantum + sincronizzazione live delle proprietà.
+    text = replace_once(
+        text,
+        '    "Home",\n    "Formazione",',
+        '    "Home",\n    "Rose Lega",\n    "Formazione",',
+        "navigazione Rose Lega",
+    )
+    text = replace_once(
+        text,
+        '        ("📊 Control Center", "Control Center", "Quadro generale di tutti i motori."),',
+        (
+            '        ("📊 Control Center", "Control Center", "Quadro generale di tutti i motori."),\n'
+            '        ("🔄 Rose Lega", "Rose Lega", "Sincronizza scambi e proprietà da Leghe Fantacalcio."),'
+        ),
+        "card Home Rose Lega",
+    )
+    text = replace_once(
+        text,
+        'elif page == "Formazione":',
+        (
+            'elif page == "Rose Lega":\n'
+            '    render_league_sync(PROJECT_ROOT)\n\n\n'
+            'elif page == "Formazione":'
+        ),
+        "pagina Rose Lega",
+    )
+    text = replace_once(
+        text,
+        '    scout_ok, scout_updated = scout_status()\n\n    st.caption("Dashboard V4 · MV + FIA")',
+        (
+            '    scout_ok, scout_updated = scout_status()\n\n'
+            '    if league_sync_health.get("connected") and league_sync_health.get("verified"):\n'
+            '        st.caption("✅ Rose live: " + format_status(league_sync_health.get("status", {})))\n'
+            '    elif league_sync_health.get("connected"):\n'
+            '        st.warning("Rose live non verificate: " + league_sync_health.get("message", "errore"))\n'
+            '    else:\n'
+            '        st.caption("⚪ Rose live: collega Leghe Fantacalcio da «Rose Lega»")\n\n'
+            '    st.caption("Dashboard V4 · MV + FIA")'
+        ),
+        "stato rose live sidebar",
+    )
+    text = replace_once(
+        text,
+        '    if scout_ok:\n        st.caption(f"Ultimo Scout: {scout_updated}")\n\n    st.info(',
+        (
+            '    if scout_ok:\n'
+            '        st.caption(f"Ultimo Scout: {scout_updated}")\n\n'
+            '    if league_sync_health.get("connected") and league_sync_health.get("verified"):\n'
+            '        st.success("Rose lega verificate da Leghe Fantacalcio: " + format_status(league_sync_health.get("status", {})))\n'
+            '    elif league_sync_health.get("connected"):\n'
+            '        st.warning("Connessione Leghe presente ma sincronizzazione non riuscita: " + league_sync_health.get("message", ""))\n'
+            '    else:\n'
+            '        st.warning("Rose non collegate a Leghe Fantacalcio: Trade e Mercato possono usare proprietà non aggiornate.")\n\n'
+            '    st.info('
+        ),
+        "stato rose live Home",
     )
 
     # Mercato è un modulo separato: il sorgente V4 e i motori V5.1 non cambiano.
