@@ -12,7 +12,7 @@ from .league_live_sync import (
 )
 
 
-def render_league_sync(root):
+def render_league_sync(root, on_rosters_changed=None):
     st.title("🔄 Rose Lega")
     st.write(
         "Collega Leghe Fantacalcio una volta: da quel momento Porca MaDovbyk AI "
@@ -40,6 +40,8 @@ def render_league_sync(root):
                         f"Rose verificate: {result['teams']}/8 squadre · "
                         f"{result['players']}/200 giocatori."
                     )
+                    if on_rosters_changed:
+                        on_rosters_changed()
                     if result["changes"]:
                         st.subheader("Scambi/cambi rilevati")
                         for item in result["changes"]:
@@ -94,6 +96,8 @@ def render_league_sync(root):
                 with st.spinner("Verifico 8 squadre e 200 giocatori..."):
                     result = sync_live_rosters(root, saved)
                 st.session_state.pop("league_login_candidates", None)
+                if on_rosters_changed:
+                    on_rosters_changed()
                 st.success(
                     f"Collegamento completato: {result['teams']}/8 squadre, "
                     f"{result['players']}/200 giocatori."
