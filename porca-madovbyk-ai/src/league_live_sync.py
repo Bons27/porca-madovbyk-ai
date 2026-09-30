@@ -506,6 +506,16 @@ def maybe_sync_live_rosters(root, max_age_minutes=15):
         }
 
 
+def ensure_rosters_current(root, max_age_minutes=5):
+    """Refresh when connected; fail closed if a configured live source cannot verify."""
+    result = maybe_sync_live_rosters(root, max_age_minutes=max_age_minutes)
+    if result.get("connected") and not result.get("verified"):
+        raise LeagueSyncError(
+            "Rose live non verificabili: " + str(result.get("message") or "errore sconosciuto")
+        )
+    return result
+
+
 def format_status(status):
     if not status:
         return "Mai verificate"
