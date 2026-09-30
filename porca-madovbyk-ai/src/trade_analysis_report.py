@@ -27,6 +27,7 @@ from .league_calendar import (
 from .league_dataset import (
     build_league_dataset,
 )
+from .league_live_sync import ensure_rosters_current
 from .league_rosters import (
     load_league_rosters,
 )
@@ -270,6 +271,9 @@ def build_report():
     root = Path(
         __file__
     ).resolve().parents[1]
+
+    # Se la lega è collegata, non usare una fotografia vecchia delle proprietà.
+    ensure_rosters_current(root, max_age_minutes=5)
 
     # -----------------------------
     # DATABASE
