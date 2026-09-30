@@ -11,6 +11,7 @@ from .fantacalcio_source import (
 from .fantacalcio_statistics import (
     fetch_statistics_catalog,
 )
+from .league_live_sync import ensure_rosters_current
 from .league_rosters import (
     load_league_rosters,
 )
@@ -68,6 +69,9 @@ def build_report():
     root = Path(
         __file__
     ).resolve().parents[1]
+
+    # Se la lega è collegata, non usare una fotografia vecchia delle proprietà.
+    ensure_rosters_current(root, max_age_minutes=5)
 
     print(
         "Caricamento rose..."
