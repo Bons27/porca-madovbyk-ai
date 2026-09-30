@@ -25,7 +25,8 @@ BASE = "https://apileague.fantacalcio.it"
 APP_KEY = "ICiELOObd5DF5uJEATi77CRvHiiRuMU0"
 ROME_TZ = ZoneInfo("Europe/Rome")
 CONNECTION_REL = Path(".streamlit") / "league_connection.json"
-STATUS_REL = Path("data") / "league_rosters_meta.json"
+STATUS_REL = Path(".streamlit") / "league_rosters_meta.json"
+LIVE_ROSTER_REL = Path(".streamlit") / "league_rosters_live.csv"
 BACKUP_REL = Path(".streamlit") / "league_rosters_backup.csv"
 ROSTER_REL = Path("data") / "league_rosters.csv"
 
@@ -122,7 +123,12 @@ def status_path(root):
 
 
 def roster_path(root):
+    """Tracked baseline path; load_league_rosters may transparently use live overlay."""
     return Path(root) / ROSTER_REL
+
+
+def live_roster_path(root):
+    return Path(root) / LIVE_ROSTER_REL
 
 
 def load_connection(root):
@@ -156,9 +162,14 @@ def save_connection(root, league):
 
 
 def delete_connection(root):
-    path = connection_path(root)
-    if path.exists():
-        path.unlink()
+    for path in (
+        connection_path(root),
+        status_path(root),
+        live_roster_path(root),
+        Path(root) / BACKUP_REL,
+    ):
+        if path.exists():
+            path.unlink()
 
 
 def load_sync_status(root):
@@ -290,9 +301,14 @@ def _build_live_players(root, token):
 
     inferred = _infer_role_map(api_players, current)
     result = []
+    current_team_names = {
+        normalize_name(p.fantasy_team): p.fantasy_team
+        for p in current
+    }
 
     for team in teams:
-        team_name = str(team.get("n") or team.get("name") or "").strip()
+        api_team_name = str(team.get("n") or team.get("name") or "").strip()
+        team_name = current_team_names.get(normalize_name(api_team_name), api_team_name)
         ids = _split_parallel(team.get("cal"))
         costs = _split_parallel(team.get("cs"))
         if not team_name:
@@ -355,9 +371,10 @@ def _changes(before, after):
 
 
 def _write_rosters_atomic(root, players):
-    path = roster_path(root)
+    # Never mutate the Git-tracked baseline: the active live snapshot is local.
+    path = live_roster_path(root)
+    path.parent.mkdir(parents=True, exist_ok=True)
     backup = Path(root) / BACKUP_REL
-    backup.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
         backup.write_bytes(path.read_bytes())
 
