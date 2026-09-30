@@ -207,6 +207,32 @@ def _api_teams(token):
     return teams
 
 
+def select_league_for_team(leagues, team_name):
+    """Select the account league that actually contains the requested fantasy team."""
+    wanted = normalize_name(team_name)
+    matches = []
+    for league in leagues:
+        try:
+            teams = _api_teams(league["token"])
+        except Exception:
+            continue
+        names = {
+            normalize_name(str(team.get("n") or team.get("name") or ""))
+            for team in teams
+        }
+        if wanted in names:
+            matches.append(league)
+    if len(matches) == 1:
+        return matches[0]
+    if not matches:
+        raise LeagueSyncError(
+            f"Nessuna lega dell'account contiene la squadra «{team_name}»."
+        )
+    raise LeagueSyncError(
+        f"Più leghe contengono «{team_name}»: specifica FANTA_LEAGUE_ID."
+    )
+
+
 def _api_players(token):
     payload = _request("GET", "/onboarding/v1/league/players", bearer=token)
     players = payload.get("players") if isinstance(payload, dict) else None
