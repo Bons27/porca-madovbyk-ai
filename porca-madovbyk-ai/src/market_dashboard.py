@@ -11,6 +11,7 @@ from .fantacalcio_catalog import fetch_player_catalog
 from .fantacalcio_statistics import fetch_statistics_catalog
 from .fantacalcio_source import fetch_unavailable
 from .league_rosters import load_league_rosters
+from .league_live_sync import ensure_rosters_current
 from .league_dataset import build_league_dataset
 from .trade_value import build_trade_values
 from .market_proposals import USER_TEAM, ROLE_NAME, find_market_proposals
@@ -23,6 +24,7 @@ from .market_auto_signals import enrich_market_metrics
 def _load_market_data(root_str):
     from pathlib import Path
     root = Path(root_str)
+    ensure_rosters_current(root, max_age_minutes=5)
     roster = load_league_rosters(root / "data" / "league_rosters.csv")
     catalog = fetch_player_catalog()
     stats = fetch_statistics_catalog()
