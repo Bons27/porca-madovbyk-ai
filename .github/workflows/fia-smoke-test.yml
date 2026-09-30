@@ -98,6 +98,10 @@ jobs:
           assert 'elif page == "Mercato":' in dashboard
           assert "render_market(PROJECT_ROOT, open_player_detail, suffix)" in dashboard
           assert '("🔁 Mercato", "Mercato",' in dashboard
+          assert '"Rose Lega"' in dashboard
+          assert 'elif page == "Rose Lega":' in dashboard
+          assert 'render_league_sync(PROJECT_ROOT, get_player_context.clear)' in dashboard
+          assert '("🔄 Rose Lega", "Rose Lega",' in dashboard
           assert callable(render_market) and callable(find_market_proposals)
           print("Mercato navigation and module imports: OK")
           PY
