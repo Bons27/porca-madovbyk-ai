@@ -1,0 +1,51 @@
+name: Sync Rose Lega
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: porca-madovbyk-roster-sync
+  cancel-in-progress: false
+
+jobs:
+  sync-rosters:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: porca-madovbyk-ai
+        run: pip install -r requirements.txt
+
+      - name: Sync live league rosters
+        working-directory: porca-madovbyk-ai
+        env:
+          FANTA_USER: ${{ secrets.FANTA_USER }}
+          FANTA_PWD: ${{ secrets.FANTA_PWD }}
+          FANTA_LEAGUE_ID: ${{ secrets.FANTA_LEAGUE_ID }}
+        run: python -m src.league_roster_sync_ci
+
+      - name: Commit roster changes
+        working-directory: porca-madovbyk-ai
+        run: |
+          if [ -n "$(git status --porcelain -- data/league_rosters.csv)" ]; then
+            git config user.name "Porca MaDovbyk AI"
+            git config user.email "actions@github.com"
+            git add data/league_rosters.csv
+            git commit -m "Sync league rosters from Leghe Fantacalcio [skip ci]"
+            git pull --rebase
+            git push
+          else
+            echo "Rose già allineate."
+          fi
